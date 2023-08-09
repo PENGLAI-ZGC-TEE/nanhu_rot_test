@@ -21,8 +21,6 @@
  /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/include/sw/device/lib/dif/autogen/dif_kmac_autogen.h \
  /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/src/sw/device/lib/dif/dif_otp_ctrl.h \
  /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/include/sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h \
- /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/src/sw/device/lib/dif/dif_rstmgr.h \
- /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/include/sw/device/lib/dif/autogen/dif_rstmgr_autogen.h \
  /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/src/sw/device/lib/runtime/hart.h \
  /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/include/sw/device/lib/base/stdasm.h \
  /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/src/sw/device/lib/runtime/log.h \
@@ -42,8 +40,6 @@
  /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/include/sw/device/lib/dif/dif_keymgr.h \
  /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/include/sw/device/lib/dif/dif_kmac.h \
  /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/src/sw/device/lib/testing/kmac_testutils.h \
- /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/src/sw/device/lib/testing/rstmgr_testutils.h \
- /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/include/sw/device/lib/dif/dif_rstmgr.h \
  /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/src/sw/device/lib/testing/test_framework/check.h \
  /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/include/sw/device/lib/base/memory.h \
  /nfs/home/zhangdongrong/thinclient_drives/xs-env/nexus-am/tests/keymgr/include/sw/device/lib/runtime/hart.h \
