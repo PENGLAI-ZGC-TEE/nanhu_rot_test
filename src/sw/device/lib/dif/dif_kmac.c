@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/runtime/log.h"
 
 #include "kmac_regs.h"  // Generated.
 
@@ -163,7 +164,6 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
   if (kmac == NULL) {
     return kDifBadArg;
   }
-
   // Entropy mode.
   uint32_t entropy_mode_value;
   bool entropy_ready = false;
@@ -182,12 +182,13 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
     default:
       return kDifBadArg;
   }
-
   // Check that the hardware is in an idle state.
-  if (!is_state_idle(kmac)) {
-    return kDifLocked;
+  // if (!is_state_idle(kmac)) {
+  //   return kDifLocked;
+  // }
+  while (!is_state_idle(kmac)) {
+    // return kDifLocked;
   }
-
   // Write entropy period register.
   uint32_t entropy_period_reg = 0;
   entropy_period_reg = bitfield_field32_write(
@@ -199,7 +200,6 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
 
   mmio_region_write32(kmac->base_addr, KMAC_ENTROPY_PERIOD_REG_OFFSET,
                       entropy_period_reg);
-
   // Write threshold register.
   uint32_t entropy_threshold_reg =
       KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_RESVAL;
@@ -211,7 +211,6 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
   mmio_region_write32_shadowed(
       kmac->base_addr, KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
       entropy_threshold_reg);
-
   // Write configuration register.
   uint32_t cfg_reg = 0;
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_ENDIANNESS_BIT,

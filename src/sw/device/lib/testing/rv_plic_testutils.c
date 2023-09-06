@@ -10,6 +10,8 @@
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
+
+
 void rv_plic_testutils_irq_range_enable(dif_rv_plic_t *plic,
                                         dif_rv_plic_target_t target,
                                         dif_rv_plic_irq_id_t start_irq_id,

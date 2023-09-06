@@ -13,6 +13,8 @@
 
 #include "/nfs/home/zhangdongrong/thinclient_drives/nanhu_v2/xs-env/nexus-am/tests/keymgr/src/rv_plic_regs.h"  // Generated.
 
+// #include "rv_plic_regs.h"  // Generated.
+
 const uint32_t kDifRvPlicMinPriority = 0;
 const uint32_t kDifRvPlicMaxPriority = RV_PLIC_PRIO0_PRIO0_MASK;
 

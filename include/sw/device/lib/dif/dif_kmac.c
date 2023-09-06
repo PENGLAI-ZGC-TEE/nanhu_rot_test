@@ -163,7 +163,6 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
   if (kmac == NULL) {
     return kDifBadArg;
   }
-
   // Entropy mode.
   uint32_t entropy_mode_value;
   bool entropy_ready = false;
@@ -182,12 +181,10 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
     default:
       return kDifBadArg;
   }
-
   // Check that the hardware is in an idle state.
   if (!is_state_idle(kmac)) {
     return kDifLocked;
   }
-
   // Write entropy period register.
   uint32_t entropy_period_reg = 0;
   entropy_period_reg = bitfield_field32_write(

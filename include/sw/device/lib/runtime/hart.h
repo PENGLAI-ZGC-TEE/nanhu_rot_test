@@ -25,9 +25,9 @@
  * This function may behave as if it is a no-op.
  */
 inline void wait_for_interrupt(void) {
-#ifdef OT_PLATFORM_RV32
+// #ifdef OT_PLATFORM_RV32
   asm volatile("wfi");
-#endif
+// #endif
 }
 
 /**

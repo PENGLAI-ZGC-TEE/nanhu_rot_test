@@ -22,6 +22,7 @@
  * This implementation matches the RTL design at `hw/ip/prim/rtl/prim_lfsr.sv`.
  */
 static const uint32_t kLfsrPolynomialCoefficients = 0x80000057;
+rand_testutils_rng_t rand_testutils_rng_ctx;
 
 /**
  * The default timeout in usecs for fetching data from the entropy source.

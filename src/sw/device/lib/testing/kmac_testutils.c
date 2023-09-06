@@ -28,7 +28,7 @@ status_t kmac_testutils_config(dif_kmac_t *kmac, bool sideload) {
       // Avoid masking the message to improve speed.
       .msg_mask = false,
   };
-
+  
   TRY(dif_kmac_configure(kmac, config));
   return OK_STATUS();
 }

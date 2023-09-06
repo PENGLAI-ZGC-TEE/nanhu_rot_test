@@ -12,6 +12,8 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+
 
 // IBEX_SPIN_FOR needs a dependency on check.h, but the build fails if a
 // dependency on sw_lib_testing_check is added.
@@ -222,13 +224,25 @@ inline uint64_t ibex_timeout_elapsed(const ibex_timeout_t *timeout) {
  * @return `kDeadlineExceeded` in case of timeout.
  */
 #define IBEX_TRY_SPIN_FOR(expr, timeout_usec)                        \
-  do {                                                               \
+  do {      
+     LOG_INFO("In spin loop 0");                                     \                                                         \
     const ibex_timeout_t timeout_ = ibex_timeout_init(timeout_usec); \
-    while (!(expr)) {                                                \
+    while (!(expr)) {                                                 \
+       LOG_INFO("In spin loop");                                     \
       if (ibex_timeout_check(&timeout_)) {                           \
         return DEADLINE_EXCEEDED();                                  \
       }                                                              \
     }                                                                \
   } while (0)
+
+  // #define TRY_SPIN_FOR_CYCLES(expr, timeout_cycles)                   \
+  // do {                                                              \
+  //   uint32_t cycles_ = timeout_cycles;                              \
+  //   while (!(expr)) {                                               \
+  //     if (--cycles_ == 0) {                                         \
+  //       return DEADLINE_EXCEEDED();                                   \
+  //     }                                                             \
+  //   }                                                               \
+  // } while(0)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_

@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/rv_core_ibex_testutils.h"
+// #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -22,7 +22,7 @@
  * This implementation matches the RTL design at `hw/ip/prim/rtl/prim_lfsr.sv`.
  */
 static const uint32_t kLfsrPolynomialCoefficients = 0x80000057;
-
+rand_testutils_rng_t rand_testutils_rng_ctx;
 /**
  * The default timeout in usecs for fetching data from the entropy source.
  */
@@ -49,10 +49,11 @@ rand_testutils_rng_t rand_testutils_init(dif_rv_core_ibex_t *rv_core_ibex) {
 }
 
 static inline void reseed_lfsr(void) {
-  CHECK_STATUS_OK(rv_core_ibex_testutils_get_rnd_data(
-      rand_testutils_rng_ctx.rv_core_ibex,
-      rand_testutils_rng_ctx.entropy_fetch_timeout_usec,
-      &rand_testutils_rng_ctx.lfsr));
+  // CHECK_STATUS_OK(rv_core_ibex_testutils_get_rnd_data(
+  //     rand_testutils_rng_ctx.rv_core_ibex,
+  //     rand_testutils_rng_ctx.entropy_fetch_timeout_usec,
+  //     &rand_testutils_rng_ctx.lfsr));
+   rand_testutils_rng_ctx.lfsr = 0x12345678; 
   rand_testutils_rng_ctx.op_counter = 0;
 }
 

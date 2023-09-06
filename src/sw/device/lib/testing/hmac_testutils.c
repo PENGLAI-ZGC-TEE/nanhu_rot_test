@@ -86,7 +86,11 @@ static bool check_fifo_empty(const dif_hmac_t *hmac) {
 status_t hmac_testutils_fifo_empty_polled(const dif_hmac_t *hmac) {
   uint32_t usec;
   TRY(compute_hmac_testutils_fifo_empty_usec(&usec));
-  IBEX_TRY_SPIN_FOR(check_fifo_empty(hmac), usec);
+  while(!check_fifo_empty(hmac)) {
+
+  }
+  // // LOG_INFO("fifo empty");
+  // IBEX_TRY_SPIN_FOR(check_fifo_empty(hmac), usec);
   return OK_STATUS();
 }
 
@@ -94,7 +98,10 @@ status_t hmac_testutils_finish_polled(const dif_hmac_t *hmac,
                                       dif_hmac_digest_t *digest_out) {
   uint32_t usec;
   TRY(compute_hmac_testutils_finish_timeout_usec(&usec));
-  IBEX_TRY_SPIN_FOR(dif_hmac_finish(hmac, digest_out) == kDifOk, usec);
+  while(!(dif_hmac_finish(hmac, digest_out) == kDifOk)) {
+
+  }
+  // IBEX_TRY_SPIN_FOR(dif_hmac_finish(hmac, digest_out) == kDifOk, usec);
   return OK_STATUS();
 }
 
