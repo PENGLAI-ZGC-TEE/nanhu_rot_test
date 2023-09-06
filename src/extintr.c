@@ -168,8 +168,13 @@ void intr_num_enable(bool shall_trigger, bool wfi, int context, int intr_num) {
 }
 
 uint32_t get_intr_num(int context){
-  uint32_t claim =  plic_get_claim(context);
+  uint32_t claim =  plic_get_claim(context) - PLIC_EXT_INTR_OFFSET;
   return claim;
+}
+
+void intr_clear(int context, int claim){
+  plic_clear_intr(claim+PLIC_EXT_INTR_OFFSET); // CLEAR_INTR(claim - PLIC_EXT_INTR_OFFSET);
+  plic_clear_claim(context, claim+PLIC_EXT_INTR_OFFSET); // WRITE_WORD(PLIC_CLAIM(current_context), claim);
 }
 
 void random_trigger() {

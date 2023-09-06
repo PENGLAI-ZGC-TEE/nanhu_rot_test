@@ -95,7 +95,7 @@ bool main(void) {
   intr_num_enable(true, true, CONTEXT_S,kTopEarlgreyPlicIrqIdHmacFifoEmpty); //kTopEarlgreyPlicIrqIdHmacFifoEmpty
 
   // Expect the fifo empty irq after pushing data.
-  hmac_ctx.expected_irq = kTopEarlgreyPlicIrqIdHmacFifoEmpty + 1  ;
+  hmac_ctx.expected_irq = kTopEarlgreyPlicIrqIdHmacFifoEmpty;
   irq_serviced = UINT32_MAX;
   // Use HMAC in SHA256 mode to generate a 256bit key from `kHmacRefLongKey`.
   CHECK_DIF_OK(
@@ -125,7 +125,7 @@ bool main(void) {
 
   // Expect the done irq after processing data.
   intr_num_enable(true, true, CONTEXT_S,kTopEarlgreyPlicIrqIdHmacHmacDone); 
-  hmac_ctx.expected_irq = kTopEarlgreyPlicIrqIdHmacHmacDone +1 ;
+  hmac_ctx.expected_irq = kTopEarlgreyPlicIrqIdHmacHmacDone;
   irq_serviced = UINT32_MAX;
 
   CHECK_DIF_OK(dif_hmac_process(hmac_ctx.hmac));
