@@ -377,7 +377,6 @@ dif_result_t dif_keymgr_get_status_codes(
   // Read and clear OP_STATUS register (rw1c).
   uint32_t reg_op_status =
       mmio_region_read32(keymgr->base_addr, KEYMGR_OP_STATUS_REG_OFFSET);
-  LOG_INFO("Keymgr reg %x",reg_op_status);
 
   bool is_idle = false;
   bool has_error = false;

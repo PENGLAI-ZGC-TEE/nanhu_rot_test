@@ -122,7 +122,31 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
     // TRY_CHECK(info == kDifRstmgrResetInfoSw, "Unexpected reset reason: %08x",
     //           info);
 
+    
+    // void *rst_addr = (void*)0x3b300000;
+    // *(uint32_t*)rst_addr = 0x01;  // reset
+    //  asm volatile("" ::: "memory"); 
+    //  *(uint32_t*)rst_addr = 0x00;
+    //  asm volatile("" ::: "memory"); 
+    //  LOG_INFO("Reset Done");
+
+    // edn entropy csrng init
+     void *entropy_conf_addr = (void*)0x3b160024;
+     void *entropy_en_addr = (void*)0x3b160020;
+     void *csrng_ctrl_addr = (void*)0x3b150014;
+      void *end0_ctrl_addr = (void*)0x3b190014;
+     *(uint32_t*)entropy_conf_addr = 0x00909099;
+     asm volatile("" ::: "memory"); 
+     *(uint32_t*)entropy_en_addr = 0x00000006;
+     asm volatile("" ::: "memory"); 
+     *(uint32_t*)csrng_ctrl_addr = 0x00000666;
+     asm volatile("" ::: "memory"); 
+     *(uint32_t*)end0_ctrl_addr = 0x00009966;
+     asm volatile("" ::: "memory"); 
+     
+
     // Initialize KMAC in preparation for keymgr use.
+
     TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR),
                       kmac));
 
@@ -131,16 +155,15 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
     // configure it to use software entropy (and a sideloaded key, although it
     // shouldn't matter here and tests should reconfigure if needed).
     TRY(kmac_testutils_config(kmac, true));
-    
 
     // Initialize keymgr context.
     TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
                         keymgr));
 
-
     // Advance to Initialized state.
     TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateReset));
     TRY(keymgr_testutils_advance_state(keymgr, NULL));
+    LOG_INFO("keymgr_testutils_advance_state");
     TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateInitialized));
     LOG_INFO("Keymgr entered Init State");
 

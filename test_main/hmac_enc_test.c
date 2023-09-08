@@ -107,7 +107,7 @@ bool main(void) {
 
   LOG_INFO("gen finish");
   // If the irq has't fired yet, wait for the `fifoEmpty` interrupt .
-  do_wfi();
+  
   // LOG_INFO("intr_num 1 %x",get_intr_num(CONTEXT_S));
   // while(get_intr_num(CONTEXT_S) != hmac_ctx.expected_irq) {
   //   LOG_INFO("intr_num 2 %x",get_intr_num(CONTEXT_S));
@@ -119,6 +119,7 @@ bool main(void) {
 //   }
   // LOG_INFO("intr finish");
   // LOG_INFO("intr_num 2 %x",get_intr_num(CONTEXT_S));
+  do_wfi();
   int a = get_intr_num(CONTEXT_S);
   LOG_INFO("intr_num 1 %x", a);
   CHECK(a == hmac_ctx.expected_irq);
