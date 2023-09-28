@@ -71,7 +71,7 @@ typedef enum otbn_status {
  * Use `OTBN_DECLARE_SYMBOL_ADDR()` together with `OTBN_ADDR_T_INIT()` to
  * initialize this type.
  */
-typedef uint32_t otbn_addr_t;
+typedef uint64_t otbn_addr_t;
 
 /**
  * Information about an embedded OTBN application image.
@@ -200,14 +200,24 @@ typedef struct otbn_app {
       .imem_end = OTBN_SYMBOL_PTR(app_name, _imem_end),                     \
       .dmem_data_start = OTBN_SYMBOL_PTR(app_name, _dmem_data_start),       \
       .dmem_data_end = OTBN_SYMBOL_PTR(app_name, _dmem_data_end),           \
-      .dmem_data_start_addr = OTBN_ADDR_T_INIT(app_name, _dmem_data_start), \
+      .dmem_data_start_addr = 0x0000, \
   })
+      // .dmem_data_start_addr = OTBN_ADDR_T_INIT(app_name, _dmem_data_start), 
 
 /**
  * Initializes an `otbn_addr_t`.
  */
+// #define OTBN_ADDR_T_INIT(app_name, symbol_name) 
+//   ((uint32_t)(uintptr_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
+
 #define OTBN_ADDR_T_INIT(app_name, symbol_name) \
-  ((uint32_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
+  ((uint64_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
+
+// extern otbn_app_t kOtbnAppRsa;
+// extern uint32_t kOtbnVarRsaOutBuf;
+// extern uint32_t kOtbnVarRsaInMod;
+// extern int32_t kOtbnVarRsaInBuf;
+// extern uint32_t kOtbnVarRsaM0Inv;
 
 /**
  * (Re-)loads the RSA application into OTBN.

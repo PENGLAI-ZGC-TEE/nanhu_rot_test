@@ -525,6 +525,8 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 }
 
 // Implementation details shared across shutdown macros.
+//zdr
+#define OT_PLATFORM_RV32
 #ifdef OT_PLATFORM_RV32
 // This string can be tuned to be longer or shorter as desired, for
 // fault-hardening purposes.
