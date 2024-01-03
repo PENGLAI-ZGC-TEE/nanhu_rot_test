@@ -71,7 +71,7 @@ typedef enum otbn_status {
  * Use `OTBN_DECLARE_SYMBOL_ADDR()` together with `OTBN_ADDR_T_INIT()` to
  * initialize this type.
  */
-typedef uint64_t otbn_addr_t;
+typedef uint32_t otbn_addr_t;
 
 /**
  * Information about an embedded OTBN application image.
@@ -210,7 +210,7 @@ typedef struct otbn_app {
 //   ((uint32_t)(uintptr_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
 
 #define OTBN_ADDR_T_INIT(app_name, symbol_name) \
-  ((uint64_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
+  ((uint32_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
 /**
  * (Re-)loads the RSA application into OTBN.
  *

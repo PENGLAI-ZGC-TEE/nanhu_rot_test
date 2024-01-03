@@ -164,49 +164,17 @@ rom_error_t rsa_verify_test_negative(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool main(void) {
-  status_t result = OK_STATUS();
+  // status_t result = OK_STATUS();
 
   compute_digest();
 
-// OTBN_DECLARE_APP_SYMBOLS(
-//     run_rsa_verify_3072_rr_modexp);  // The OTBN RSA-3072 app.
-// OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
-//                          out_buf);  // Output buffer (message).
-// OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
-//                          in_mod);  // The RSA modulus (n).
-// OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
-//                          in_buf);  // The signature (s).
-// OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
-//                          m0inv);  // The Montgomery constant m0_inv.
+  rsa_verify_test_exp_3();
 
-// static const otbn_app_t kOtbnAppRsa =
-//     OTBN_APP_T_INIT(run_rsa_verify_3072_rr_modexp);
-// static const otbn_addr_t kOtbnVarRsaOutBuf_64 = 
-//     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, out_buf);
-// static const otbn_addr_t kOtbnVarRsaInMod_64 = 
-//     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, in_mod);
-// static const otbn_addr_t kOtbnVarRsaInBuf_64 = 
-//     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, in_buf);
-// static const otbn_addr_t kOtbnVarRsaM0Inv_64 = 
-//     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, m0inv);
-
-// const uint32_t kOtbnVarRsaOutBuf = (uint32_t)(uintptr_t)kOtbnVarRsaOutBuf_64;
-// const uint32_t kOtbnVarRsaInMod = (uint32_t)(uintptr_t)kOtbnVarRsaInMod_64;
-// const uint32_t kOtbnVarRsaInBuf = (uint32_t)(uintptr_t)kOtbnVarRsaInBuf_64;
-// const uint32_t kOtbnVarRsaM0Inv = (uint32_t)(uintptr_t)kOtbnVarRsaM0Inv_64;
-
-// LOG_INFO("kOtbnAppRsa %x\n",kOtbnAppRsa.dmem_data_end);
-// LOG_INFO("kOtbnVarRsaOutBuf %x\n",kOtbnVarRsaOutBuf);
-// LOG_INFO("kOtbnVarRsaInMod %x\n",kOtbnVarRsaInMod);
-// LOG_INFO("kOtbnVarRsaInBuf %x\n",kOtbnVarRsaInBuf);
-// LOG_INFO("kOtbnVarRsaM0Inv %x\n",kOtbnVarRsaM0Inv);
-
-
-
-  EXECUTE_TEST(result, rsa_verify_test_exp_3);
+  // EXECUTE_TEST(result, rsa_verify_test_exp_3);
 
   // EXECUTE_TEST(result, rsa_verify_test_exp_3(kOtbnAppRsa,kOtbnVarRsaOutBuf,kOtbnVarRsaInMod,kOtbnVarRsaInBuf,,kOtbnVarRsaM0Inv));
   // EXECUTE_TEST(result, rsa_verify_test_exp_65537(kOtbnAppRsa,kOtbnVarRsaOutBuf,kOtbnVarRsaInMod,kOtbnVarRsaInBuf,,kOtbnVarRsaM0Inv));
   // EXECUTE_TEST(result, rsa_verify_test_negative(kOtbnAppRsa,kOtbnVarRsaOutBuf,kOtbnVarRsaInMod,kOtbnVarRsaInBuf,,kOtbnVarRsaM0Inv));
-  return status_ok(result);
+  // return status_ok(result);
+  return 0;
 }

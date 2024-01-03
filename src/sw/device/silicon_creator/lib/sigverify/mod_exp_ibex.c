@@ -9,6 +9,9 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 
+#include "sw/device/lib/runtime/log.h"
+
+
 /**
  * Subtracts the modulus of `key` from `a` in-place, i.e. `a -= n`.
  *
@@ -144,6 +147,7 @@ static void calc_r_square(const sigverify_rsa_key_t *key,
   // modulo n and ensures that `buf` fits in `kSigVerifyRsaNumWords` going
   // into the loop.
   subtract_modulus(key, &buf);
+  LOG_INFO("test rsa clac 1");
 
   // Compute (2^96 * R) mod n.
   // Each run of the loop doubles buf and reduces modulo n.
@@ -155,6 +159,7 @@ static void calc_r_square(const sigverify_rsa_key_t *key,
       msb -= subtract_modulus(key, &buf);
     }
   }
+  LOG_INFO("test rsa clac 2");
 
   // Perform 5 montgomery squares to get RR = ((2^96)^32 * R) mod n
   mont_mul(key, &buf, &buf, result);
@@ -176,10 +181,22 @@ rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
   sigverify_rsa_buffer_t buf;
 
   // result = R^2 mod n
+  LOG_INFO("test rsa 1");
+
+  
+
   calc_r_square(key, result);
+
+  void *read_addr = (void*)0x3a008000;
+  uint64_t read_data = *(uint32_t*)read_addr;
+  LOG_INFO("Read 0x%x from 0x%x success!\n", read_data, read_addr);
+
+  LOG_INFO("test rsa 2");
   // buf = sig * R mod n
   mont_mul(key, sig, result, &buf);
+  LOG_INFO("test rsa 3");
   for (size_t i = 0; i < 8; ++i) {
+    LOG_INFO("test rsa i");
     // result = sig^{2*4^i} * R mod n (sig's exponent: 2, 8, 32, ..., 32768)
     mont_mul(key, &buf, &buf, result);
     // buf = sig^{4^{i+1}} * R mod n (sig's exponent: 4, 16, 64, ..., 65536)

@@ -74,7 +74,7 @@ rom_error_t otbn_busy_wait_for_done(void) {
  * @param src Source buffer.
  * @param num_words Number of words to copy.
  */
-static void otbn_write(uint32_t dest_addr, const uint64_t *src,
+static void otbn_write(uint32_t dest_addr, const uint32_t *src,
                        size_t num_words) {
   // Start from a random index less than `num_words`.
   // size_t i = ((uint64_t)rnd_uint32() * (uint64_t)num_words) >> 32;
@@ -94,7 +94,7 @@ static void otbn_write(uint32_t dest_addr, const uint64_t *src,
   HARDENED_CHECK_EQ((uint32_t)r_iter_cnt, UINT32_MAX);
 }
 
-static rom_error_t otbn_imem_write(size_t num_words, const uint64_t *src,
+static rom_error_t otbn_imem_write(size_t num_words, const uint32_t *src,
                                    otbn_addr_t dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(dest, num_words, OTBN_IMEM_SIZE_BYTES));
@@ -102,7 +102,7 @@ static rom_error_t otbn_imem_write(size_t num_words, const uint64_t *src,
   return kErrorOk;
 }
 
-rom_error_t otbn_dmem_write(size_t num_words, const uint64_t *src,
+rom_error_t otbn_dmem_write(size_t num_words, const uint32_t *src,
                             otbn_addr_t dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(dest, num_words, OTBN_DMEM_SIZE_BYTES));
@@ -110,7 +110,7 @@ rom_error_t otbn_dmem_write(size_t num_words, const uint64_t *src,
   return kErrorOk;
 }
 
-rom_error_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint64_t *dest) {
+rom_error_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(src, num_words, OTBN_DMEM_SIZE_BYTES));
   size_t i = 0, r = num_words - 1;

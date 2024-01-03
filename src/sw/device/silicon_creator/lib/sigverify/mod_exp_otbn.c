@@ -13,33 +13,54 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// OTBN_DECLARE_APP_SYMBOLS(
-//     run_rsa_verify_3072_rr_modexp);  // The OTBN RSA-3072 app.
-// OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
-//                          out_buf);  // Output buffer (message).
-// OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
-//                          in_mod);  // The RSA modulus (n).
-// OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
-//                          in_buf);  // The signature (s).
-// OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
-//                          m0inv);  // The Montgomery constant m0_inv.
+OTBN_DECLARE_APP_SYMBOLS(
+    run_rsa_verify_3072_rr_modexp);  // The OTBN RSA-3072 app.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
+                         out_buf);  // Output buffer (message).
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
+                         in_mod);  // The RSA modulus (n).
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
+                         in_buf);  // The signature (s).
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
+                         m0inv);  // The Montgomery constant m0_inv.
 
 // static const otbn_app_t kOtbnAppRsa =
 //     OTBN_APP_T_INIT(run_rsa_verify_3072_rr_modexp);
-// static const otbn_addr_t kOtbnVarRsaOutBuf_64 = 
+// static const otbn_addr_t kOtbnVarRsaOutBuf = 
 //     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, out_buf);
-// static const otbn_addr_t kOtbnVarRsaInMod_64 = 
+// static const otbn_addr_t kOtbnVarRsaInMod = 
 //     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, in_mod);
-// static const otbn_addr_t kOtbnVarRsaInBuf_64 = 
+// static const otbn_addr_t kOtbnVarRsaInBuf = 
 //     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, in_buf);
-// static const otbn_addr_t kOtbnVarRsaM0Inv_64 = 
+// static const otbn_addr_t kOtbnVarRsaM0Inv = 
 //     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, m0inv);
 
-// const uint32_t kOtbnVarRsaOutBuf = (uint32_t)(uintptr_t)kOtbnVarRsaOutBuf_64;
-// const uint32_t kOtbnVarRsaInMod = (uint32_t)(uintptr_t)kOtbnVarRsaInMod_64;
-// const uint32_t kOtbnVarRsaInBuf = (uint32_t)(uintptr_t)kOtbnVarRsaInBuf_64;
-// const uint32_t kOtbnVarRsaM0Inv = (uint32_t)(uintptr_t)kOtbnVarRsaM0Inv_64;
 
+// otbn_app_t结构体的定义。
+otbn_app_t kOtbnAppRsa;
+
+// 运行时调用的初始化函数。
+void initialize_otbn_app_rsa(void) {
+    kOtbnAppRsa.imem_start = OTBN_SYMBOL_PTR(run_rsa_verify_3072_rr_modexp, _imem_start);
+    kOtbnAppRsa.imem_end = OTBN_SYMBOL_PTR(run_rsa_verify_3072_rr_modexp, _imem_end);
+    kOtbnAppRsa.dmem_data_start = OTBN_SYMBOL_PTR(run_rsa_verify_3072_rr_modexp, _dmem_data_start);
+    kOtbnAppRsa.dmem_data_end = OTBN_SYMBOL_PTR(run_rsa_verify_3072_rr_modexp, _dmem_data_end);
+    kOtbnAppRsa.dmem_data_start_addr = OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, _dmem_data_start);
+}
+
+// 声明全局指针
+ const uint32_t *kOtbnVarRsaOutBuf;
+ const uint32_t *kOtbnVarRsaInMod;
+ const uint32_t *kOtbnVarRsaInBuf;
+ const uint32_t *kOtbnVarRsaM0Inv;
+
+// 在初始化函数中设置指针
+void initialize_otbn_pointers() {
+    kOtbnVarRsaOutBuf = OTBN_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp, out_buf);
+    kOtbnVarRsaInMod = OTBN_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp, in_mod);
+    kOtbnVarRsaInBuf = OTBN_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp, in_buf);
+    kOtbnVarRsaM0Inv = OTBN_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp, m0inv);
+}
 
 /**
  * Copies a 3072-bit number from the CPU memory to OTBN data memory.
@@ -69,21 +90,23 @@ rom_error_t run_otbn_rsa_3072_modexp(
     const sigverify_rsa_key_t *public_key,
     const sigverify_rsa_buffer_t *signature,
     sigverify_rsa_buffer_t *recovered_message) {
-
+  
+  initialize_otbn_app_rsa();
+  initialize_otbn_pointers();
   // Load the RSA app.
   HARDENED_RETURN_IF_ERROR(otbn_load_app(kOtbnAppRsa));
 
   // Set the modulus (n).
   HARDENED_RETURN_IF_ERROR(
-      write_rsa_3072_int_to_otbn(&public_key->n, kOtbnVarRsaInMod));
+      write_rsa_3072_int_to_otbn(&public_key->n, *kOtbnVarRsaInMod));
 
   // Set the signature.
   HARDENED_RETURN_IF_ERROR(
-      write_rsa_3072_int_to_otbn(signature, kOtbnVarRsaInBuf));
+      write_rsa_3072_int_to_otbn(signature, *kOtbnVarRsaInBuf));
 
   // Set the precomputed constant m0_inv.
   HARDENED_RETURN_IF_ERROR(otbn_dmem_write(
-      kOtbnWideWordNumWords, public_key->n0_inv, kOtbnVarRsaM0Inv));
+      kOtbnWideWordNumWords, public_key->n0_inv, *kOtbnVarRsaM0Inv));
 
   // Start the OTBN routine.
   HARDENED_RETURN_IF_ERROR(otbn_execute());
@@ -101,7 +124,7 @@ rom_error_t run_otbn_rsa_3072_modexp(
   HARDENED_CHECK_LE(count, kModExpOtbnInsnCountMax);
 
   // Read recovered message out of OTBN dmem.
-  return read_rsa_3072_int_from_otbn(kOtbnVarRsaOutBuf, recovered_message);
+  return read_rsa_3072_int_from_otbn(*kOtbnVarRsaOutBuf, recovered_message);
 }
 
 rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,
