@@ -913,7 +913,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x3b008000u
+#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x3a000000u
 
 /**
  * Peripheral size for rom device on rom_ctrl in top earlgrey.
