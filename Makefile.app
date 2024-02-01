@@ -17,7 +17,8 @@ INC_DIR += $(addsuffix /include/, $(addprefix $(AM_HOME)/libs/, $(LIBS)))
 ## Paste in "Makefile.compile" here
 include $(AM_HOME)/Makefile.compile
 
-OTBN_ELF_FILE = ./otbn/run_rsa_verify_3072_rr_modexp.rv64embed.a
+OTBN_ELF_FILE = ./otbn/sm2_ecdsa.rv64embed.a
+#OTBN_ELF_FILE = ./otbn/run_rsa_verify_3072_rr_modexp.rv64embed.a
 
 ## Produce a list of files to be linked: app objects, AM, and libraries
 LINK_LIBS  = $(sort $(LIBS))

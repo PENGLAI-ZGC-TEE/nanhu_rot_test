@@ -13,6 +13,9 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#include "sw/device/lib/runtime/log.h"
+
+
 OTBN_DECLARE_APP_SYMBOLS(
     run_rsa_verify_3072_rr_modexp);  // The OTBN RSA-3072 app.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
@@ -27,13 +30,13 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
 // static const otbn_app_t kOtbnAppRsa =
 //     OTBN_APP_T_INIT(run_rsa_verify_3072_rr_modexp);
 // static const otbn_addr_t kOtbnVarRsaOutBuf = 
-//     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, out_buf);
+//     OTBN_ADDR_T_INIT(sm2_ecdsa, out_buf);
 // static const otbn_addr_t kOtbnVarRsaInMod = 
-//     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, in_mod);
+//     OTBN_ADDR_T_INIT(sm2_ecdsa, in_mod);
 // static const otbn_addr_t kOtbnVarRsaInBuf = 
-//     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, in_buf);
+//     OTBN_ADDR_T_INIT(sm2_ecdsa, in_buf);
 // static const otbn_addr_t kOtbnVarRsaM0Inv = 
-//     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, m0inv);
+//     OTBN_ADDR_T_INIT(sm2_ecdsa, m0inv);
 
 
 // otbn_app_t结构体的定义。
@@ -90,28 +93,27 @@ rom_error_t run_otbn_rsa_3072_modexp(
     const sigverify_rsa_key_t *public_key,
     const sigverify_rsa_buffer_t *signature,
     sigverify_rsa_buffer_t *recovered_message) {
-  
   initialize_otbn_app_rsa();
   initialize_otbn_pointers();
   // Load the RSA app.
   HARDENED_RETURN_IF_ERROR(otbn_load_app(kOtbnAppRsa));
-
+  // LOG_INFO("otbn load");
   // Set the modulus (n).
-  HARDENED_RETURN_IF_ERROR(
-      write_rsa_3072_int_to_otbn(&public_key->n, *kOtbnVarRsaInMod));
 
+  HARDENED_RETURN_IF_ERROR(
+      write_rsa_3072_int_to_otbn(&public_key->n, (uint32_t)(uintptr_t)kOtbnVarRsaInMod));
   // Set the signature.
   HARDENED_RETURN_IF_ERROR(
-      write_rsa_3072_int_to_otbn(signature, *kOtbnVarRsaInBuf));
+      write_rsa_3072_int_to_otbn(signature, (uint32_t)(uintptr_t)kOtbnVarRsaInBuf));
 
   // Set the precomputed constant m0_inv.
   HARDENED_RETURN_IF_ERROR(otbn_dmem_write(
-      kOtbnWideWordNumWords, public_key->n0_inv, *kOtbnVarRsaM0Inv));
+      kOtbnWideWordNumWords, public_key->n0_inv, (uint32_t)(uintptr_t)kOtbnVarRsaM0Inv));
 
   // Start the OTBN routine.
   HARDENED_RETURN_IF_ERROR(otbn_execute());
-  SEC_MMIO_WRITE_INCREMENT(kOtbnSecMmioExecute);
 
+  SEC_MMIO_WRITE_INCREMENT(kOtbnSecMmioExecute);
   // Check that the instruction count falls within the expected range. If the
   // instruction count falls outside this range, it indicates that there was a
   // fault injection attack of some kind during OTBN execution.
@@ -124,7 +126,7 @@ rom_error_t run_otbn_rsa_3072_modexp(
   HARDENED_CHECK_LE(count, kModExpOtbnInsnCountMax);
 
   // Read recovered message out of OTBN dmem.
-  return read_rsa_3072_int_from_otbn(*kOtbnVarRsaOutBuf, recovered_message);
+  return read_rsa_3072_int_from_otbn((uint32_t)(uintptr_t)kOtbnVarRsaOutBuf, recovered_message);
 }
 
 rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,

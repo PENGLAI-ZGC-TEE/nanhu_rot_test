@@ -17,6 +17,9 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"  // Generated.
 
+#include "sw/device/lib/runtime/log.h"
+
+
 enum {
   /**
    * Base address for OTBN.
@@ -221,14 +224,14 @@ static rom_error_t check_app_address_ranges(const otbn_app_t app) {
 
 rom_error_t otbn_load_app(const otbn_app_t app) {
   HARDENED_RETURN_IF_ERROR(check_app_address_ranges(app));
-
+  LOG_INFO("load test1");
   // If OTBN is busy, wait for it to be done.
   HARDENED_RETURN_IF_ERROR(otbn_busy_wait_for_done());
-
+  LOG_INFO("load test2");
   // Wipe memories.
   HARDENED_RETURN_IF_ERROR(otbn_dmem_sec_wipe());
   HARDENED_RETURN_IF_ERROR(otbn_imem_sec_wipe());
-
+  LOG_INFO("load test3");
   const size_t imem_num_words = (size_t)(app.imem_end - app.imem_start);
   const size_t data_num_words =
       (size_t)(app.dmem_data_end - app.dmem_data_start);

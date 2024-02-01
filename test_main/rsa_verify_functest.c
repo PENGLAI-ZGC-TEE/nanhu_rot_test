@@ -163,9 +163,22 @@ rom_error_t rsa_verify_test_negative(void) {
 
 OTTF_DEFINE_TEST_CONFIG();
 
-bool main(void) {
+bool test_main(void) {
   // status_t result = OK_STATUS();
-
+  // edn entropy csrng init
+     void *entropy_conf_addr = (void*)0x3b160024;
+     void *entropy_en_addr = (void*)0x3b160020;
+     void *csrng_ctrl_addr = (void*)0x3b150014;
+      void *end0_ctrl_addr = (void*)0x3b190014;
+     *(uint32_t*)entropy_conf_addr = 0x00909099;
+     asm volatile("" ::: "memory");
+     *(uint32_t*)entropy_en_addr = 0x00000006;
+     asm volatile("" ::: "memory");
+     *(uint32_t*)csrng_ctrl_addr = 0x00000666;
+     asm volatile("" ::: "memory");
+     *(uint32_t*)end0_ctrl_addr = 0x00009966;
+     asm volatile("" ::: "memory");
+	
   compute_digest();
 
   rsa_verify_test_exp_3();
