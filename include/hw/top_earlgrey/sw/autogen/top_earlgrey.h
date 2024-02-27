@@ -782,6 +782,96 @@ extern "C" {
 #define TOP_EARLGREY_ROT_TOP_SIZE_BYTES 0x200000u
 
 /**
+ * Peripheral base address for sm3 in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SM3_BASE_ADDR 0x3B1A0000u
+
+/**
+ * Peripheral size for sm3 in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SM3_BASE_ADDR and
+ * `TOP_EARLGREY_SM3_BASE_ADDR + TOP_EARLGREY_SM3_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SM3_SIZE_BYTES 0x40u
+
+/**
+ * Peripheral base address for sm4 in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SM4_BASE_ADDR 0x3B1B0000u
+
+/**
+ * Peripheral size for sm4 in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SM4_BASE_ADDR and
+ * `TOP_EARLGREY_SM4_BASE_ADDR + TOP_EARLGREY_SM4_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SM4_SIZE_BYTES 0x40u
+
+/**
+ * Peripheral base address for rs_encode in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RS_ENCODE_BASE_ADDR 0x3b170000u
+
+/**
+ * Peripheral size for rs_encode in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_RS_ENCODE_BASE_ADDR and
+ * `TOP_EARLGREY_RS_ENCODE_BASE_ADDR + TOP_EARLGREY_RS_ENCODE_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_RS_ENCODE_SIZE_BYTES 0x200u
+
+/**
+ * Peripheral base address for rs_decode in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RS_DECODE_BASE_ADDR 0x3b180000u
+
+/**
+ * Peripheral size for rs_decode in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_RS_DECODE_BASE_ADDR and
+ * `TOP_EARLGREY_RS_DECODE_BASE_ADDR + TOP_EARLGREY_RS_DECODE_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_RS_DECODE_SIZE_BYTES 0x200u
+
+/**
+ * Peripheral base address for puf in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_PUF_BASE_ADDR 0x3b1c0000u
+
+/**
+ * Peripheral size for puf in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_PUF_BASE_ADDR and
+ * `TOP_EARLGREY_PUF_BASE_ADDR + TOP_EARLGREY_PUF_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_PUF_SIZE_BYTES 0x40u
+
+/**
  * Peripheral base address for csrng in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -913,7 +1003,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x3a000000u
+#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x3b008000u
 
 /**
  * Peripheral size for rom device on rom_ctrl in top earlgrey.
