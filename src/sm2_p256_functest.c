@@ -263,5 +263,5 @@ bool main(void) {
     return false;
   }
 LOG_INFO("Done");
-  return true;
+  return 0;
 }

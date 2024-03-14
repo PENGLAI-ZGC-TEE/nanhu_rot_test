@@ -95,5 +95,5 @@ bool main(void) {
     puf_get_res_of_a_cha(a_challenge,result_buf);
     LOG_INFO("response :");
     LOG_INFO("%08x%08x%08x%08x%08x%08x%08x%08x",result_buf[0],result_buf[1],result_buf[2],result_buf[3],result_buf[4],result_buf[5],result_buf[6],result_buf[7]);
-    return true;
+    return 0;
 }
