@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 
-#include "/nfs/home/zhangdongrong/thinclient_drives/nanhu_v2/xs-env/nexus-am/tests/keymgr/src/rv_plic_regs.h"  // Generated.
+#include "/nfs/home/zhangdongrong/Desktop/nexus-am/tests/nanhuv2_rot_test/src/rv_plic_regs.h"  // Generated.
 
 // #include "rv_plic_regs.h"  // Generated.
 

@@ -30,8 +30,8 @@
 // External interrupts start with index PLIC_EXT_INTR_OFFSET
 #define PLIC_EXT_INTR_OFFSET   1
 
-#define MAX_EXTERNAL_INTR 81
-#define MAX_INTERNAL_INTR 10
+// #define MAX_EXTERNAL_INTR 81
+// #define MAX_INTERNAL_INTR 10
 
 // CSR.MIE
 #define MEIE 11

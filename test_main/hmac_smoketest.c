@@ -97,7 +97,7 @@ static void run_test(const dif_hmac_t *hmac, const char *data, size_t len,
       hmac_testutils_finish_and_check_polled(hmac, expected_digest));
 }
 
-bool main_zdr(void) {
+bool main(void) {
   LOG_INFO("Running HMAC DIF test...");
 
   dif_hmac_t hmac;

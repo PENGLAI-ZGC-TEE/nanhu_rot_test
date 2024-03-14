@@ -225,11 +225,13 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool main(void) {
+    LOG_INFO("Test");
     // edn entropy csrng init
      void *entropy_conf_addr = (void*)0x3b160024;
      void *entropy_en_addr = (void*)0x3b160020;
      void *csrng_ctrl_addr = (void*)0x3b150014;
-      void *end0_ctrl_addr = (void*)0x3b190014;
+     void *end0_ctrl_addr = (void*)0x3b190014;
+     void *puf_enable_addr = (void*)0x3b1c0000;
      *(uint32_t*)entropy_conf_addr = 0x00909099;
      asm volatile("" ::: "memory");
      *(uint32_t*)entropy_en_addr = 0x00000006;
@@ -238,6 +240,9 @@ bool main(void) {
      asm volatile("" ::: "memory");
      *(uint32_t*)end0_ctrl_addr = 0x00009966;
      asm volatile("" ::: "memory");
+     *(uint32_t*)puf_enable_addr = 0x00000001;
+     asm volatile("" ::: "memory");
+
      
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
