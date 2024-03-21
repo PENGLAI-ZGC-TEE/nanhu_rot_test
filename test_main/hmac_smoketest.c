@@ -106,16 +106,18 @@ bool main(void) {
   LOG_INFO("Running test SHA256 pass 1...");
   run_test(&hmac, kData, sizeof(kData), NULL, &kExpectedShaDigest);
 
-  LOG_INFO("Running test SHA256 pass 2...");
-  run_test(&hmac, kData, sizeof(kData), NULL, &kExpectedShaDigest);
-
   LOG_INFO("Running test HMAC pass 1...");
   run_test(&hmac, kData, sizeof(kData), (uint8_t *)(&kHmacKey[0]),
            &kExpectedHmacDigest);
 
+  LOG_INFO("Running test SHA256 pass 2...");
+  run_test(&hmac, kData, sizeof(kData), NULL, &kExpectedShaDigest);
+  
+  
   LOG_INFO("Running test HMAC pass 2...");
   run_test(&hmac, kData, sizeof(kData), (uint8_t *)(&kHmacKey[0]),
            &kExpectedHmacDigest);
+  
 
-  return true;
+  return 0;
 }

@@ -1003,7 +1003,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x3b008000u
+#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x3b200000u
 
 /**
  * Peripheral size for rom device on rom_ctrl in top earlgrey.
@@ -1098,23 +1098,23 @@ typedef enum top_earlgrey_plic_peripheral {
  * the same peripheral are guaranteed to be consecutive.
  */
 typedef enum top_earlgrey_plic_irq_id {
-  kTopEarlgreyPlicIrqIdHmacHmacDone = 0, /**< rot_top_hmac_hmac_done */
-  kTopEarlgreyPlicIrqIdHmacFifoEmpty = 1, /**< rot_top_hmac_fifo_empty */
-  kTopEarlgreyPlicIrqIdHmacHmacErr = 2, /**< rot_top_hmac_hmac_err */
-  kTopEarlgreyPlicIrqIdKmacKmacDone = 3, /**< rot_top_kmac_kmac_done */
-  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 4, /**< rot_top_kmac_fifo_empty */
-  kTopEarlgreyPlicIrqIdKmacKmacErr = 5, /**< rot_top_kmac_kmac_err */
-  kTopEarlgreyPlicIrqIdKeymgrOpDone = 6, /**< rot_top_keymgr_op_done */
-  kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 7, /**< rot_top_csrng_cs_cmd_req_done */
-  kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 8, /**< rot_top_csrng_cs_entropy_req */
-  kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 9, /**< rot_top_csrng_cs_hw_inst_exc */
-  kTopEarlgreyPlicIrqIdCsrngCsFatalErr = 10, /**< rot_top_csrng_cs_fatal_err */
-  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 11, /**< rot_top_entropy_src_es_entropy_valid */
-  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 12, /**< rot_top_entropy_src_es_health_test_failed */
-  kTopEarlgreyPlicIrqIdEntropySrcEsObserveFifoReady = 13, /**< rot_top_entropy_src_es_observe_fifo_ready */
-  kTopEarlgreyPlicIrqIdEntropySrcEsFatalErr = 14, /**< rot_top_entropy_src_es_fatal_err */
-  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 15, /**< rot_top_edn0_edn_cmd_req_done */
-  kTopEarlgreyPlicIrqIdEdn0EdnFatalErr = 16, /**< rot_top_edn0_edn_fatal_err */ 
+  kTopEarlgreyPlicIrqIdHmacHmacDone = 0+256, /**< rot_top_hmac_hmac_done */
+  kTopEarlgreyPlicIrqIdHmacFifoEmpty = 1+256, /**< rot_top_hmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdHmacHmacErr = 2+256, /**< rot_top_hmac_hmac_err */
+  kTopEarlgreyPlicIrqIdKmacKmacDone = 3+256, /**< rot_top_kmac_kmac_done */
+  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 4+256, /**< rot_top_kmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdKmacKmacErr = 5+256, /**< rot_top_kmac_kmac_err */
+  kTopEarlgreyPlicIrqIdKeymgrOpDone = 6+256, /**< rot_top_keymgr_op_done */
+  kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 7+256, /**< rot_top_csrng_cs_cmd_req_done */
+  kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 8+256, /**< rot_top_csrng_cs_entropy_req */
+  kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 9+256, /**< rot_top_csrng_cs_hw_inst_exc */
+  kTopEarlgreyPlicIrqIdCsrngCsFatalErr = 10+256, /**< rot_top_csrng_cs_fatal_err */
+  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 11+256, /**< rot_top_entropy_src_es_entropy_valid */
+  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 12+256, /**< rot_top_entropy_src_es_health_test_failed */
+  kTopEarlgreyPlicIrqIdEntropySrcEsObserveFifoReady = 13+256, /**< rot_top_entropy_src_es_observe_fifo_ready */
+  kTopEarlgreyPlicIrqIdEntropySrcEsFatalErr = 14+256, /**< rot_top_entropy_src_es_fatal_err */
+  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 15+256, /**< rot_top_edn0_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn0EdnFatalErr = 16+256, /**< rot_top_edn0_edn_fatal_err */ 
 } top_earlgrey_plic_irq_id_t;
 
 /**

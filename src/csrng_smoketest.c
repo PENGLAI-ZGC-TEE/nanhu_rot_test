@@ -26,6 +26,7 @@ enum {
  */
 status_t test_ctr_drbg_ctr0_smoke(const dif_csrng_t *csrng) {
   CHECK_DIF_OK(dif_csrng_uninstantiate(csrng));
+  LOG_INFO("1");
 
   const dif_csrng_seed_material_t kEntropyInput = {
       .seed_material = {0x73bec010, 0x9262474c, 0x16a30f76, 0x531b51de,
@@ -34,12 +35,15 @@ status_t test_ctr_drbg_ctr0_smoke(const dif_csrng_t *csrng) {
       .seed_material_len = 12,
   };
   TRY(csrng_testutils_cmd_ready_wait(csrng));
+  LOG_INFO("2");
   CHECK_DIF_OK(dif_csrng_instantiate(csrng, kDifCsrngEntropySrcToggleDisable,
                                      &kEntropyInput));
 
   uint32_t got[kExpectedOutputLen];
   TRY(csrng_testutils_cmd_generate_run(csrng, got, kExpectedOutputLen));
+  LOG_INFO("3");
   TRY(csrng_testutils_cmd_generate_run(csrng, got, kExpectedOutputLen));
+  LOG_INFO("4");
 
   const uint32_t kExpectedOutput[kExpectedOutputLen] = {
       0xe48bb8cb, 0x1012c84c, 0x5af8a7f1, 0xd1c07cd9, 0xdf82ab22, 0x771c619b,
@@ -52,11 +56,30 @@ status_t test_ctr_drbg_ctr0_smoke(const dif_csrng_t *csrng) {
 }
 
 bool main(void) {
+  // edn entropy csrng init
+     void *entropy_conf_addr = (void*)0x3b160024;
+     void *entropy_en_addr = (void*)0x3b160020;
+     void *csrng_ctrl_addr = (void*)0x3b150014;
+     void *end0_ctrl_addr = (void*)0x3b190014;
+     void *puf_enable_addr = (void*)0x3b1c0000;
+     void *puf_mode_addr = (void*)0x3b1c0004;
+     *(uint32_t*)entropy_conf_addr = 0x00909099;
+     asm volatile("" ::: "memory");
+     *(uint32_t*)entropy_en_addr = 0x00000006;
+     asm volatile("" ::: "memory");
+     *(uint32_t*)csrng_ctrl_addr = 0x00000666;
+     asm volatile("" ::: "memory");
+     *(uint32_t*)end0_ctrl_addr = 0x00009966;
+     asm volatile("" ::: "memory");
+     *(uint32_t*)puf_enable_addr = 0x00000001;
+     asm volatile("" ::: "memory");
+     *(uint32_t*)puf_mode_addr = 0x00000001;
+     asm volatile("" ::: "memory");
   dif_csrng_t csrng;
   mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
   CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
   CHECK_STATUS_OK(test_ctr_drbg_ctr0_smoke(&csrng));
   LOG_INFO("CSRNG DONE");
-  return true;
+  return 0;
 }

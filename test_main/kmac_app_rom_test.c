@@ -14,7 +14,7 @@ static dif_rom_ctrl_t rom_ctrl;
 
 OTTF_DEFINE_TEST_CONFIG();
 
-bool test_main(void) {
+bool main(void) {
   dif_rom_ctrl_digest_t computed_digest;
   dif_rom_ctrl_digest_t expected_digest;
 
@@ -25,10 +25,38 @@ bool test_main(void) {
 
   // get computed and expected digests and check that they match
   CHECK_DIF_OK(dif_rom_ctrl_get_digest(&rom_ctrl, &computed_digest));
+  while (computed_digest.digest[0] == 0)
+  {
+    LOG_INFO("Waiting computing...\n");
+    CHECK_DIF_OK(dif_rom_ctrl_get_digest(&rom_ctrl, &computed_digest));
+  }
+  
   CHECK_DIF_OK(dif_rom_ctrl_get_expected_digest(&rom_ctrl, &expected_digest));
+
+  LOG_INFO("256-bit Computed Digest in custom order: %08x%08x%08x%08x%08x%08x%08x%08x\n",
+    computed_digest.digest[6],
+    computed_digest.digest[7],
+    computed_digest.digest[4],
+    computed_digest.digest[5],
+    computed_digest.digest[2],
+    computed_digest.digest[3],
+    computed_digest.digest[0],
+    computed_digest.digest[1]
+  );
+
+  LOG_INFO("256-bit Excepted Digest in custom order: %08x%08x%08x%08x%08x%08x%08x%08x\n",
+    expected_digest.digest[6],
+    expected_digest.digest[7],
+    expected_digest.digest[4],
+    expected_digest.digest[5],
+    expected_digest.digest[2],
+    expected_digest.digest[3],
+    expected_digest.digest[0],
+    expected_digest.digest[1]
+  );
   CHECK_ARRAYS_EQ(computed_digest.digest, expected_digest.digest,
                   ROM_CTRL_DIGEST_MULTIREG_COUNT,
                   "Mismatch between computed and expected digest.");
 
-  return true;
+  return 0;
 }

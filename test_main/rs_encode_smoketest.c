@@ -189,5 +189,10 @@ bool main(void) {
     rs_encode_function(data_in_buf,result_buf);
     LOG_INFO("Actual result");
     LOG_INFO("%08x",result_buf[0] );
-    return true;
+    if (result_buf[0] != 0xd9dcbd68)
+    {
+        LOG_INFO("Bad result!");
+        return 1;
+    }
+    return 0;
 }

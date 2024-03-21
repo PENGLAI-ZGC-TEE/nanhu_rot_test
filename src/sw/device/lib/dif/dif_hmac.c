@@ -242,8 +242,13 @@ dif_result_t dif_hmac_finish(const dif_hmac_t *hmac,
   }
 
   // Check if hmac_done is asserted.
-  bool done = mmio_region_get_bit32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
-                                    HMAC_INTR_STATE_HMAC_DONE_BIT);
+  bool done = false;
+  while (!done) {
+  done = mmio_region_get_bit32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
+                               HMAC_INTR_STATE_HMAC_DONE_BIT);
+}
+  // bool done = mmio_region_get_bit32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
+                                    // HMAC_INTR_STATE_HMAC_DONE_BIT);
 
   // Check if fifo_empty is asserted.
   bool fifo_empty = mmio_region_get_bit32(

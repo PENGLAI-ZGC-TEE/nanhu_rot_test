@@ -75,5 +75,11 @@ bool main(void) {
     rs_decode_function(encoded_data_err_input_buf,result_buf);
     LOG_INFO("Actual result");
     LOG_INFO("%08x",result_buf[0]);
-    return true;
+    if (result_buf[0] != 0x00d00605)
+    {
+        LOG_INFO("Bad result!");
+        return 1;
+    }
+
+    return 0;
 }

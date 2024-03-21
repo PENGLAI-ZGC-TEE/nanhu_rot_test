@@ -167,5 +167,5 @@ bool main(void) {
   LOG_INFO("%08x%08x%08x%08x",out_data[3],out_data[2],out_data[1],out_data[0]);//将数组中的值显示
   SM4_OFF();
 
-  return true;
+  return 0;
 }

@@ -28,7 +28,7 @@
 #define PLIC_THRESHOLD(c)      (PLIC_BASE_ADDR + 0x200000UL + c*0x1000UL)
 #define PLIC_CLAIM(c)          (PLIC_BASE_ADDR + 0x200004UL + c*0x1000UL)
 // External interrupts start with index PLIC_EXT_INTR_OFFSET
-#define PLIC_EXT_INTR_OFFSET   1
+#define PLIC_EXT_INTR_OFFSET   0
 
 // #define MAX_EXTERNAL_INTR 81
 // #define MAX_INTERNAL_INTR 10

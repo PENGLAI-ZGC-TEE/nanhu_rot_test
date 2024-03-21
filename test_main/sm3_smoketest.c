@@ -18,7 +18,7 @@ unsigned int *SM3_RESULT_OUT_5_REG_ADDR =(unsigned int *)(TOP_EARLGREY_SM3_BASE_
 unsigned int *SM3_RESULT_OUT_6_REG_ADDR =(unsigned int *)(TOP_EARLGREY_SM3_BASE_ADDR+SM3_RESULT_OUT_6_REG_OFFSET);
 unsigned int *SM3_RESULT_OUT_7_REG_ADDR =(unsigned int *)(TOP_EARLGREY_SM3_BASE_ADDR+SM3_RESULT_OUT_7_REG_OFFSET);
 
-OTTF_DEFINE_TEST_CONFIG();
+// OTTF_DEFINE_TEST_CONFIG();
 
 unsigned int result_buf[8] ={0,0,0,0,0,0,0,0};
 
@@ -139,7 +139,7 @@ bool test_main(void) {
 }
 */
 
-//计算长消息用到的main函数
+// //计算长消息用到的main函数
 bool main(void) {
 
     LOG_INFO("Now, SM3 unit test!!");
@@ -147,5 +147,5 @@ bool main(void) {
     SM3_hash_function(message_4word,4,full,result_buf);
     LOG_INFO("Actual encryption result:");
     LOG_INFO("%08x%08x%08x%08x%08x%08x%08x%08x",result_buf[0],result_buf[1],result_buf[2],result_buf[3],result_buf[4],result_buf[5],result_buf[6],result_buf[7]);
-    return true; 
+    return 0; 
 }
