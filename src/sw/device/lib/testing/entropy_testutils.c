@@ -44,7 +44,6 @@ status_t entropy_testutils_auto_mode_init(void) {
   // re-eanble entropy src and csrng
   setup_entropy_src(&entropy_src);
   TRY(dif_csrng_configure(&csrng));
-
   // Re-enable EDN0 in auto mode.
   TRY(dif_edn_set_auto_mode(
       &edn0,

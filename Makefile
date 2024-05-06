@@ -1,4 +1,4 @@
-NAME := csrng_smoketest
+NAME := bootrom
 SRCS := $(shell find -L ./src/ -name "*.[cS]")
 
 # include $(AM_HOME)/Makefile.app

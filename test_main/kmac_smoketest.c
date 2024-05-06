@@ -306,5 +306,5 @@ bool main(void) {
   run_sha3_alignment_test(&kmac);
   run_shake_test(&kmac);
   LOG_INFO("Running KMAC DIF test done");
-  return true;
+  return 0;
 }

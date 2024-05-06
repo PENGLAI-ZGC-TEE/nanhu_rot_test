@@ -99,8 +99,8 @@ void initialize_otbn_pointers_ecdsa(){
 status_t ecdsa_p256_keygen_start(void) {
   // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.
   LOG_INFO("ecdsa_keygen_start");
-    initialize_otbn_app_ecdsa();
-  initialize_otbn_pointers_ecdsa();
+  //   initialize_otbn_app_ecdsa();
+  // initialize_otbn_pointers_ecdsa();
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdsa));
   LOG_INFO("finish");
   // Set mode so start() will jump into keygen.
@@ -115,8 +115,8 @@ status_t ecdsa_p256_keygen_finalize(p256_masked_scalar_t *private_key,
                                     p256_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
-  initialize_otbn_app_ecdsa();
-  initialize_otbn_pointers_ecdsa();
+  // initialize_otbn_app_ecdsa();
+  // initialize_otbn_pointers_ecdsa();
   // Read the masked private key from OTBN dmem.
   HARDENED_TRY(otbn_dmem_read(kP256MaskedScalarShareWords, (uint32_t)(uintptr_t)kOtbnVarEcdsaD0,
                               private_key->share0));
@@ -136,8 +136,8 @@ status_t ecdsa_p256_keygen_finalize(p256_masked_scalar_t *private_key,
 status_t ecdsa_p256_sign_start(const uint32_t digest[kP256ScalarWords],
                                const p256_masked_scalar_t *private_key) {
   // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.
-  initialize_otbn_app_ecdsa();
-  initialize_otbn_pointers_ecdsa();
+  // initialize_otbn_app_ecdsa();
+  // initialize_otbn_pointers_ecdsa();
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdsa));
 
   // Set mode so start() will jump into signing.
@@ -158,8 +158,8 @@ status_t ecdsa_p256_sign_start(const uint32_t digest[kP256ScalarWords],
 status_t ecdsa_p256_sign_finalize(ecdsa_p256_signature_t *result) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
-  initialize_otbn_app_ecdsa();
-  initialize_otbn_pointers_ecdsa();
+  // initialize_otbn_app_ecdsa();
+  // initialize_otbn_pointers_ecdsa();
   // Read signature R out of OTBN dmem.
   HARDENED_TRY(otbn_dmem_read(kP256ScalarWords, (uint32_t)(uintptr_t)kOtbnVarEcdsaR, result->r));
 
@@ -175,8 +175,8 @@ status_t ecdsa_p256_sign_finalize(ecdsa_p256_signature_t *result) {
 status_t ecdsa_p256_verify_start(const ecdsa_p256_signature_t *signature,
                                  const uint32_t digest[kP256ScalarWords],
                                  const p256_point_t *public_key) {
-  initialize_otbn_app_ecdsa();
-  initialize_otbn_pointers_ecdsa();
+  // initialize_otbn_app_ecdsa();
+  // initialize_otbn_pointers_ecdsa();
   // Load the ECDSA/P-256 app and set up data pointers
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdsa));
 
@@ -208,8 +208,8 @@ status_t ecdsa_p256_verify_finalize(const ecdsa_p256_signature_t *signature,
   
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
-  initialize_otbn_app_ecdsa();
-  initialize_otbn_pointers_ecdsa();
+  // initialize_otbn_app_ecdsa();
+  // initialize_otbn_pointers_ecdsa();
   // Read x_r (recovered R) out of OTBN dmem.
   uint32_t x_r[kP256ScalarWords];
   HARDENED_TRY(otbn_dmem_read(kP256ScalarWords, (uint32_t)(uintptr_t)kOtbnVarEcdsaXr, x_r));

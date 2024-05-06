@@ -8,6 +8,8 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 
+#include "sw/device/lib/runtime/log.h"
+
 #include "edn_regs.h"  // Generated
 
 static dif_result_t check_locked(const dif_edn_t *edn) {
@@ -76,7 +78,6 @@ dif_result_t dif_edn_set_auto_mode(const dif_edn_t *edn,
   if (dif_multi_bit_bool_to_toggle(edn_en) != kDifToggleDisabled) {
     return kDifError;
   }
-
   // Ensure neither automatic nor boot request mode is set.
   ctrl_reg = bitfield_field32_write(ctrl_reg, EDN_CTRL_AUTO_REQ_MODE_FIELD,
                                     kMultiBitBool4False);
@@ -94,7 +95,6 @@ dif_result_t dif_edn_set_auto_mode(const dif_edn_t *edn,
   ctrl_reg = bitfield_field32_write(ctrl_reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
                                     kMultiBitBool4False);
   mmio_region_write32(edn->base_addr, EDN_CTRL_REG_OFFSET, ctrl_reg);
-
   // Fill the reseed command FIFO.
   mmio_region_write32(edn->base_addr, EDN_RESEED_CMD_REG_OFFSET,
                       config.reseed_cmd.cmd);
@@ -110,7 +110,6 @@ dif_result_t dif_edn_set_auto_mode(const dif_edn_t *edn,
     mmio_region_write32(edn->base_addr, EDN_GENERATE_CMD_REG_OFFSET,
                         config.generate_cmd.seed_material.data[i]);
   }
-
   // Set the maximum number of requests between reseeds.
   mmio_region_write32(edn->base_addr,
                       EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_REG_OFFSET,
@@ -167,7 +166,6 @@ dif_result_t dif_edn_get_status(const dif_edn_t *edn, dif_edn_status_t flag,
     default:
       return kDifBadArg;
   }
-
   uint32_t reg = mmio_region_read32(edn->base_addr, EDN_SW_CMD_STS_REG_OFFSET);
   *set = bitfield_bit32_read(reg, bit);
   return kDifOk;

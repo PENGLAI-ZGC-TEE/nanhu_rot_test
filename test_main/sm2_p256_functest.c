@@ -13,6 +13,11 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/sm/sm3.h"
+#include "sw/device/lib/dif/dif_rom_ctrl.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#define FLASH_BASE 0x10000000
+unsigned int penglai_sm_size = 0x1000;
 // Message
 static const char kMessage[] = "test message";
 unsigned char sm2_param_a[32] = {0xFF, 0xFF, 0xFF, 0xFF, 
@@ -47,8 +52,8 @@ unsigned char sm2_param_y_G[32] = {0x4f, 0xe3, 0x42, 0xe2,
                                    0x6b, 0x31, 0x5e, 0xce,
                                    0xcb, 0xb6, 0x40, 0x68,
                                    0x37, 0xbf, 0x51, 0xf5};
-unsigned char sm2_param_x_A[32];
-unsigned char sm2_param_y_A[32];
+// unsigned char sm2_param_x_A_233[32] = {0};
+// unsigned char sm2_param_y_A_233[32] = {0};
 unsigned char id_a[18] = {0x41, 0x4C, 0x49, 0x43, 0x45, 0x31, 0x32, 0x33, 0x40, 
                           0x59, 0x41, 0x48, 0x4F, 0x4F, 0x2E, 0x43, 0x4F, 0x4D};
 char id[] = "ALICE123@YAHOO.COM";
@@ -130,70 +135,85 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   LOG_INFO("Generating keypair...");
   CHECK(otcrypto_ecdsa_keygen(&kCurveP256, &private_key, &public_key) ==
         kCryptoStatusOK);
-  for (size_t i = 0; i < public_key.x.key_length; i++) {
-      size_t j = i * 4;
-      sm2_param_x_A[j+3] = (unsigned char)public_key.x.key[i];
-      sm2_param_x_A[j+2] = (unsigned char) (public_key.x.key[i] >> 8);
-      sm2_param_x_A[j+1] = (unsigned char) (public_key.x.key[i] >> 16);
-      sm2_param_x_A[j] = (unsigned char) (public_key.x.key[i] >> 24);
-  }
-  for (size_t i = 0; i < public_key.y.key_length; i++) {
-      size_t j = i * 4;
-      sm2_param_y_A[j+3] = (unsigned char) (public_key.y.key[i]);
-      sm2_param_y_A[j+2] = (unsigned char) (public_key.y.key[i] >> 8);
-      sm2_param_y_A[j+1] = (unsigned char) (public_key.y.key[i] >> 16);
-      sm2_param_y_A[j] = (unsigned char) (public_key.y.key[i] >> 24);
-  }
- crypto_const_uint8_buf_t entla_buf = {
-      .len = sizeof(entla) / sizeof(entla[0]),
-      .data = entla,
-  };
- crypto_const_uint8_buf_t ida_buf = {
-      .len = sizeof(id_a) / sizeof(id_a[0]),
-      .data = id_a,
-  };
- crypto_const_uint8_buf_t a_buf = {
-      .len = sizeof(sm2_param_a) / sizeof(sm2_param_a[0]),
-      .data = sm2_param_a,
-  };
- crypto_const_uint8_buf_t b_buf = {
-      .len = sizeof(sm2_param_b) / sizeof(sm2_param_b[0]),
-      .data = sm2_param_b,
-  };
- crypto_const_uint8_buf_t xg_buf = {
-      .len = sizeof(sm2_param_x_G) / sizeof(sm2_param_x_G[0]),
-      .data = sm2_param_x_G,
-  };
- crypto_const_uint8_buf_t yg_buf = {
-      .len = sizeof(sm2_param_y_G) / sizeof(sm2_param_y_G[0]),
-      .data = sm2_param_y_G,
-  };
- crypto_const_uint8_buf_t xa_buf = {
-      .len = sizeof(sm2_param_x_A) / sizeof(sm2_param_x_A[0]),
-      .data = sm2_param_x_A,
-  };
- crypto_const_uint8_buf_t ya_buf = {
-      .len = sizeof(sm2_param_y_A) / sizeof(sm2_param_y_A[0]),
-      .data = sm2_param_y_A,
-  };
-  // Package message in a cryptolib-style struct.
-  crypto_const_uint8_buf_t message = {
-      .len = sizeof(kMessage) - 1,
-      .data = (unsigned char *)&kMessage,
-  };
+  LOG_INFO("private_key: %08x%08x%08x%08x%08x%08x%08x%08x", private_key.keyblob[0],private_key.keyblob[1],private_key.keyblob[2],private_key.keyblob[3],private_key.keyblob[4],private_key.keyblob[5],private_key.keyblob[6],private_key.keyblob[7]);
+  LOG_INFO("public_key.x: %08x%08x%08x%08x%08x%08x%08x%08x", public_key.x.key[0],public_key.x.key[1],public_key.x.key[2],public_key.x.key[3],public_key.x.key[4],public_key.x.key[5],public_key.x.key[6],public_key.x.key[7]);
+  LOG_INFO("public_key.y: %08x%08x%08x%08x%08x%08x%08x%08x", public_key.y.key[0],public_key.y.key[1],public_key.y.key[2],public_key.y.key[3],public_key.y.key[4],public_key.y.key[5],public_key.y.key[6],public_key.y.key[7]);
+//   for (size_t i = 0; i < public_key.x.key_length; i++) {
+//       size_t j = i * 4;
+//       sm2_param_x_A_233[j+3] = (unsigned char)public_key.x.key[i];
+//       sm2_param_x_A_233[j+2] = (unsigned char) (public_key.x.key[i] >> 8);
+//       sm2_param_x_A_233[j+1] = (unsigned char) (public_key.x.key[i] >> 16);
+//       sm2_param_x_A_233[j] = (unsigned char) (public_key.x.key[i] >> 24);
+//   }
+//   for (size_t i = 0; i < public_key.y.key_length; i++) {
+//       size_t j = i * 4;
+//       sm2_param_y_A_233[j+3] = (unsigned char) (public_key.y.key[i]);
+//       sm2_param_y_A_233[j+2] = (unsigned char) (public_key.y.key[i] >> 8);
+//       sm2_param_y_A_233[j+1] = (unsigned char) (public_key.y.key[i] >> 16);
+//       sm2_param_y_A_233[j] = (unsigned char) (public_key.y.key[i] >> 24);
+//   }
+//   sm2_param_x_A_233[1] =  (unsigned char) 0x123;
+// //   sm2_param_y_A_233[2] =  (unsigned char) 0x233;
+//   LOG_INFO("only sm2_param_x_A_233 give value 123");
+
+//  crypto_const_uint8_buf_t entla_buf = {
+//       .len = sizeof(entla) / sizeof(entla[0]),
+//       .data = entla,
+//   };
+//  crypto_const_uint8_buf_t ida_buf = {
+//       .len = sizeof(id_a) / sizeof(id_a[0]),
+//       .data = id_a,
+//   };
+//  crypto_const_uint8_buf_t a_buf = {
+//       .len = sizeof(sm2_param_a) / sizeof(sm2_param_a[0]),
+//       .data = sm2_param_a,
+//   };
+//  crypto_const_uint8_buf_t b_buf = {
+//       .len = sizeof(sm2_param_b) / sizeof(sm2_param_b[0]),
+//       .data = sm2_param_b,
+//   };
+//  crypto_const_uint8_buf_t xg_buf = {
+//       .len = sizeof(sm2_param_x_G) / sizeof(sm2_param_x_G[0]),
+//       .data = sm2_param_x_G,
+//   };
+//  crypto_const_uint8_buf_t yg_buf = {
+//       .len = sizeof(sm2_param_y_G) / sizeof(sm2_param_y_G[0]),
+//       .data = sm2_param_y_G,
+//   };
+//  crypto_const_uint8_buf_t xa_buf = {
+//       .len = sizeof(sm2_param_x_A) / sizeof(sm2_param_x_A[0]),
+//       .data = sm2_param_x_A,
+//   };
+//  crypto_const_uint8_buf_t ya_buf = {
+//       .len = sizeof(sm2_param_y_A) / sizeof(sm2_param_y_A[0]),
+//       .data = sm2_param_y_A,
+//   };
+//   // Package message in a cryptolib-style struct.
+//   crypto_const_uint8_buf_t message = {
+//       .len = sizeof(kMessage) - 1,
+//       .data = (unsigned char *)&kMessage,
+//   };
 
   hmac_digest_t M_digest;
-  hmac_sha256_init();
-  hmac_update(entla_buf.data, entla_buf.len);
-  hmac_update(ida_buf.data, ida_buf.len);
-  hmac_update(a_buf.data, a_buf.len);
-  hmac_update(b_buf.data, b_buf.len);
-  hmac_update(xg_buf.data, xg_buf.len);
-  hmac_update(yg_buf.data, yg_buf.len);
-  hmac_update(xa_buf.data, xa_buf.len);
-  hmac_update(ya_buf.data, ya_buf.len);
-  hmac_update(message.data, message.len);
-  hmac_final(&M_digest);
+//   hmac_sha256_init();
+//   hmac_update(entla_buf.data, entla_buf.len);
+//   hmac_update(ida_buf.data, ida_buf.len);
+//   hmac_update(a_buf.data, a_buf.len);
+//   hmac_update(b_buf.data, b_buf.len);
+//   hmac_update(xg_buf.data, xg_buf.len);
+//   hmac_update(yg_buf.data, yg_buf.len);
+//   hmac_update(xa_buf.data, xa_buf.len);
+//   hmac_update(ya_buf.data, ya_buf.len);
+//   hmac_update(message.data, message.len);
+//   hmac_final(&M_digest);
+// unsigned int result_buf[8] ={0x19f67568,0x2de8f402,0xe26134da,0xe003f82f,0x41919ac8,0x55a94d0a,0x685e262c,0x12345678};
+  unsigned int result_buf[8] = {0};
+  SM3_hash_function((void*)FLASH_BASE, penglai_sm_size, 4, result_buf);
+  for (int i = 0; i < 8; i++)
+  {
+    M_digest.digest[i] = (uint32_t)result_buf[i];
+  }
+  LOG_INFO("M_digest: %08x%08x%08x%08x%08x%08x%08x%08x", M_digest.digest[0],M_digest.digest[1],M_digest.digest[2],M_digest.digest[3],M_digest.digest[4],M_digest.digest[5],M_digest.digest[6],M_digest.digest[7]);
 
   crypto_const_uint8_buf_t message_digest = {
       .len = sizeof(M_digest) - 1,
@@ -213,7 +233,8 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   LOG_INFO("Signing...");
   CHECK(otcrypto_ecdsa_sign(&private_key, message_digest, &kCurveP256, &signature) ==
         kCryptoStatusOK);
-
+  LOG_INFO("sigR %08x%08x%08x%08x%08x%08x%08x%08x", signature.r[0],signature.r[1],signature.r[2],signature.r[3],signature.r[4],signature.r[5],signature.r[6],signature.r[7]);
+  LOG_INFO("sigS %08x%08x%08x%08x%08x%08x%08x%08x", signature.s[0],signature.s[1],signature.s[2],signature.s[3],signature.s[4],signature.s[5],signature.s[6],signature.s[7]);
   // Verify the signature.
   LOG_INFO("Verifying...");
   CHECK(otcrypto_ecdsa_verify(&public_key, message_digest, &signature, &kCurveP256,
@@ -223,15 +244,45 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
 }
 
 OTTF_DEFINE_TEST_CONFIG();
-
+static dif_rom_ctrl_t rom_ctrl;
 bool main(void) {
     LOG_INFO("Test");
+
+    dif_rom_ctrl_digest_t computed_digest;
+  dif_rom_ctrl_digest_t expected_digest;
+
+  // initialize rom_ctrl
+  mmio_region_t rom_ctrl_reg =
+      mmio_region_from_addr(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR);
+  CHECK_DIF_OK(dif_rom_ctrl_init(rom_ctrl_reg, &rom_ctrl));
+
+  // get computed and expected digests and check that they match
+  CHECK_DIF_OK(dif_rom_ctrl_get_digest(&rom_ctrl, &computed_digest));
+  while (computed_digest.digest[0] == 0)
+  {
+    LOG_INFO("Waiting computing...\n");
+    CHECK_DIF_OK(dif_rom_ctrl_get_digest(&rom_ctrl, &computed_digest));
+  }
+  
+  CHECK_DIF_OK(dif_rom_ctrl_get_expected_digest(&rom_ctrl, &expected_digest));
+
+  LOG_INFO("256-bit Computed Digest in custom order: %08x%08x%08x%08x%08x%08x%08x%08x\n",
+    computed_digest.digest[6],
+    computed_digest.digest[7],
+    computed_digest.digest[4],
+    computed_digest.digest[5],
+    computed_digest.digest[2],
+    computed_digest.digest[3],
+    computed_digest.digest[0],
+    computed_digest.digest[1]
+  );
     // edn entropy csrng init
      void *entropy_conf_addr = (void*)0x3b160024;
      void *entropy_en_addr = (void*)0x3b160020;
      void *csrng_ctrl_addr = (void*)0x3b150014;
      void *end0_ctrl_addr = (void*)0x3b190014;
      void *puf_enable_addr = (void*)0x3b1c0000;
+    //  void *puf_mode_addr = (void*)0x3b1c0004;
      *(uint32_t*)entropy_conf_addr = 0x00909099;
      asm volatile("" ::: "memory");
      *(uint32_t*)entropy_en_addr = 0x00000006;
@@ -242,11 +293,17 @@ bool main(void) {
      asm volatile("" ::: "memory");
      *(uint32_t*)puf_enable_addr = 0x00000001;
      asm volatile("" ::: "memory");
+    //  *(uint32_t*)puf_mode_addr = 0x00000001;
+    //  asm volatile("" ::: "memory");
+     
+
 
      
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
-
+LOG_INFO("Test3");
   hardened_bool_t verificationResult;
+  initialize_otbn_app_ecdsa();
+  initialize_otbn_pointers_ecdsa();
   status_t err = sign_then_verify_test(&verificationResult);
   if (!status_ok(err)) {
     // If there was an error, print the OTBN error bits and instruction count.
@@ -260,8 +317,25 @@ bool main(void) {
   // Signature verification is expected to succeed.
   if (verificationResult != kHardenedBoolTrue) {
     LOG_ERROR("Signature failed to pass verification!");
+    // return false;
+  }
+  LOG_INFO("Done");
+  hardened_bool_t verificationResult1;
+  status_t err1 = sign_then_verify_test(&verificationResult1);
+  if (!status_ok(err1)) {
+    // If there was an error, print the OTBN error bits and instruction count.
+    LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
+    LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
+    // Print the error.
+    CHECK_STATUS_OK(err1);
     return false;
   }
-LOG_INFO("Done");
+
+  // Signature verification is expected to succeed.
+  if (verificationResult1 != kHardenedBoolTrue) {
+    LOG_ERROR("Signature failed to pass verification!");
+    // return false;
+  }
+LOG_INFO("Done1");
   return 0;
 }

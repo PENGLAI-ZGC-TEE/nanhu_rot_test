@@ -1,5 +1,5 @@
 // Generated register defines for rs_encode
-
+#include "sw/device/lib/base/abs_mmio.h"
 #ifndef _RS_ENCODE_REG_DEFS_
 #define _RS_ENCODE_REG_DEFS_
 
@@ -12,11 +12,14 @@ static unsigned int data_in_buf[42]={0xa8a7a6a5,0xa4a3a2a1,0xa09f9e9d,0x9c9b9a99
 //static unsigned int data_in_buf[42]={};
 
 //声明函数
-void rs_encode_function(unsigned int data_input[],unsigned int encoded_output[]);
+uint8_t checkBit_rs_encode(uint32_t addr, uint32_t bit);
+void wait_for_rs_encode_valid_BIT(uint32_t base_addr);
+void rs_encode_function(uint32_t base_addr, uint32_t data_input[], uint32_t encoded_output[]);
+// void rs_encode_function(unsigned int data_input[],unsigned int encoded_output[]);
 
-uint8_t checkBit(unsigned int* registerAddress, unsigned int bit);
+// uint8_t checkBit(unsigned int* registerAddress, unsigned int bit);
 
-void wait_for_RDY_BIT(void);
+// void wait_for_RDY_BIT(void);
 // Number registers for input data
 #define RS_ENCODE_PARAM_NUMREGS_DATA_IN 42
 

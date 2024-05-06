@@ -68,14 +68,14 @@ void SM3_hash_one_word(unsigned int message_word,unsigned int hash_result[8])
 }
 
 //检查寄存器某位的值
-uint8_t checkBit(unsigned int* registerAddress, unsigned int bit) {  
+uint8_t checkBit_sm3(unsigned int* registerAddress, unsigned int bit) {  
     return (*registerAddress & (1 << bit)) != 0;  
 }
 
 //等待输出数据有效位的变化
 void wait_for_dataout(void)
 {
-  while (!checkBit(SM3_STATE_SIGNALS_REG_ADDR,SM3_STATE_SIGNALS_CMPRSS_OTPT_VLD_BIT))//应该问red!!!
+  while (!checkBit_sm3(SM3_STATE_SIGNALS_REG_ADDR,SM3_STATE_SIGNALS_CMPRSS_OTPT_VLD_BIT))//应该问red!!!
   {
     LOG_INFO("The SM3 unit is calculating!!!");/* code */
   }
@@ -86,7 +86,7 @@ void wait_for_dataout(void)
 //等待rdy
 void wait_for_RDY_BIT(void)
 { 
-  while (!checkBit(SM3_STATE_SIGNALS_REG_ADDR,SM3_STATE_SIGNALS_MSG_INPT_RDY_BIT))//应该问red!!!
+  while (!checkBit_sm3(SM3_STATE_SIGNALS_REG_ADDR,SM3_STATE_SIGNALS_MSG_INPT_RDY_BIT))//应该问red!!!
   {
     asm volatile("" ::: "memory");
   }
@@ -140,12 +140,12 @@ bool test_main(void) {
 */
 
 // //计算长消息用到的main函数
-bool main(void) {
+// bool main(void) {
 
-    LOG_INFO("Now, SM3 unit test!!");
-    LOG_INFO("Long message test,expected encryption result:BB49D5(HEAD)");
-    SM3_hash_function(message_4word,4,full,result_buf);
-    LOG_INFO("Actual encryption result:");
-    LOG_INFO("%08x%08x%08x%08x%08x%08x%08x%08x",result_buf[0],result_buf[1],result_buf[2],result_buf[3],result_buf[4],result_buf[5],result_buf[6],result_buf[7]);
-    return 0; 
-}
+//     LOG_INFO("Now, SM3 unit test!!");
+//     LOG_INFO("Long message test,expected encryption result:BB49D5(HEAD)");
+//     SM3_hash_function(message_4word,4,full,result_buf);
+//     LOG_INFO("Actual encryption result:");
+//     LOG_INFO("%08x%08x%08x%08x%08x%08x%08x%08x",result_buf[0],result_buf[1],result_buf[2],result_buf[3],result_buf[4],result_buf[5],result_buf[6],result_buf[7]);
+//     return 0; 
+// }

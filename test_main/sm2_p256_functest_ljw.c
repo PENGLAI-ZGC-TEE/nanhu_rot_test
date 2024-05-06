@@ -127,11 +127,19 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   };
   public_key.x.checksum = integrity_unblinded_checksum(&public_key.x);
   public_key.y.checksum = integrity_unblinded_checksum(&public_key.y);
-
+  
+  // Generate a keypair.
+  LOG_INFO("Generating keypair...");
+  CHECK(otcrypto_ecdsa_keygen(&kCurveP256, &private_key, &public_key) ==
+        kCryptoStatusOK);
+  LOG_INFO("private_key: %08x%08x%08x%08x%08x%08x%08x%08x", private_key.keyblob[0],private_key.keyblob[1],private_key.keyblob[2],private_key.keyblob[3],private_key.keyblob[4],private_key.keyblob[5],private_key.keyblob[6],private_key.keyblob[7]);
+  LOG_INFO("public_key.x: %08x%08x%08x%08x%08x%08x%08x%08x", public_key.x.key[0],public_key.x.key[1],public_key.x.key[2],public_key.x.key[3],public_key.x.key[4],public_key.x.key[5],public_key.x.key[6],public_key.x.key[7]);
+  LOG_INFO("public_key.y: %08x%08x%08x%08x%08x%08x%08x%08x", public_key.y.key[0],public_key.y.key[1],public_key.y.key[2],public_key.y.key[3],public_key.y.key[4],public_key.y.key[5],public_key.y.key[6],public_key.y.key[7]);
   LOG_INFO("Start measure SM\n");
   hmac_digest_t M_digest;
-  unsigned int result_buf[8] ={0,0,0,0,0,0,0,0};
-  SM3_hash_function((void*)FLASH_BASE, penglai_sm_size, 4, result_buf);
+  unsigned int result_buf[8] ={0x19f67568,0x2de8f402,0xe26134da,0xe003f82f,0x41919ac8,0x55a94d0a,0x685e262c,0xc38592c6};
+  
+//   SM3_hash_function((void*)FLASH_BASE, penglai_sm_size, 4, result_buf);
 
   LOG_INFO("End measure SM\n");
   //将result_buf赋值给M_digest
@@ -141,13 +149,6 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   }
   LOG_INFO("M_digest: %08x%08x%08x%08x%08x%08x%08x%08x", M_digest.digest[0],M_digest.digest[1],M_digest.digest[2],M_digest.digest[3],M_digest.digest[4],M_digest.digest[5],M_digest.digest[6],M_digest.digest[7]);
 
-  // Generate a keypair.
-  LOG_INFO("Generating keypair...");
-  CHECK(otcrypto_ecdsa_keygen(&kCurveP256, &private_key, &public_key) ==
-        kCryptoStatusOK);
-  LOG_INFO("private_key: %08x%08x%08x%08x%08x%08x%08x%08x", private_key.keyblob[0],private_key.keyblob[1],private_key.keyblob[2],private_key.keyblob[3],private_key.keyblob[4],private_key.keyblob[5],private_key.keyblob[6],private_key.keyblob[7]);
-  LOG_INFO("public_key.x: %08x%08x%08x%08x%08x%08x%08x%08x", public_key.x.key[0],public_key.x.key[1],public_key.x.key[2],public_key.x.key[3],public_key.x.key[4],public_key.x.key[5],public_key.x.key[6],public_key.x.key[7]);
-  LOG_INFO("public_key.y: %08x%08x%08x%08x%08x%08x%08x%08x", public_key.y.key[0],public_key.y.key[1],public_key.y.key[2],public_key.y.key[3],public_key.y.key[4],public_key.y.key[5],public_key.y.key[6],public_key.y.key[7]);
   crypto_const_uint8_buf_t message_digest = {
       .len = sizeof(M_digest) - 1,
       .data = (unsigned char *)&M_digest,

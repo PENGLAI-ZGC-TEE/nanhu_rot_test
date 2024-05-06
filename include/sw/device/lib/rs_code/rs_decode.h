@@ -1,5 +1,5 @@
 // Generated register defines for rs_decode
-
+#include "sw/device/lib/base/abs_mmio.h"
 #ifndef _RS_DECODE_REG_DEFS_
 #define _RS_DECODE_REG_DEFS_
 
@@ -7,11 +7,14 @@
 extern "C" {
 #endif
 
-void wait_for_RDY_BIT(void);
+// void wait_for_RDY_BIT(void);
 
-uint8_t checkBit(unsigned int* registerAddress, unsigned int bit);
+// uint8_t checkBit(unsigned int* registerAddress, unsigned int bit);
+int wait_for_rs_decode_valid_BIT(uint32_t base_addr);
+uint8_t checkBit_rs_decode(uint32_t addr, uint32_t bit);
 
-void rs_decode_function(unsigned int encoded_data_err_input[],unsigned int error_pos_output[]);
+// void rs_decode_function(unsigned int encoded_data_err_input[],unsigned int error_pos_output[]);
+void rs_decode_function(uint32_t base_addr, uint32_t encoded_data_err_input[],uint32_t error_pos_output[]);
 
 static unsigned int encoded_data_err_input_buf[50] = {0xd90cbb6d, 0x917e2b7e, 0x5aaf6806, 0x890de9d0, 0xd958528f, 0x8c43c11d, 0x4a9dd25, 0x624145fb, 0xa8a7a6a5, 0xa4a3a2a1, 0xa09f9e9d, 0x9c9b9a99, 0x98979695, 0x94939291, 0x908f8e8d, 0x8c8b8a89, 0x88878685, 0x84838281, 0x807f7e7d, 0x7c7b7a79, 0x78777675, 0x74737271, 0x706f6e6d, 0x6c6b6a69, 0x68676665, 0x64636261, 0x605f5e5d, 0x5c5b5a59, 0x58575655, 0x54535251, 0x504f4e4d, 0x4c4b4a49, 0x48474645, 0x44434241, 0x403f3e3d, 0x3c3b3a39, 0x38373635, 0x34333231, 0x302f2e2d, 0x2c2b2a29, 0x28272625, 0x24232221, 0x201f1e1d, 0x1c1b1a19, 0x18171615, 0x14131211, 0x100f0e0d, 0xc0b0a09, 0x98776655, 0x44332211};
 

@@ -93,73 +93,73 @@ static uint32_t spi_device_frame_num = 0;
  * |     0xFF Pad Bytes    | <4-bytes |          |
  * -----------------------------------|----------|
  */
-static size_t base_dev_spi_device(void *data, const char *buf, size_t len) {
-  dif_spi_device_handle_t *spi_device = (dif_spi_device_handle_t *)data;
+// static size_t base_dev_spi_device(void *data, const char *buf, size_t len) {
+//   dif_spi_device_handle_t *spi_device = (dif_spi_device_handle_t *)data;
 
-  const size_t kDataPacketSizeBytes = ((len + 3u) & ~3u) + 4;
-  const size_t kFrameSizeBytes =
-      kSpiDeviceFrameHeaderSizeBytes + kDataPacketSizeBytes;
-  uint8_t frame_bytes[kFrameSizeBytes];
+//   const size_t kDataPacketSizeBytes = ((len + 3u) & ~3u) + 4;
+//   const size_t kFrameSizeBytes =
+//       kSpiDeviceFrameHeaderSizeBytes + kDataPacketSizeBytes;
+//   uint8_t frame_bytes[kFrameSizeBytes];
 
-  // Construct the frame header packet.
-  // Add the pad bytes.
-  for (size_t i = 0; i < 4; ++i) {
-    frame_bytes[i] = 0xff;
-  }
-  // Add the frame number.
-  for (size_t i = 0; i < 4; ++i) {
-    frame_bytes[i + 4] = (spi_device_frame_num >> (i * 8)) & 0xff;
-  }
-  // Add the data length.
-  for (size_t i = 0; i < 4; ++i) {
-    frame_bytes[i + 8] = (len >> (i * 8)) & 0xff;
-  }
+//   // Construct the frame header packet.
+//   // Add the pad bytes.
+//   for (size_t i = 0; i < 4; ++i) {
+//     frame_bytes[i] = 0xff;
+//   }
+//   // Add the frame number.
+//   for (size_t i = 0; i < 4; ++i) {
+//     frame_bytes[i + 4] = (spi_device_frame_num >> (i * 8)) & 0xff;
+//   }
+//   // Add the data length.
+//   for (size_t i = 0; i < 4; ++i) {
+//     frame_bytes[i + 8] = (len >> (i * 8)) & 0xff;
+//   }
 
-  // Construct the frame data packet.
-  // Add the pad bytes.
-  for (size_t i = 0; i < 4; ++i) {
-    frame_bytes[i + 12] = 0xff;
-  }
-  // Add the data and pad bytes.
-  for (size_t i = 0; i < ((len + 3u) & ~3u); ++i) {
-    if (i < len) {
-      frame_bytes[i + 16] = buf[i];
-    } else {
-      frame_bytes[i + 16] = 0xff;
-    }
-  }
+//   // Construct the frame data packet.
+//   // Add the pad bytes.
+//   for (size_t i = 0; i < 4; ++i) {
+//     frame_bytes[i + 12] = 0xff;
+//   }
+//   // Add the data and pad bytes.
+//   for (size_t i = 0; i < ((len + 3u) & ~3u); ++i) {
+//     if (i < len) {
+//       frame_bytes[i + 16] = buf[i];
+//     } else {
+//       frame_bytes[i + 16] = 0xff;
+//     }
+//   }
 
-  // Send the frame.
-  if (dif_spi_device_send_polled(spi_device, frame_bytes,
-                                 /*buf_len=*/kFrameSizeBytes) != kDifOk) {
-    return 0;
-  }
-  spi_device_frame_num++;
+//   // Send the frame.
+//   if (dif_spi_device_send_polled(spi_device, frame_bytes,
+//                                  /*buf_len=*/kFrameSizeBytes) != kDifOk) {
+//     return 0;
+//   }
+//   spi_device_frame_num++;
 
-  return len;
-}
+//   return len;
+// }
 
-static size_t base_dev_uart(void *data, const char *buf, size_t len) {
-  const dif_uart_t *uart = (const dif_uart_t *)data;
-  for (size_t i = 0; i < len; ++i) {
-    if (dif_uart_byte_send_polled(uart, (uint8_t)buf[i]) != kDifOk) {
-      return i;
-    }
-  }
-  return len;
-}
+// static size_t base_dev_uart(void *data, const char *buf, size_t len) {
+//   const dif_uart_t *uart = (const dif_uart_t *)data;
+//   for (size_t i = 0; i < len; ++i) {
+//     if (dif_uart_byte_send_polled(uart, (uint8_t)buf[i]) != kDifOk) {
+//       return i;
+//     }
+//   }
+//   return len;
+// }
 
-void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device) {
-  // Reset the frame counter.
-  spi_device_frame_num = 0;
-  base_set_stdout((buffer_sink_t){.data = (void *)spi_device,
-                                  .sink = &base_dev_spi_device});
-}
+// void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device) {
+//   // Reset the frame counter.
+//   spi_device_frame_num = 0;
+//   base_set_stdout((buffer_sink_t){.data = (void *)spi_device,
+//                                   .sink = &base_dev_spi_device});
+// }
 
-void base_uart_stdout(const dif_uart_t *uart) {
-  base_set_stdout(
-      (buffer_sink_t){.data = (void *)uart, .sink = &base_dev_uart});
-}
+// void base_uart_stdout(const dif_uart_t *uart) {
+//   base_set_stdout(
+//       (buffer_sink_t){.data = (void *)uart, .sink = &base_dev_uart});
+// }
 
 size_t base_printf(const char *format, ...) {
   va_list args;

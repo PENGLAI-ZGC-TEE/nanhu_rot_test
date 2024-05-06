@@ -1,4 +1,5 @@
 // Generated register defines for puf
+#include "sw/device/lib/base/abs_mmio.h"
 
 #ifndef _PUF_REG_DEFS_
 #define _PUF_REG_DEFS_
@@ -8,14 +9,19 @@ extern "C" {
 #endif
 static unsigned int a_challenge[4] ={0xabc9f99d,0x6c9f99d6,0xc9f99d6c,0x9f99d6cd};
 
-uint8_t checkBit(unsigned int* registerAddress, unsigned int bit);
+// uint8_t checkBit(unsigned int* registerAddress, unsigned int bit);
+uint8_t checkBit(uint32_t addr, uint32_t bit);
 
-void wait_for_res_valid_BIT(void);
+void wait_for_res_valid_BIT(uint32_t addr);
 
-void PUF_ON(void);
+// void PUF_ON(void);
+void PUF_OFF(uint32_t base_addr); 
 
-void puf_get_res_of_a_cha(unsigned int challenge_input[],unsigned int response_output[]);
+void PUF_RNG_ON(uint32_t base_addr); 
+void PUF_RNG_OFF(uint32_t base_addr); 
 
+// void puf_get_res_of_a_cha(unsigned int challenge_input[],unsigned int response_output[]);
+void puf_get_res_of_a_cha(uint32_t base_addr, uint32_t challenge_input[], uint32_t response_output[]);
 // Number registers for challenge
 #define PUF_PARAM_NUMREGS_CHALLENGE 4
 
@@ -26,7 +32,7 @@ void puf_get_res_of_a_cha(unsigned int challenge_input[],unsigned int response_o
 #define PUF_PARAM_REG_WIDTH 32
 
 // Control
-#define PUF_CTRL_SIGNALS_REG_OFFSET 0x0
+#define PUF_CTRL_SIGNALS_REG_OFFSET 0x0u
 #define PUF_CTRL_SIGNALS_REG_RESVAL 0x0u
 #define PUF_CTRL_SIGNALS_ENABLE_PUF_BIT 0
 #define PUF_CTRL_SIGNALS_MODE_PUF_BIT 1
