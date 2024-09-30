@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/rv_core_ibex/doc/">RV_CORE_IBEX</a> Device Interface
+ * @brief <a href="/book/hw/ip/rv_core_ibex/">RV_CORE_IBEX</a> Device Interface
  * Functions
  */
 

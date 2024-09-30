@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -286,7 +286,7 @@ typedef struct {
 } dif_lc_ctrl_hw_rev_t;
 
 /**
- * A 256-bit device id stored in OTP's hw_cfg partition.
+ * A 256-bit device id stored in OTP's hw_cfg0 partition.
  */
 typedef struct dif_lc_ctrl_device_id {
   uint32_t data[256 / 32];

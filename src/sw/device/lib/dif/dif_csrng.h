@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -155,6 +155,36 @@ typedef enum dif_csrng_error {
 } dif_csrng_error_t;
 
 /**
+ * Enumeration of CSRNG command status errors.
+ */
+typedef enum dif_csrng_cmd_sts_error {
+  /**
+   * Indicates that the command completed successfully.
+   */
+  kDifCsrngCmdStsSuccess = 0,
+  /**
+   * Indicates that an invalid apllication command has been issued.
+   */
+  kDifCsrngCmdStsInvalidAcmd = 1,
+  /**
+   * Indicates that the state wasn't zeroized properly after an uninstantiate
+   * command due to invalid state parameters in the cmd drbg.
+   */
+  kDifCsrngCmdStsInvalidStateParams = 2,
+  /**
+   * Indicates that CSRNG entropy was generated for a command that is not a
+   * generate command.
+   */
+  kDifCsrngCmdStsInvalidCtrDrbgCmd = 3,
+  /**
+   * Indicates that last command was not issued in sequence.
+   * E.g. an instantiate on an instantiated state or any command other than an
+   * instantiate on an uninstantiated state.
+   */
+  kDifCsrngCmdStsInvalidCmdSeq = 4,
+} dif_csrng_cmd_sts_t;
+
+/**
  * The status of the CSRNG block at a particular moment in time.
  */
 typedef struct dif_csrng_cmd_status {
@@ -163,14 +193,9 @@ typedef struct dif_csrng_cmd_status {
    */
   dif_csrng_cmd_status_kind_t kind;
   /**
-   * A bitset of FIFOs in an unhealthy state, with bit indices given by
-   * `dif_csrng_fifo_t`.
+   * The status value CSRNG returns.
    */
-  uint32_t unhealthy_fifos;
-  /**
-   * A bitset of errors, with bit indices given by `dif_csrng_error_t`.
-   */
-  uint32_t errors;
+  dif_csrng_cmd_sts_t cmd_sts;
 } dif_csrng_cmd_status_t;
 
 /**
@@ -314,11 +339,20 @@ typedef enum dif_csrng_recoverable_alert {
   kDifCsrngRecoverableAlertRepeatedGenBits =
       1U << CSRNG_RECOV_ALERT_STS_CS_BUS_CMP_ALERT_BIT,
   /**
-   * Indicates an unsupported CSRNG command is being processed, causing the main
-   * FSM to hang unless the module enable field is set to the disabled state.
+   * Indicates an unsupported CSRNG command was issued.
    */
   kDifCsrngRecoverableAlertBadCsrngCmd =
-      1U << CSRNG_RECOV_ALERT_STS_CS_MAIN_SM_ALERT_BIT,
+      1U << CSRNG_RECOV_ALERT_STS_CMD_STAGE_INVALID_ACMD_ALERT_BIT,
+  /**
+   * Indicates a supported CSRNG command was issued out of sequence.
+   */
+  kDifCsrngRecoverableAlertBadCsrngCmdSeq =
+      1U << CSRNG_RECOV_ALERT_STS_CMD_STAGE_INVALID_CMD_SEQ_ALERT_BIT,
+  /**
+   * Indicates that too many generate commands were issued in a row.
+   */
+  kDifCsrngRecoverableAlertMaxReseedsExceeded =
+      1U << CSRNG_RECOV_ALERT_STS_CMD_STAGE_RESEED_CNT_ALERT_BIT,
 } dif_csrng_recoverable_alert_t;
 
 /**
@@ -537,6 +571,20 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_get_internal_state(
     const dif_csrng_t *csrng, dif_csrng_internal_state_id_t instance_id,
     dif_csrng_internal_state_t *state);
+
+/**
+ * Gets the reseed counter of a CSRNG instance.
+ *
+ * @param csrng A CSRNG handle
+ * @param instance_id CSRNG instance ID.
+ * @param[out] reseed counter The current reseed counter value of a CSRNG
+ * instance.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_get_reseed_counter(
+    const dif_csrng_t *csrng, dif_csrng_internal_state_id_t instance_id,
+    uint32_t *reseed_counter);
 
 /**
  * Locks out CSRNG functionality.

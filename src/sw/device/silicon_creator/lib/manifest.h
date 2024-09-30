@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +13,7 @@
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
+#include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/spx_key.h"
 
@@ -44,7 +45,7 @@ typedef struct manifest_usage_constraints {
   uint32_t selector_bits;
   /**
    * Device identifier value which is compared against the `DEVICE_ID` value
-   * stored in the `HW_CFG` partition in OTP.
+   * stored in the `HW_CFG0` partition in OTP.
    *
    * Mapped to bits 0-7 of `selector_bits`.
    */
@@ -104,6 +105,20 @@ enum {
 };
 
 /**
+ * Manifest timestamp.
+ */
+typedef struct manifest_timestamp {
+  /**
+   * Least significant word of the timestamp.
+   */
+  uint32_t timestamp_low;
+  /**
+   * Most significant word of the timestamp.
+   */
+  uint32_t timestamp_high;
+} manifest_timestamp_t;
+
+/**
  * Manifest extensions table entry.
  *
  * An extension with index `i` exists if the `identifier` of the `i`th entry in
@@ -131,6 +146,36 @@ typedef struct manifest_ext_table {
 } manifest_ext_table_t;
 
 /**
+ * Manifest version.
+ */
+typedef struct manifest_version {
+  /**
+   * Minor manifest format version.
+   *
+   * ROM doesn't check this field. Thus, this field can be used to update the
+   * manifest format without breaking the forward compatibility of ROM.
+   */
+  uint16_t minor;
+  /**
+   * Major manifest format version.
+   *
+   * This field can be used to maintain or break forward compatibility in ROM
+   * while preserving backward compatibility in ROM_EXT. ROM requires the major
+   * version to be `kManifestFormatVersionMajor1`.
+   */
+  uint16_t major;
+} manifest_version_t;
+
+/**
+ * Manifest versions.
+ */
+enum {
+  kManifestVersionMajor1 = CHIP_MANIFEST_VERSION_MAJOR_1,
+  kManifestVersionMajor2 = CHIP_MANIFEST_VERSION_MAJOR_2,
+  kManifestVersionMinor1 = CHIP_MANIFEST_VERSION_MINOR_1,
+};
+
+/**
  * Manifest for boot stage images stored in flash.
  *
  * OpenTitan secure boot, at a minimum, consists of three boot stages: ROM,
@@ -149,11 +194,12 @@ typedef struct manifest_ext_table {
  */
 typedef struct manifest {
   /**
-   * RSA signature of the image.
+   * The manifest only supports one of the following signatures:
    *
-   * RSASSA-PKCS1-v1_5 signature of the image generated using a 3072-bit RSA
-   * private key and the SHA-256 hash function. The signed region of an image
-   * starts immediately after this field and ends at the end of the image.
+   * - For `kManifestVersionMajor1`: `rsa_signature`.
+   * - For `kManifestVersionMajor2`: `ecdsa_signature`.
+   *
+   * Both signatures use SHA-256 as the hash function.
    *
    * On-target verification should also integrate usage constraints comparison
    * to signature verification to harden it against potential attacks. During
@@ -167,15 +213,46 @@ typedef struct manifest {
    * usage constraints read from the hardware can be obtained using
    * `manifest_digest_region_get()`.
    */
-  sigverify_rsa_buffer_t rsa_signature;
+  union {
+    /**
+     * RSA signature of the image.
+     *
+     * RSASSA-PKCS1-v1_5 signature of the image generated using a 3072-bit RSA
+     * private key and the SHA-256 hash function. The signed region of an image
+     * starts immediately after this field and ends at the end of the image.
+     */
+    sigverify_rsa_buffer_t rsa_signature;
+
+    /**
+     * ECDSA P256 signature of the image.
+     *
+     * ECDSA P256 signature of the image generated using a NIST P256 ECC key
+     * and the SHA-256 hash function. The signed region of an image starts
+     * immediately after the end of the union encapsulating this field and ends
+     * at the end of the image.
+     */
+    ecdsa_p256_signature_t ecdsa_signature;
+  };
   /**
    * Usage constraints.
    */
   manifest_usage_constraints_t usage_constraints;
   /**
-   * Modulus of the signer's 3072-bit RSA public key.
+   * The manifest only supports one of the following public key types:
+   *
+   * - For `kManifestVersionMajor1`: `rsa_modulus`.
+   * - For `kManifestVersionMajor2`: `ecdsa_public_key`.
    */
-  sigverify_rsa_buffer_t rsa_modulus;
+  union {
+    /**
+     * Modulus of the signer's 3072-bit RSA public key.
+     */
+    sigverify_rsa_buffer_t rsa_modulus;
+    /**
+     * Signer's ECDSA NIST P256 ECC public key.
+     */
+    ecdsa_p256_public_key_t ecdsa_public_key;
+  };
   /**
    * Address translation (hardened boolean).
    */
@@ -184,6 +261,14 @@ typedef struct manifest {
    * Manifest identifier.
    */
   uint32_t identifier;
+  /**
+   * Manifest format major and minor version.
+   *
+   * These version values can be used to maintain or break forward compatibility
+   * in ROM while preserving backward compatibility in ROM_EXT. ROM requires the
+   * major version to be `kManifestVersionMajor2`.
+   */
+  manifest_version_t manifest_version;
   /**
    * Offset of the end of the signed region relative to the start of the
    * manifest.
@@ -214,7 +299,7 @@ typedef struct manifest {
    * Unix timestamp that gives the creation time of the image, seconds since
    * 00:00:00 on January 1, 1970 UTC (the Unix Epoch).
    */
-  uint32_t timestamp[2];
+  manifest_timestamp_t timestamp;
   /**
    * Binding value used by key manager to derive secret values.
    *
@@ -249,22 +334,25 @@ typedef struct manifest {
 } manifest_t;
 
 OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_signature, 0);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, ecdsa_signature, 0);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_modulus, 432);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, ecdsa_public_key, 432);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 816);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 820);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, signed_region_end, 824);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 828);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 832);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 836);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 840);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 844);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 852);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 884);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 888);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 892);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 896);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, extensions, 900);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, manifest_version, 824);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, signed_region_end, 828);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 832);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 836);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 840);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 844);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 848);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 856);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 888);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 892);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 896);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 900);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, extensions, 904);
 OT_ASSERT_SIZE(manifest_t, CHIP_MANIFEST_SIZE);
 
 /**
@@ -372,7 +460,13 @@ typedef struct manifest_ext_spx_signature {
  * @param manfiest A manifest.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 inline rom_error_t manifest_check(const manifest_t *manifest) {
+  // Major version must be `kManifestVersionMajor2`.
+  if (manifest->manifest_version.major != kManifestVersionMajor2) {
+    return kErrorManifestBadVersionMajor;
+  }
+
   // Signed region must be inside the image.
   if (manifest->signed_region_end > manifest->length) {
     return kErrorManifestBadSignedRegion;
@@ -394,6 +488,13 @@ inline rom_error_t manifest_check(const manifest_t *manifest) {
     return kErrorManifestBadEntryPoint;
   }
 
+  // Manifest extension offset must be word aligned.
+  for (size_t i = 0; i < CHIP_MANIFEST_EXT_TABLE_ENTRY_COUNT; ++i) {
+    if ((manifest->extensions.entries[i].offset & 0x3) != 0) {
+      return kErrorManifestBadExtension;
+    }
+  }
+
   return kErrorOk;
 }
 
@@ -408,6 +509,7 @@ inline rom_error_t manifest_check(const manifest_t *manifest) {
  * return digest_region Region of the image that should be included in the
  * digest computation.
  */
+OT_WARN_UNUSED_RESULT
 inline manifest_digest_region_t manifest_digest_region_get(
     const manifest_t *manifest) {
   enum {
@@ -426,6 +528,7 @@ inline manifest_digest_region_t manifest_digest_region_get(
  * @param manifest A manifest.
  * return Executable region of the image.
  */
+OT_WARN_UNUSED_RESULT
 inline epmp_region_t manifest_code_region_get(const manifest_t *manifest) {
   return (epmp_region_t){
       .start = (uintptr_t)manifest + manifest->code_start,
@@ -444,16 +547,19 @@ inline epmp_region_t manifest_code_region_get(const manifest_t *manifest) {
  * @param manfiest A manifest.
  * return Entry point address.
  */
+OT_WARN_UNUSED_RESULT
 inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
   return (uintptr_t)manifest + manifest->entry_point;
 }
 
 #define DEFINE_GETTER(index_, type_, name_, id_, _)                            \
+  OT_WARN_UNUSED_RESULT                                                        \
+                                                                               \
   inline rom_error_t manifest_ext_get_##name_(const manifest_t *manifest,      \
                                               const type_ **name_) {           \
     enum {                                                                     \
       kMinSize = CHIP_MANIFEST_SIZE,                                           \
-      kMaxSize = CHIP_ROM_EXT_SIZE_MAX - sizeof(type_),                        \
+      kMaxSize = CHIP_ROM_EXT_RESIZABLE_SIZE_MAX - sizeof(type_),              \
     };                                                                         \
     const manifest_ext_table_entry_t *entry =                                  \
         &manifest->extensions.entries[index_];                                 \
@@ -482,7 +588,7 @@ inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
  */
 MANIFEST_EXTENSIONS(DEFINE_GETTER)
 
-#else   // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
+#else  // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 /**
  * Declarations for the functions above that should be defined in tests.
  */
@@ -490,11 +596,14 @@ rom_error_t manifest_check(const manifest_t *manifest);
 manifest_digest_region_t manifest_digest_region_get(const manifest_t *manifest);
 epmp_region_t manifest_code_region_get(const manifest_t *manifest);
 uintptr_t manifest_entry_point_get(const manifest_t *manifest);
-rom_error_t manifest_get_ext_spx_key(const manifest_t *manifest,
+
+// Manifest extension getters.
+rom_error_t manifest_ext_get_spx_key(const manifest_t *manifest,
                                      const manifest_ext_spx_key_t **spx_key);
-rom_error_t manifest_get_ext_spx_signature(
+rom_error_t manifest_ext_get_spx_signature(
     const manifest_t *manifest,
     const manifest_ext_spx_signature_t **spx_signature);
+
 #endif  // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 
 #ifdef __cplusplus

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,23 +13,38 @@
 /**
  * Manifest size for boot stages stored in flash (in bytes).
  */
-#define CHIP_MANIFEST_SIZE 964
+#define CHIP_MANIFEST_SIZE 1024
+
+/**
+ * Manifest format major and minor versions.
+ */
+#define CHIP_MANIFEST_VERSION_MINOR_1 0x6c47
+#define CHIP_MANIFEST_VERSION_MAJOR_1 0x71c3
+
+// TODO(moidx): Update to a valid number once we figure out a manifest
+// versioning scheme.
+#define CHIP_MANIFEST_VERSION_MAJOR_2 0x0002
 
 /**
  * Number of entries in the manifest extensions table.
  */
-#define CHIP_MANIFEST_EXT_TABLE_ENTRY_COUNT 8
+#define CHIP_MANIFEST_EXT_TABLE_ENTRY_COUNT 15
 
 /**
- * ROM_EXT manifest identifier (ASCII "OTRE").
+ * Size of the header of a boot services message.
  */
-#define CHIP_ROM_EXT_IDENTIFIER 0x4552544f
+#define CHIP_BOOT_SVC_MSG_HEADER_SIZE 44
 
 /**
- * Allowed bounds for the `length` field of a ROM_EXT manifest.
+ * Maximum size of a boot services message.
  */
-#define CHIP_ROM_EXT_SIZE_MIN CHIP_MANIFEST_SIZE
-#define CHIP_ROM_EXT_SIZE_MAX 0x10000
+#define CHIP_BOOT_SVC_MSG_SIZE_MAX 256
+
+/**
+ * Maximum payload size for a boot services message.
+ */
+#define CHIP_BOOT_SVC_MSG_PAYLOAD_SIZE_MAX \
+  (CHIP_BOOT_SVC_MSG_SIZE_MAX - CHIP_BOOT_SVC_MSG_HEADER_SIZE)
 
 /**
  * First owner boot stage, e.g. BL0, manifest identifier (ASCII "OTB0").
@@ -41,6 +56,19 @@
  */
 #define CHIP_BL0_SIZE_MIN CHIP_MANIFEST_SIZE
 #define CHIP_BL0_SIZE_MAX 0x70000
+
+/**
+ * ROM_EXT manifest identifier (ASCII "OTRE").
+ */
+#define CHIP_ROM_EXT_IDENTIFIER 0x4552544f
+
+/**
+ * Allowed bounds for the `length` field of a ROM_EXT manifest.
+ */
+#define CHIP_ROM_EXT_SIZE_MIN CHIP_MANIFEST_SIZE
+#define CHIP_ROM_EXT_SIZE_MAX 0x10000
+#define CHIP_ROM_EXT_RESIZABLE_SIZE_MAX \
+  (CHIP_ROM_EXT_SIZE_MAX + CHIP_BL0_SIZE_MAX)
 
 /**
  * Value written to the end of the retention SRAM creator area by `test_rom` to

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,9 +25,9 @@
  * This function may behave as if it is a no-op.
  */
 inline void wait_for_interrupt(void) {
-// #ifdef OT_PLATFORM_RV32
+#ifdef OT_PLATFORM_RV32
   asm volatile("wfi");
-// #endif
+#endif
 }
 
 /**

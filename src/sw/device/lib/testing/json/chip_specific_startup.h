@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_CHIP_SPECIFIC_STARTUP_H_
@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 // clang-format off
+
+#define MODULE_ID MAKE_MODULE_ID('j', 'c', 'h')
 
 // OTP words that we care about for low-level init.
 #define STRUCT_ROM_OTP_CONFIG(field, string) \
@@ -47,6 +49,8 @@ UJSON_SERDE_STRUCT(SramInit, sram_init_t, STRUCT_SRAM_INIT);
     field(ast_init_done, bool) \
     field(sram, sram_init_t)
 UJSON_SERDE_STRUCT(ChipStartup, chip_startup_t, STRUCT_CHIP_STARTUP);
+
+#undef MODULE_ID
 
 // clang-format on
 #ifdef __cplusplus

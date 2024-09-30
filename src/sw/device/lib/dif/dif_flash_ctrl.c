@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -264,6 +264,8 @@ dif_result_t dif_flash_ctrl_get_status(const dif_flash_ctrl_state_t *handle,
           bitfield_bit32_read(reg, FLASH_CTRL_STATUS_PROG_EMPTY_BIT),
       .controller_init_wip =
           bitfield_bit32_read(reg, FLASH_CTRL_STATUS_INIT_WIP_BIT),
+      .controller_initialized =
+          bitfield_bit32_read(reg, FLASH_CTRL_STATUS_INITIALIZED_BIT),
   };
   *status_out = status;
   return kDifOk;
@@ -612,15 +614,20 @@ dif_result_t dif_flash_ctrl_end(dif_flash_ctrl_state_t *handle,
   if (handle->words_remaining != 0) {
     return kDifIpFifoFull;
   }
-  out->operation_done =
-      bitfield_bit32_read(status_reg, FLASH_CTRL_OP_STATUS_DONE_BIT);
-  out->operation_error =
-      bitfield_bit32_read(status_reg, FLASH_CTRL_OP_STATUS_ERR_BIT);
+  dif_flash_ctrl_error_t error_code_tmp;
+  DIF_RETURN_IF_ERROR(dif_flash_ctrl_get_error_codes(handle, &error_code_tmp));
+  dif_flash_ctrl_output_t output = {
+      .operation_done =
+          bitfield_bit32_read(status_reg, FLASH_CTRL_OP_STATUS_DONE_BIT),
+      .operation_error =
+          bitfield_bit32_read(status_reg, FLASH_CTRL_OP_STATUS_ERR_BIT),
+      .error_code = error_code_tmp};
   // Clear the operation status
   mmio_region_write32(handle->dev.base_addr, FLASH_CTRL_OP_STATUS_REG_OFFSET,
                       0);
   handle->transaction_pending = false;
-  return dif_flash_ctrl_get_error_codes(handle, &out->error_code);
+  *out = output;
+  return kDifOk;
 }
 
 OT_WARN_UNUSED_RESULT

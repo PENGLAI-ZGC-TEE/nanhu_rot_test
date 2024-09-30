@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +12,8 @@
  */
 
 #include <stdint.h>
+
+#include "sw/device/lib/base/multibits.h"
 
 #include "sw/device/lib/dif/autogen/dif_sram_ctrl_autogen.h"
 
@@ -91,6 +93,12 @@ typedef enum dif_sram_ctrl_lock {
    * of the chip (EN_SRAM_IFETCH fuse).
    */
   kDifSramCtrlLockExec,
+  /**
+   * Readback feature lock. When locked, disabling or enabling the SRAM readback
+   * feature is not available anymore. Includes the following API:
+   * `dif_sram_ctrl_readback_set`.
+   */
+  kDifSramCtrlLockReadback,
 } dif_sram_ctrl_lock_t;
 
 /**
@@ -191,6 +199,17 @@ dif_result_t dif_sram_ctrl_exec_set_enabled(const dif_sram_ctrl_t *sram_ctrl,
                                             dif_toggle_t state);
 
 /**
+ * Sets whether the SRAM readback feature is enabled or disabled.
+ *
+ * @param sram_ctrl A SRAM Controller handle.
+ * @param state The new toggle state for the SRAM readback feature.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sram_ctrl_readback_set(const dif_sram_ctrl_t *sram_ctrl,
+                                        dif_toggle_t state);
+
+/**
  * Queries the SRAM Controller status.
  *
  * `dif_sram_ctrl_status_t` is used to then extract individual status bits.
@@ -229,6 +248,26 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sram_ctrl_is_locked(const dif_sram_ctrl_t *sram_ctrl,
                                      dif_sram_ctrl_lock_t lock,
                                      bool *is_locked);
+
+/**
+ * Checks whether requested SRAM Controller successfully obtained a new key.
+ *
+ * success is set to kMultiBitBool4True if a key rotation was successful.
+ *
+ * The clear parameter can be set to kMultiBitBool4True in order to clear
+ * the key rotation state back to kMultiBitBool4False after reading it.
+ * If the state should not be cleared, set clear to kMultiBitBool4False.
+ *
+ * @param sram_ctrl A SRAM Controller handle.
+ * @param[out] success Outparam for the success state.
+ * @param clear Parameter indicating whether to CSR should be cleared after
+ *              reading.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sram_ctrl_scr_key_rotated(const dif_sram_ctrl_t *sram_ctrl,
+                                           multi_bit_bool_t *success,
+                                           multi_bit_bool_t clear);
 
 #ifdef __cplusplus
 }  // extern "C"

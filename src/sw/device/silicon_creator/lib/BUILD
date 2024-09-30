@@ -1,11 +1,21 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load(
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
+)
 load("//rules:autogen.bzl", "autogen_chip_info")
-load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
+    "fpga_params",
+    "opentitan_test",
+    "verilator_params",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -21,8 +31,8 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:memory",
@@ -34,6 +44,7 @@ dual_cc_library(
         ],
         shared = [
             ":error",
+            ":nonce",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/drivers:hmac",
@@ -52,9 +63,19 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "boot_data_functest",
     srcs = ["boot_data_functest.c"],
+    exec_env = dicts.add(
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Not intended for ROM_EXT environments.
+            ["//hw/top_earlgrey:fpga_cw310_sival_rom_ext"],
+        ),
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+        },
+    ),
     verilator = verilator_params(
         timeout = "eternal",
         tags = ["flaky"],
@@ -65,6 +86,32 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_library(
+    name = "boot_log",
+    srcs = ["boot_log.c"],
+    hdrs = ["boot_log.h"],
+    deps = [
+        ":boot_data",
+        ":nonce",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
+    ],
+)
+
+cc_test(
+    name = "boot_log_unittest",
+    srcs = ["boot_log_unittest.cc"],
+    deps = [
+        ":boot_log",
+        "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -131,11 +178,17 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "error_unittest_util",
+    hdrs = ["error_unittest_util.h"],
+)
+
 cc_test(
     name = "error_unittest",
     srcs = ["error_unittest.cc"],
     deps = [
         ":error",
+        ":error_unittest_util",
         "@googletest//:gtest_main",
     ],
 )
@@ -145,18 +198,26 @@ cc_library(
     srcs = ["irq_asm.S"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/aon_timer/data:aon_timer_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
-        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//hw/ip/aon_timer/data:aon_timer_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:multibits",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "irq_asm_functest",
     srcs = ["irq_asm_functest.c"],
+    broken = fpga_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -179,21 +240,25 @@ cc_library(
 )
 
 cc_library(
-    name = "rom_print",
-    srcs = ["rom_print.c"],
-    hdrs = ["rom_print.h"],
+    name = "dbg_print",
+    srcs = ["dbg_print.c"],
+    hdrs = ["dbg_print.h"],
     deps = [
+        ":epmp_defs",
         ":error",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/drivers:uart",
     ],
 )
 
 cc_test(
-    name = "rom_print_unittest",
-    srcs = ["rom_print_unittest.cc"],
+    name = "dbg_print_unittest",
+    srcs = ["dbg_print_unittest.cc"],
     deps = [
+        ":dbg_print",
         ":error",
-        ":rom_print",
         "//sw/device/silicon_creator/lib/drivers:uart",
         "@googletest//:gtest_main",
     ],
@@ -224,6 +289,7 @@ dual_cc_library(
             ":keymgr_binding",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
             "//sw/device/silicon_creator/lib/sigverify:rsa_key",
             "//sw/device/silicon_creator/lib/sigverify:spx_key",
             "//sw/device/silicon_creator/lib/base:chip",
@@ -295,19 +361,21 @@ dual_cc_library(
             ":chip_info",
             ":error",
             ":epmp_defs",
+            ":stack_utilization",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
-            "//hw/ip/keymgr/data:keymgr_regs",
-            "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-            "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
-            "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
-            "//hw/ip/uart/data:uart_regs",
-            "//hw/top_earlgrey:alert_handler_regs",
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-            "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
+            "//hw/ip/keymgr/data:keymgr_c_regs",
+            "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+            "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
+            "//hw/ip/uart/data:uart_c_regs",
+            "//hw/top_earlgrey:alert_handler_c_regs",
+            "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
@@ -331,63 +399,185 @@ cc_test(
     ],
 )
 
-dual_cc_library(
-    name = "crc32",
-    srcs = dual_inputs(
-        device = ["crc32.c"],
-        host = ["mock_crc32.cc"],
-    ),
-    hdrs = dual_inputs(
-        host = ["mock_crc32.h"],
-        shared = ["crc32.h"],
-    ),
-    deps = dual_inputs(
-        host = [
-            "//sw/device/lib/base:global_mock",
-            "@googletest//:gtest",
-        ],
-        shared = [
-            "//sw/device/lib/base:memory",
-            "//sw/device/lib/base:macros",
-        ],
-    ),
-)
-
-cc_test(
-    name = "crc32_unittest",
-    srcs = ["crc32_unittest.cc"],
+cc_library(
+    name = "bootstrap",
+    srcs = ["bootstrap.c"],
+    hdrs = ["bootstrap.h"],
     deps = [
-        dual_cc_device_library_of(":crc32"),
-        "//sw/device/silicon_creator/testing:rom_test",
-        "@googletest//:gtest_main",
+        ":stack_utilization",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:spi_device",
     ],
 )
 
-opentitan_functest(
-    name = "crc32_functest",
-    srcs = ["crc32_functest.c"],
-    deps = [
-        ":crc32",
-        "//sw/device/lib/testing/test_framework:ottf_main",
+filegroup(
+    name = "bootstrap_srcs",
+    srcs = [
+        "bootstrap.c",
+        "bootstrap.h",
     ],
 )
 
-opentitan_functest(
-    name = "crc32_perftest",
-    srcs = ["crc32_perftest.c"],
-    cw310 = cw310_params(
-        tags = [
-            "manual",
-        ],
-    ),
-    targets = ["cw310_test_rom"],
+cc_library(
+    name = "bootstrap_fuzzer_util",
+    srcs = ["bootstrap_fuzzer_util.cc"],
+    hdrs = ["bootstrap_fuzzer_util.h"],
     deps = [
-        ":crc32",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:spi_device",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "bootstrap_unittest_util",
+    srcs = ["bootstrap_unittest_util.cc"],
+    hdrs = ["bootstrap_unittest_util.h"],
+    deps = [
+        ":bootstrap",
+        "//hw/ip/gpio/data:gpio_c_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib/base:chip",
+    ],
+)
+
+cc_library(
+    name = "attestation",
+    hdrs = ["attestation.h"],
+)
+
+cc_library(
+    name = "nonce",
+    srcs = ["nonce.c"],
+    hdrs = ["nonce.h"],
+    deps = ["//sw/device/silicon_creator/lib/drivers:rnd"],
+)
+
+cc_library(
+    name = "attestation_key_diversifiers",
+    srcs = ["attestation_key_diversifiers.c"],
+    hdrs = ["attestation_key_diversifiers.h"],
+    deps = ["//sw/device/silicon_creator/lib/drivers:keymgr"],
+)
+
+cc_library(
+    name = "otbn_boot_services",
+    srcs = ["otbn_boot_services.c"],
+    hdrs = ["otbn_boot_services.h"],
+    # This target uses OTBN pointers internally, so it cannot work host-side.
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":attestation",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:otbn",
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+        "//sw/otbn/crypto:boot",
+    ],
+)
+
+opentitan_test(
+    name = "otbn_boot_services_functest",
+    srcs = ["otbn_boot_services_functest.c"],
+    broken = fpga_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            # See #21706, expects keymgr state 0 so not working after ROM_EXT.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
+    # This target uses OTBN pointers internally, so it cannot work host-side.
+    deps = [
+        ":otbn_boot_services",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+    ],
+)
+
+cc_library(
+    name = "xmodem",
+    srcs = ["xmodem.c"],
+    hdrs = ["xmodem.h"],
+    deps = [
+        ":error",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib/drivers:uart",
+    ],
+)
+
+cc_library(
+    name = "xmodem_testlib",
+    srcs = [
+        "xmodem.c",
+        "xmodem.h",
+    ],
+    hdrs = ["xmodem_testlib.h"],
+    defines = ["XMODEM_TESTLIB=1"],
+    deps = [
+        ":error",
+        "//sw/device/lib/base:hardened",
+    ],
+)
+
+cc_library(
+    name = "dice",
+    srcs = ["dice.c"],
+    hdrs = ["dice.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/json:provisioning_data",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
+        "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
+        "//sw/device/silicon_creator/lib/cert:tpm_cek_template_library",
+        "//sw/device/silicon_creator/lib/cert:tpm_cik_template_library",
+        "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
+        "//sw/device/silicon_creator/lib/cert:uds_template_library",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+    ],
+)
+
+cc_library(
+    name = "stack_utilization",
+    srcs = ["stack_utilization.c"],
+    hdrs = [
+        "stack_utilization.h",
+        "stack_utilization_asm.h",
+    ],
+    deps = [
+        "//sw/device/silicon_creator/lib/drivers:uart",
     ],
 )

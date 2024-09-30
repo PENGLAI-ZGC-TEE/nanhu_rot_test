@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -284,6 +284,17 @@ OT_WARN_UNUSED_RESULT
 pmp_region_configure_result_t pmp_region_configure_tor(
     pmp_region_index_t region_end, const pmp_region_config_t config,
     uintptr_t address_start, uintptr_t address_end);
+
+/**
+ * Check if the requested region is configured.
+ *
+ * @param region PMP region to query the information for.
+ * @param[out] configured Whether the PMP region is configured.
+ * @return `pmp_region_configure_result_t`.
+ */
+OT_WARN_UNUSED_RESULT
+pmp_region_configure_result_t pmp_region_is_configured(
+    pmp_region_index_t region, bool *configured);
 
 /**
  * Queries the lock status for the requested region.

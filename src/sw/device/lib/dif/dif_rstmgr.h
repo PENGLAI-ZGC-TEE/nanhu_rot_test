@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,8 +7,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/rstmgr/doc/">Reset Manager</a> Device Interface
- * Functions
+ * @brief <a href="/book/hw/top_earlgrey/ip_autogen/rstmgr/">Reset Manager</a>
+ * Device Interface Functions
  */
 
 #include <stdbool.h>

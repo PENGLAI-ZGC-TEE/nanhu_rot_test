@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,7 +25,7 @@ extern "C" {
  *
  * @return Ibex cycle count at start time.
  */
-uint64_t profile_start();
+uint64_t profile_start(void);
 
 /**
  * End a cycle-count timing profile.

@@ -1,19 +1,115 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
+load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
     "cw310_params",
-    "opentitan_functest",
+    "fpga_params",
+    "opentitan_test",
+    "verilator_params",
 )
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
+
+dual_cc_library(
+    name = "crc32",
+    srcs = dual_inputs(
+        device = ["crc32.c"],
+        host = ["mock_crc32.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_crc32.h"],
+        shared = ["crc32.h"],
+    ),
+    # This library is a dependancy of the ujson library.
+    visibility = ["//sw/device/lib/ujson:__pkg__"],
+    deps = dual_inputs(
+        host = [
+            ":global_mock",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            ":memory",
+            ":macros",
+        ],
+    ),
+)
+
+cc_test(
+    name = "crc32_unittest",
+    srcs = ["crc32_unittest.cc"],
+    deps = [
+        dual_cc_device_library_of(":crc32"),
+        "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_test(
+    name = "crc32_functest",
+    srcs = ["crc32_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":crc32",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "crc32_perftest",
+    srcs = ["crc32_perftest.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
+    fpga = fpga_params(
+        tags = [
+            "manual",
+        ],
+    ),
+    deps = [
+        ":crc32",
+        ":macros",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+    ],
+)
 
 cc_library(
     name = "global_mock",
     hdrs = ["global_mock.h"],
+)
+
+cc_test(
+    name = "global_mock_unittest",
+    srcs = ["global_mock_unittest.cc"],
+    # Enable UBSan by setting copts and linkopts. This is roughly what
+    # `--config=ubsan` does, as defined in `.bazelrc`.
+    copts = [
+        "-fsanitize=undefined",
+        "-g",
+        "-fno-omit-frame-pointer",
+        # Make detected UB fatal. Without this flag, the test would always pass.
+        "-fno-sanitize-recover",
+    ],
+    linkopts = [
+        "-fsanitize=undefined",
+    ],
+    deps = [
+        ":global_mock",
+        "@googletest//:gtest_main",
+    ],
 )
 
 cc_library(
@@ -53,7 +149,10 @@ cc_library(
     name = "math",
     srcs = ["math.c"],
     hdrs = ["math.h"],
-    deps = [":math_builtins"],
+    deps = [
+        ":macros",
+        ":math_builtins",
+    ],
 )
 
 cc_test(
@@ -88,17 +187,10 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "memory_perftest",
     srcs = ["memory_perftest.c"],
-    cw310 = cw310_params(
-        tags = [
-            "flaky",
-            "manual",
-        ],
-    ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    targets = ["cw310_test_rom"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         ":macros",
         ":memory",
@@ -138,6 +230,20 @@ cc_test(
     deps = [
         ":hardened",
         "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_test(
+    name = "hardened_functest",
+    srcs = ["hardened_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":hardened",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -290,6 +396,27 @@ cc_test(
     srcs = ["status_unittest.cc"],
     deps = [
         ":status",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "status_report_unittest_c",
+    srcs = ["status_report_unittest_c.c"],
+    hdrs = ["status_report_unittest_c.h"],
+    deps = [
+        ":status",
+    ],
+)
+
+cc_test(
+    name = "status_report_unittest",
+    srcs = [
+        "status_report_unittest.cc",
+    ],
+    deps = [
+        ":status",
+        ":status_report_unittest_c",
         "@googletest//:gtest_main",
     ],
 )

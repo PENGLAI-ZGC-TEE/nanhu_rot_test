@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -39,6 +39,7 @@ status_t kmac_testutils_config(dif_kmac_t *kmac, bool sideload);
  * @param output_len Requested length of output in words.
  * @param[out] output Pre-allocated output buffer (length must match
  * output_len).
+ * @param[out] capacity Optional buffer to read the capacity of Keccak state.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -47,6 +48,16 @@ status_t kmac_testutils_kmac(const dif_kmac_t *kmac, dif_kmac_mode_kmac_t mode,
                              const char *custom_string,
                              const size_t custom_string_len,
                              const char *message, const size_t message_len,
-                             const size_t output_len, uint32_t *output);
+                             const size_t output_len, uint32_t *output,
+                             uint32_t *capacity);
+
+/**
+ * Check if the KMAC HW has flagged any errors and acknowledge them.
+ *
+ * @param kmac A KMAC DIF handle.
+ * @return Ok if there were no errors; non-Ok if there was any error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t kmac_testutils_check_error(const dif_kmac_t *kmac);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_KMAC_TESTUTILS_H_

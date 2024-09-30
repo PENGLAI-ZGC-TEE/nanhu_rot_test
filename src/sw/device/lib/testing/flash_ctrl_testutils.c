@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,6 +17,8 @@
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+#define MODULE_ID MAKE_MODULE_ID('f', 'c', 't')
 
 status_t flash_ctrl_testutils_wait_for_init(
     dif_flash_ctrl_state_t *flash_state) {
@@ -309,12 +311,50 @@ status_t flash_ctrl_testutils_backdoor_init(
                                                     /*he_en*/ false);
 }
 
-status_t flash_ctrl_testutils_backdoor_wait_update(
-    dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout) {
-  static uint32_t data = UINT32_MAX;
-  TRY(flash_ctrl_testutils_write(
-      flash_state, (uint32_t)addr - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR, 0,
-      &data, kDifFlashCtrlPartitionTypeData, 1));
-  IBEX_TRY_SPIN_FOR(UINT32_MAX != *(uint32_t *)addr, timeout);
+static void flash_ctrl_testutils_flush_read_buffers(void) {
+  // Cause read buffers to flush since it reads 32 bytes, which is the
+  // size of the read buffers.
+  enum { kBufferBytes = 32 };
+  static volatile const uint8_t kFlashFlusher[kBufferBytes];
+  for (int i = 0; i < sizeof(kFlashFlusher); ++i) {
+    (void)kFlashFlusher[i];
+  }
+}
+
+status_t flash_ctrl_testutils_backdoor_wait_update(const volatile uint8_t *addr,
+                                                   uint8_t prior_data,
+                                                   size_t timeout_usec) {
+  uint8_t new_data = 0;
+  const ibex_timeout_t timeout = ibex_timeout_init(timeout_usec);
+  do {
+    if (ibex_timeout_check(&timeout)) {
+      return DEADLINE_EXCEEDED();
+    }
+    flash_ctrl_testutils_flush_read_buffers();
+    new_data = addr[0];
+  } while (new_data == prior_data);
+  return OK_STATUS();
+}
+
+status_t flash_ctrl_testutils_show_faults(
+    const dif_flash_ctrl_state_t *flash_ctrl) {
+  dif_flash_ctrl_faults_t faults = {.memory_properties_error = false};
+  CHECK_DIF_OK(dif_flash_ctrl_get_faults(flash_ctrl, &faults));
+#define LOG_IF_FIELD_SET(_struct, _field)             \
+  if (_struct._field != 0) {                          \
+    LOG_INFO("Flash_ctrl fault status has " #_field); \
+  }
+
+  LOG_IF_FIELD_SET(faults, memory_properties_error);
+  LOG_IF_FIELD_SET(faults, read_error);
+  LOG_IF_FIELD_SET(faults, prog_window_error);
+  LOG_IF_FIELD_SET(faults, prog_type_error);
+  LOG_IF_FIELD_SET(faults, host_gnt_error);
+  LOG_IF_FIELD_SET(faults, register_integrity_error);
+  LOG_IF_FIELD_SET(faults, phy_integrity_error);
+  LOG_IF_FIELD_SET(faults, lifecycle_manager_error);
+  LOG_IF_FIELD_SET(faults, shadow_storage_error);
+#undef LOG_IF_FIELD_SET
+
   return OK_STATUS();
 }

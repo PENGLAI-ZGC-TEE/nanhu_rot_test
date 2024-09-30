@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,6 +11,14 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#ifdef __cplusplus
+// The <type_traits> header is required for the C++-only `SignConverter` class.
+// See `SignConverter` for an explanation of this `extern "C++"` block.
+extern "C++" {
+#include <type_traits>
+}
+#endif
 #endif
 
 /**
@@ -208,6 +216,17 @@
                 "Unexpected offset for " #type "." #member)
 
 /**
+ * A macro that expands to an assertion for the offset of a struct member.
+ *
+ * @param type A struct type.
+ * @param member A member of the struct.
+ * @param enum_offset Expected offset of the member as an enum constant.
+ */
+#define OT_ASSERT_MEMBER_OFFSET_AS_ENUM(type, member, enum_offset) \
+  static_assert(offsetof(type, member) == enum_offset,             \
+                "Unexpected offset for " #type "." #member)
+
+/**
  * A macro that expands to an assertion for the size of a struct member.
  *
  * @param type A struct type.
@@ -216,6 +235,20 @@
  */
 #define OT_ASSERT_MEMBER_SIZE(type, member, size)             \
   static_assert(sizeof(((type){0}).member) == UINT32_C(size), \
+                "Unexpected size for " #type)
+
+/**
+ * A macro that expands to an assertion for the size of a struct member.
+ *
+ * Identical to `OT_ASSERT_MEMBER_SIZE`, except the size parameter is provided
+ * as an enum constant.
+ *
+ * @param type A struct type.
+ * @param member A member of the struct.
+ * @param enum_size Expected size of the type as an enum constant.
+ */
+#define OT_ASSERT_MEMBER_SIZE_AS_ENUM(type, member, enum_size) \
+  static_assert(sizeof(((type){0}).member) == enum_size,       \
                 "Unexpected size for " #type)
 
 /**
@@ -235,6 +268,153 @@
  */
 #define OT_ASSERT_ENUM_VALUE(var, expected_value) \
   static_assert(var == expected_value, "Unexpected value for " #var)
+
+/**
+ * A variable-argument macro that expands to the number of arguments passed into
+ * it, between 1 and 32 arguments (1 action and 0-31 others).
+ *
+ * This macro accepts a macro name and a variable list of items, and will then
+ * expand to sequentially call the macro with each provided item in order. This
+ * can be useful for performing compile-time checks on arguments in variadic
+ * functions defined via macros.
+ *
+ * For example, OT_VAR_FOR_EACH(TEST, 5, 19, 32, 1, 4) would expand to be
+ * `do {TEST(5); TEST(19); TEST(32); TEST(1); TEST(4);} while (false)`
+ *
+ * @param action The name of the macro to invoke with each item individually.
+ * @param ... The variable args list to call the macro on.
+ */
+#define OT_VA_FOR_EACH(action, ...)                                        \
+  do {                                                                     \
+    OT_CAT(OT_CAT(OT_VA_FOR_EACH_, OT_VA_ARGS_COUNT(0, ##__VA_ARGS__)), _) \
+    (action, ##__VA_ARGS__)                                                \
+  } while (false)
+
+/**
+ * The following collection of `OT_VA_FOR_EACH` macros are used to construct
+ * the generic "for each" `OT_VA_FOR_EACH` macro.
+ */
+#define OT_VA_FOR_EACH_0_(action)
+#define OT_VA_FOR_EACH_1_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_0_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_2_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_1_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_3_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_2_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_4_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_3_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_5_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_4_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_6_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_5_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_7_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_6_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_8_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_7_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_9_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_8_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_10_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_9_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_11_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_10_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_12_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_11_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_13_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_12_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_14_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_13_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_15_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_14_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_16_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_15_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_17_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_16_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_18_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_17_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_19_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_18_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_20_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_19_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_21_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_20_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_22_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_21_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_23_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_22_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_24_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_23_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_25_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_24_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_26_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_25_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_27_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_26_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_28_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_27_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_29_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_28_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_30_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_29_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_31_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_30_(action, ##__VA_ARGS__)
+
+/**
+ * A macro that checks whether a specified argument is not a standard C integer
+ * type with a width of 64 bits. Useful when assuming that variable arguments
+ * are 32 bits integers.
+ *
+ * @param arg An argument/expression
+ */
+#define OT_CHECK_NOT_INT64(arg) \
+  _Generic((arg), int64_t: false, uint64_t: false, default: true)
+
+/**
+ * A macro that expands to an assertion that wraps the `OT_CHECK_NOT_INT64`
+ * macro, failing with a relevant error message if the provided argument is a
+ * standard C integer type with a width of 64 bits.
+ *
+ * @param arg An argument/expression to check
+ * @param func_name The name of the macro/functionality being invoked, to be
+ * printed in a relevant error if the assertion fails.
+ */
+#define OT_FAIL_IF_64_BIT(arg, func_name)                          \
+  do {                                                             \
+    static_assert(OT_CHECK_NOT_INT64(arg),                         \
+                  "Argument '" #arg "' passed to the " #func_name  \
+                  " function must be no wider than 32 bits. "      \
+                  "Hint: maybe cast with '(uint32_t) " #arg "'?"); \
+  } while (0)
 
 /**
  * A macro representing the OpenTitan execution platform.
@@ -439,8 +619,103 @@
   }
 
 /**
+ * An attribute used for static variables indicating that they should be
+ * retained in the object file, even if they are seemingly unreferenced.
+ */
+#define OT_USED __attribute__((used))
+
+/**
+ * OT_BUILD_FOR_STATIC_ANALYZER indicates whether we are compiling for the
+ * purpose of static analysis. Currently, this macro only detects
+ * Clang-Analyzer, which is used as a backend by Clang-Tidy.
+ */
+#ifdef __clang_analyzer__
+#define OT_BUILD_FOR_STATIC_ANALYZER 1
+#else
+#define OT_BUILD_FOR_STATIC_ANALYZER 0
+#endif
+
+/**
  *  This macro is used to align an offset to point to a 32b value.
  */
-#define OT_ALIGN_MEM(x) (uint32_t)(4 + (((uintptr_t)(x)-1) & ~3))
+#define OT_ALIGN_MEM(x) (uint32_t)(4 + (((uintptr_t)(x)-1) & ~3u))
+
+#if !defined(__ASSEMBLER__) && !defined(NOSTDINC) && \
+    !defined(RUST_PREPROCESSOR_EMIT)
+#ifndef __cplusplus
+struct OtSignConversionUnsupportedType {
+  char err;
+};
+
+/**
+ * This macro converts a given unsigned integer value to its signed counterpart.
+ */
+#define OT_SIGNED(value)          \
+  _Generic((value),               \
+      uint8_t: (int8_t)(value),   \
+      uint16_t: (int16_t)(value), \
+      uint32_t: (int32_t)(value), \
+      uint64_t: (int64_t)(value), \
+      default: (struct OtSignConversionUnsupportedType){.err = 1})
+
+/**
+ * This macro converts a given signed integer value to its unsigned counterpart.
+ */
+#define OT_UNSIGNED(value)        \
+  _Generic((value),               \
+      int8_t: (uint8_t)(value),   \
+      int16_t: (uint16_t)(value), \
+      int32_t: (uint32_t)(value), \
+      int64_t: (uint64_t)(value), \
+      default: (struct OtSignConversionUnsupportedType){.err = 1})
+#else  // __cplusplus
+// Templates require "C++" linkage. Even though this block is only reachable
+// when __cplusplus is defined, it's possible that we are in the middle of an
+// `extern "C"` block. In case that is true, we explicitly set the linkage to
+// "C++" for the coming C++ templates.
+extern "C++" {
+namespace {
+template <typename T>
+class SignConverter {
+ public:
+  using SignedT = typename std::make_signed<T>::type;
+  using UnsignedT = typename std::make_unsigned<T>::type;
+  static constexpr SignedT as_signed(T value) {
+    return static_cast<SignedT>(value);
+  }
+  static constexpr UnsignedT as_unsigned(T value) {
+    return static_cast<UnsignedT>(value);
+  }
+};
+}  // namespace
+}
+#define OT_SIGNED(value) (SignConverter<typeof(value)>::as_signed((value)))
+#define OT_UNSIGNED(value) (SignConverter<typeof(value)>::as_unsigned((value)))
+#endif  // __cplusplus
+#endif  // !defined(__ASSEMBLER__) && !defined(NOSTDINC) &&
+        // !defined(RUST_PREPROCESSOR_EMIT)
+
+// This routine makes sure that a condition that can be changed by IRQs
+// is evaluated inside a critical session. It executes a `wfi` between
+// evaluations.
+#define ATOMIC_WAIT_FOR_INTERRUPT(_volatile_condition) \
+  while (true) {                                       \
+    irq_global_ctrl(false);                            \
+    if ((_volatile_condition)) {                       \
+      break;                                           \
+    }                                                  \
+    wait_for_interrupt();                              \
+    irq_global_ctrl(true);                             \
+  }                                                    \
+  irq_global_ctrl(true)
+
+/**
+ * Macros for implementing OT ISRs.
+ */
+#define OT_WORD_SIZE 4
+#define OT_HALF_WORD_SIZE (OT_WORD_SIZE / 2)
+// The ISR context size is 30 words.  There are 32 cpu registers; 30 of them
+// need to be saved.  The two that do not are `sp` and `gp` (x2 and x3).
+#define OT_CONTEXT_SIZE (OT_WORD_SIZE * 30)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_

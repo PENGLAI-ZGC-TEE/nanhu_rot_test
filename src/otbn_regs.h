@@ -1,7 +1,7 @@
 // Generated register defines for otbn
 
 // Copyright information found in source file:
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 
 // Licensing information found in source file:
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -106,8 +106,8 @@ extern "C" {
 
 // Memory area: Instruction Memory Access
 #define OTBN_IMEM_REG_OFFSET 0x4000
-#define OTBN_IMEM_SIZE_WORDS 1024
-#define OTBN_IMEM_SIZE_BYTES 4096
+#define OTBN_IMEM_SIZE_WORDS 2048
+#define OTBN_IMEM_SIZE_BYTES 8192
 // Memory area: Data Memory Access
 #define OTBN_DMEM_REG_OFFSET 0x8000
 #define OTBN_DMEM_SIZE_WORDS 768

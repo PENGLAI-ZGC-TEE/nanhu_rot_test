@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,6 +9,8 @@
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+
+#define MODULE_ID MAKE_MODULE_ID('c', 'm', 'h')
 
 /**
  * Returns the transactional block's clock status.
@@ -181,5 +183,7 @@ status_t clkmgr_testutils_enable_external_clock_blocking(
               clock_state, expected_state);                                    \
     OK_STATUS();                                                               \
   })
+
+#undef MODULE_ID
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_CLKMGR_TESTUTILS_H_

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,14 +15,23 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-status_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds,
-                                                    uint32_t *cycles) {
+#define MODULE_ID MAKE_MODULE_ID('a', 'o', 't')
+
+status_t aon_timer_testutils_get_aon_cycles_32_from_us(uint64_t microseconds,
+                                                       uint32_t *cycles) {
   uint64_t cycles_ = udiv64_slow(microseconds * kClockFreqAonHz, 1000000,
                                  /*rem_out=*/NULL);
   TRY_CHECK(cycles_ <= UINT32_MAX,
             "The value 0x%08x%08x can't fit into the 32 bits timer counter.",
-            (cycles_ >> 32), (uint32_t)cycles_);
+            (uint32_t)(cycles_ >> 32), (uint32_t)cycles_);
   *cycles = (uint32_t)cycles_;
+  return OK_STATUS();
+}
+
+status_t aon_timer_testutils_get_aon_cycles_64_from_us(uint64_t microseconds,
+                                                       uint64_t *cycles) {
+  *cycles = udiv64_slow(microseconds * kClockFreqAonHz, 1000000,
+                        /*rem_out=*/NULL);
   return OK_STATUS();
 }
 
@@ -32,13 +41,13 @@ status_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles,
                              /*rem_out=*/NULL);
   TRY_CHECK(uss <= UINT32_MAX,
             "The value 0x%08x%08x can't fit into the 32 bits timer counter.",
-            (uss >> 32), (uint32_t)uss);
+            (uint32_t)(uss >> 32), (uint32_t)uss);
   *us = (uint32_t)uss;
   return OK_STATUS();
 }
 
 status_t aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
-                                           uint32_t cycles) {
+                                           uint64_t cycles) {
   // Make sure that wake-up timer is stopped.
   TRY(dif_aon_timer_wakeup_stop(aon_timer));
 

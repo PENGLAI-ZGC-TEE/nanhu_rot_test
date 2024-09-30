@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/flash_ctrl/doc/">FLASH_CTRL</a> Device Interface
+ * @brief <a href="/book/hw/ip/flash_ctrl/">FLASH_CTRL</a> Device Interface
  * Functions
  */
 
@@ -63,7 +63,15 @@ typedef enum dif_flash_ctrl_alert {
    */
   kDifFlashCtrlAlertFatalStdErr = 1,
   /**
-   * Flash fatal errors
+   * Flash fatal errors including uncorrectable ECC errors.  Note that this
+   * alert is not always fatal. The underlying error bits in the !!FAULT_STATUS
+   * register remain set until reset, meaning the alert keeps firing. This
+   * doesn't hold for !!FAULT_STATUS.PHY_RELBL_ERR and
+   * !!FAULT_STATUS.PHY_STORAGE_ERR. To enable firmware dealing with multi-bit
+   * ECC and ICV errors during firmware selection and verification, these error
+   * bits can be cleared. After passing this stage, it is recommended that
+   * firmware classifies the corresponding alert as fatal on the receiver end,
+   * i.e, inside the alert handler.
    */
   kDifFlashCtrlAlertFatalErr = 2,
   /**

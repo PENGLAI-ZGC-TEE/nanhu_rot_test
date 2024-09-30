@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -640,7 +640,7 @@ TEST_F(WakeupRecording, GetReason) {
                            .value = 1,
                        },
                        {
-                           .offset = PWRMGR_PARAM_SENSOR_CTRL_WKUP_REQ_IDX,
+                           .offset = PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX,
                            .value = 1,
                        }},
           .exp_output = {.types = kDifPwrmgrWakeupTypeAbort |
@@ -735,7 +735,7 @@ TEST_F(WakeupRecording, GetReason) {
       },
       {
           .read_val = {{
-              .offset = PWRMGR_PARAM_SENSOR_CTRL_WKUP_REQ_IDX,
+              .offset = PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX,
               .value = 1,
           }},
           .exp_output =

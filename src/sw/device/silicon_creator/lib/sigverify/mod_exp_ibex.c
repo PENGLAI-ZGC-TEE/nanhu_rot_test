@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,9 +8,6 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
-
-#include "sw/device/lib/runtime/log.h"
-
 
 /**
  * Subtracts the modulus of `key` from `a` in-place, i.e. `a -= n`.
@@ -22,6 +19,7 @@
  * @param[in,out] a Buffer that holds `a`, little-endian.
  * @return Borrow.
  */
+OT_WARN_UNUSED_RESULT
 static uint32_t subtract_modulus(const sigverify_rsa_key_t *key,
                                  sigverify_rsa_buffer_t *a) {
   uint32_t borrow = 0;
@@ -42,6 +40,7 @@ static uint32_t subtract_modulus(const sigverify_rsa_key_t *key,
  * @param a Buffer that holds `a`, little-endian.
  * @return Comparison result.
  */
+OT_WARN_UNUSED_RESULT
 static bool greater_equal_modulus(const sigverify_rsa_key_t *key,
                                   const sigverify_rsa_buffer_t *a) {
   // Note: Loop terminates when `i` wraps around.
@@ -62,6 +61,7 @@ static bool greater_equal_modulus(const sigverify_rsa_key_t *key,
  * @param[in,out] a Buffer that holds `a`, little-endian.
  * @return Most significant bit of the result.
  */
+OT_WARN_UNUSED_RESULT
 static uint32_t shift_left(sigverify_rsa_buffer_t *a) {
   const uint32_t msb = a->data[ARRAYSIZE(a->data) - 1] >> 31;
   for (size_t i = ARRAYSIZE(a->data) - 1; i > 0; --i) {
@@ -128,7 +128,7 @@ static void mont_mul(const sigverify_rsa_key_t *key,
     // not a direct comparison with the modulus, the final result is not
     // guaranteed to be the least non-negative residue of x*y*R^-1 mod n.
     if (acc0 >> 32) {
-      subtract_modulus(key, result);
+      OT_DISCARD(subtract_modulus(key, result));
     }
   }
 }
@@ -146,8 +146,7 @@ static void calc_r_square(const sigverify_rsa_key_t *key,
   // This subtraction sets buf = -n mod R = R - n, which is equivalent to R
   // modulo n and ensures that `buf` fits in `kSigVerifyRsaNumWords` going
   // into the loop.
-  subtract_modulus(key, &buf);
-  LOG_INFO("test rsa clac 1");
+  OT_DISCARD(subtract_modulus(key, &buf));
 
   // Compute (2^96 * R) mod n.
   // Each run of the loop doubles buf and reduces modulo n.
@@ -159,7 +158,6 @@ static void calc_r_square(const sigverify_rsa_key_t *key,
       msb -= subtract_modulus(key, &buf);
     }
   }
-  LOG_INFO("test rsa clac 2");
 
   // Perform 5 montgomery squares to get RR = ((2^96)^32 * R) mod n
   mont_mul(key, &buf, &buf, result);
@@ -181,22 +179,10 @@ rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
   sigverify_rsa_buffer_t buf;
 
   // result = R^2 mod n
-  LOG_INFO("test rsa 1");
-
-  
-
   calc_r_square(key, result);
-
-  void *read_addr = (void*)0x3a008000;
-  uint64_t read_data = *(uint32_t*)read_addr;
-  LOG_INFO("Read 0x%x from 0x%x success!\n", read_data, read_addr);
-
-  LOG_INFO("test rsa 2");
   // buf = sig * R mod n
   mont_mul(key, sig, result, &buf);
-  LOG_INFO("test rsa 3");
   for (size_t i = 0; i < 8; ++i) {
-    LOG_INFO("test rsa i");
     // result = sig^{2*4^i} * R mod n (sig's exponent: 2, 8, 32, ..., 32768)
     mont_mul(key, &buf, &buf, result);
     // buf = sig^{4^{i+1}} * R mod n (sig's exponent: 4, 16, 64, ..., 65536)
@@ -209,7 +195,7 @@ rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
   // the least non-negative residue. We need to subtract the modulus n from
   // `result` at most once because R/2 < n < R.
   if (greater_equal_modulus(key, result)) {
-    subtract_modulus(key, result);
+    OT_DISCARD(subtract_modulus(key, result));
   }
 
   return kErrorOk;

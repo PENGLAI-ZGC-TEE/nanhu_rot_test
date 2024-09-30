@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,8 @@
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+
+#define MODULE_ID MAKE_MODULE_ID('r', 'v', 'c')
 
 bool rv_core_ibex_testutils_is_rnd_data_valid(
     const dif_rv_core_ibex_t *rv_core_ibex) {

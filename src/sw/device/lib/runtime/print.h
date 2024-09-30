@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,6 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-#include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
 
 /**
@@ -66,6 +65,7 @@ typedef struct buffer_sink {
  * - %b, which prints an unsigned binary uint32_t.
  *
  * Finally, additional nonstandard format specifiers is supported:
+ * - %C prints a 'FourCC' style uint32_t (ASCII bytes in little-endian order).
  * - %!s, which takes a size_t followed by a pointer to a buffer, and prints
  *   out that many characters from the buffer.
  * - %!x, %!X, %!y, and %!Y, which are like %!s but print out a hex dump
@@ -93,7 +93,7 @@ typedef struct buffer_sink {
  * Note that for logging in DV, the following script updates the format
  * specifiers supported in C above and changes them to match the SystemVerilog
  * language semantics: util/device_sw_utils/extract_sw_logs.py
- * It also makes fixes as needed for custom speficiers such as %!s.
+ * It also makes fixes as needed for custom specifiers such as %!s.
  *
  * @param format the format spec.
  * @param ... values to interpolate in the format spec.
@@ -279,16 +279,6 @@ size_t base_fhexdump_with(buffer_sink_t out, base_hexdump_fmt_t fmt,
  * @param out the sink to use for "default" printing.
  */
 void base_set_stdout(buffer_sink_t out);
-
-/**
- * Configures SPI device stdout for `base_print.h` to use.
- *
- * Note that this function will save `spi_device` in a global variable, so the
- * pointer must have static storage duration.
- *
- * @param spi_device The SPI device handle to use for stdout.
- */
-void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device);
 
 /**
  * Configures UART stdout for `base_print.h` to use.

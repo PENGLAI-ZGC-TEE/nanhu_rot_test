@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
+#include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_verify.h"
 #include "sw/device/silicon_creator/lib/sigverify/spx_verify.h"
 #include "sw/device/silicon_creator/lib/sigverify/usage_constraints.h"
 

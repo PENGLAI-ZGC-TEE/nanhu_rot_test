@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -49,7 +49,7 @@ class AstTest : public rom_test::RomTest {
         .WillOnce(Return(val));
   }
 
-  uint32_t base_ = TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR;
+  uint32_t base_ = TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
   rom_test::MockOtp otp_;
   mock_csr::MockCsr csr_;

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,8 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_LIFECYCLE_H_
 
 #include <stdint.h>
+
+#include "sw/device/lib/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,7 +63,7 @@ enum {
 };
 
 /**
- * 256-bit device identifier that is stored in the `HW_CFG` partition in OTP.
+ * 256-bit device identifier that is stored in the `HW_CFG0` partition in OTP.
  */
 typedef struct lifecycle_device_id {
   uint32_t device_id[kLifecycleDeviceIdNumWords];
@@ -87,6 +89,7 @@ typedef struct lifecycle_hw_rev {
  *
  * @return Life cycle state.
  */
+OT_WARN_UNUSED_RESULT
 lifecycle_state_t lifecycle_state_get(void);
 
 /**
@@ -96,13 +99,14 @@ lifecycle_state_t lifecycle_state_get(void);
  *
  * @return Life cycle state.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t lifecycle_raw_state_get(void);
 
 /**
  * Get the device identifier.
  *
  * @param[out] device_id 256-bit device identifier that is stored in the
- * `HW_CFG` partition in OTP.
+ * `HW_CFG0` partition in OTP.
  */
 void lifecycle_device_id_get(lifecycle_device_id_t *device_id);
 

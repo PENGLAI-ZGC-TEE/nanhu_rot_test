@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,9 +17,17 @@ namespace internal {
  */
 class MockHmac : public global_mock::GlobalMock<MockHmac> {
  public:
+  MOCK_METHOD(void, sha256_configure, (bool));
+  MOCK_METHOD(void, sha256_start, ());
   MOCK_METHOD(void, sha256_init, ());
-  MOCK_METHOD(rom_error_t, sha256_update, (const void *, size_t));
-  MOCK_METHOD(rom_error_t, sha256_final, (hmac_digest_t *));
+  MOCK_METHOD(void, sha256_update, (const void *, size_t));
+  MOCK_METHOD(void, sha256_update_words, (const uint32_t *, size_t));
+  MOCK_METHOD(void, sha256_process, ());
+  MOCK_METHOD(void, sha256_final_truncated, (uint32_t *, size_t));
+  MOCK_METHOD(void, sha256_final, (hmac_digest_t *));
+  MOCK_METHOD(void, sha256, (const void *, size_t, hmac_digest_t *));
+  MOCK_METHOD(void, sha256_save, (hmac_context_t *));
+  MOCK_METHOD(void, sha256_restore, (const hmac_context_t *));
 };
 
 }  // namespace internal

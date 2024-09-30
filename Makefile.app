@@ -1,5 +1,5 @@
 APP_DIR ?= $(shell pwd)
-INC_DIR += $(APP_DIR)/include/
+INC_DIR += $(APP_DIR)/src/
 DST_DIR ?= $(APP_DIR)/build/$(ARCH)/
 BINARY  ?= $(APP_DIR)/build/$(NAME)-$(ARCH)
 BINARY_REL = $(shell realpath $(BINARY) --relative-to .)

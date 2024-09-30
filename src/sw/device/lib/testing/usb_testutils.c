@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+#define MODULE_ID MAKE_MODULE_ID('u', 's', 't')
 
 #define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
 
@@ -139,7 +141,7 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   }
 
   // Keep buffers available for packet reception
-  TRY(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
+  TRY(dif_usbdev_fill_available_fifos(ctx->dev, ctx->buffer_pool));
 
   if (istate & (1u << kDifUsbdevIrqPktReceived)) {
     // TODO: we run the risk of starving the IN side here if the rx_callback(s)
@@ -204,8 +206,9 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   if (istate &
       ~((1u << kDifUsbdevIrqLinkReset) | (1u << kDifUsbdevIrqPktReceived) |
         (1u << kDifUsbdevIrqPktSent) | (1u << kDifUsbdevIrqFrame) |
-        (1u << kDifUsbdevIrqAvEmpty) | (1u << kDifUsbdevIrqRxFull) |
-        (1u << kDifUsbdevIrqLinkOutErr) | (1u << kDifUsbdevIrqLinkInErr))) {
+        (1u << kDifUsbdevIrqAvSetupEmpty) | (1u << kDifUsbdevIrqAvOutEmpty) |
+        (1u << kDifUsbdevIrqRxFull) | (1u << kDifUsbdevIrqLinkOutErr) |
+        (1u << kDifUsbdevIrqLinkInErr))) {
     // Report anything that really should not be happening during testing,
     //   at least for now
     //
@@ -276,10 +279,12 @@ status_t usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
 }
 
 status_t usb_testutils_in_endpoint_setup(
-    usb_testutils_ctx_t *ctx, uint8_t ep, void *ep_ctx,
-    usb_testutils_tx_done_handler_t tx_done,
+    usb_testutils_ctx_t *ctx, uint8_t ep, usb_testutils_transfer_type_t ep_type,
+    void *ep_ctx, usb_testutils_tx_done_handler_t tx_done,
     usb_testutils_tx_flush_handler_t flush,
     usb_testutils_reset_handler_t reset) {
+  // Store callback handler information before we enable the endpoint
+  ctx->in[ep].ep_type = ep_type;
   ctx->in[ep].ep_ctx = ep_ctx;
   ctx->in[ep].tx_done_callback = tx_done;
   ctx->in[ep].flush = flush;
@@ -292,15 +297,24 @@ status_t usb_testutils_in_endpoint_setup(
 
   TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleDisabled));
 
+  // Specify whether this is an Isochronous endpoint (no acknowledgement/retry)
+  dif_toggle_t iso = kDifToggleDisabled;
+  if (ep_type == kUsbTransferTypeIsochronous) {
+    iso = kDifToggleEnabled;
+  }
+  CHECK_DIF_OK(dif_usbdev_endpoint_iso_enable(ctx->dev, endpoint, iso));
+
   // Enable IN traffic from device to host
   TRY(dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleEnabled));
   return OK_STATUS();
 }
 
 status_t usb_testutils_out_endpoint_setup(
-    usb_testutils_ctx_t *ctx, uint8_t ep,
+    usb_testutils_ctx_t *ctx, uint8_t ep, usb_testutils_transfer_type_t ep_type,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
     usb_testutils_rx_handler_t rx, usb_testutils_reset_handler_t reset) {
+  // Store callback handler information before we enable the endpoint
+  ctx->out[ep].ep_type = ep_type;
   ctx->out[ep].ep_ctx = ep_ctx;
   ctx->out[ep].rx_callback = rx;
   ctx->out[ep].reset = reset;
@@ -311,6 +325,13 @@ status_t usb_testutils_out_endpoint_setup(
   };
 
   TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleDisabled));
+
+  // Specify whether this is an Isochronous endpoint (no acknowledgement/retry)
+  dif_toggle_t iso = kDifToggleDisabled;
+  if (ep_type == kUsbTransferTypeIsochronous) {
+    iso = kDifToggleEnabled;
+  }
+  CHECK_DIF_OK(dif_usbdev_endpoint_iso_enable(ctx->dev, endpoint, iso));
 
   // Enable/disable the endpoint and reception of OUT packets?
   dif_toggle_t enabled = kDifToggleEnabled;
@@ -324,23 +345,27 @@ status_t usb_testutils_out_endpoint_setup(
     nak = kDifToggleEnabled;
   }
 
-  TRY(dif_usbdev_endpoint_enable(ctx->dev, endpoint, enabled));
   TRY(dif_usbdev_endpoint_out_enable(ctx->dev, ep, enabled));
   TRY(dif_usbdev_endpoint_set_nak_out_enable(ctx->dev, ep, nak));
+  // Now we may enable the OUT endpoint
+  TRY(dif_usbdev_endpoint_enable(ctx->dev, endpoint, enabled));
   return OK_STATUS();
 }
 
 status_t usb_testutils_endpoint_setup(
-    usb_testutils_ctx_t *ctx, uint8_t ep,
+    usb_testutils_ctx_t *ctx, uint8_t ep, usb_testutils_transfer_type_t in_type,
+    usb_testutils_transfer_type_t out_type,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
     usb_testutils_tx_done_handler_t tx_done, usb_testutils_rx_handler_t rx,
     usb_testutils_tx_flush_handler_t flush,
     usb_testutils_reset_handler_t reset) {
-  TRY(usb_testutils_in_endpoint_setup(ctx, ep, ep_ctx, tx_done, flush, reset));
+  TRY(usb_testutils_in_endpoint_setup(ctx, ep, in_type, ep_ctx, tx_done, flush,
+                                      reset));
 
   // Note: register the link reset handler only on the IN endpoint so that it
   // does not get invoked twice
-  return usb_testutils_out_endpoint_setup(ctx, ep, out_mode, ep_ctx, rx, NULL);
+  return usb_testutils_out_endpoint_setup(ctx, ep, out_type, out_mode, ep_ctx,
+                                          rx, NULL);
 }
 
 status_t usb_testutils_in_endpoint_remove(usb_testutils_ctx_t *ctx,
@@ -413,15 +438,16 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   static_assert(USBDEV_NUM_ENDPOINTS <= UINT8_MAX,
                 "USBDEV_NUM_ENDPOINTS must fit into uint8_t");
   for (uint8_t i = 0; i < USBDEV_NUM_ENDPOINTS; i++) {
-    TRY(usb_testutils_endpoint_setup(ctx, i, kUsbdevOutDisabled, NULL, NULL,
-                                     NULL, NULL, NULL));
+    TRY(usb_testutils_endpoint_setup(
+        ctx, i, kUsbTransferTypeControl, kUsbTransferTypeControl,
+        kUsbdevOutDisabled, NULL, NULL, NULL, NULL, NULL));
   }
 
   // All about polling...
   TRY(dif_usbdev_irq_disable_all(ctx->dev, NULL));
 
   // Provide buffers for any packet reception
-  TRY(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
+  TRY(dif_usbdev_fill_available_fifos(ctx->dev, ctx->buffer_pool));
 
   // Preemptively enable SETUP reception on endpoint zero for the
   // Default Control Pipe; all other settings for that endpoint will be applied
@@ -437,9 +463,11 @@ status_t usb_testutils_fin(usb_testutils_ctx_t *ctx) {
                 "USBDEV_NUM_ENDPOINTS must fit into uint8_t");
   static_assert(USBDEV_NUM_ENDPOINTS > 0,
                 "USBDEV_NUM_ENDPOINTS - 1 must not overflow");
-  for (uint8_t ep = USBDEV_NUM_ENDPOINTS - 1; ep >= 0; ep--) {
+  uint8_t ep = USBDEV_NUM_ENDPOINTS;
+  do {
+    ep--;
     TRY(usb_testutils_endpoint_remove(ctx, ep));
-  }
+  } while (ep > 0U);
 
   // Disconnect from the bus
   TRY(dif_usbdev_interface_enable(ctx->dev, kDifToggleDisabled));

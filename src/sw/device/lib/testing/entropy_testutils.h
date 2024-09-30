@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -54,6 +54,12 @@ status_t entropy_testutils_fw_override_enable(dif_entropy_src_t *entropy_src,
                                               bool bypass_conditioner);
 
 /**
+ * Drain the `entropy_src` FW override mode observe FIFO.
+ */
+OT_WARN_UNUSED_RESULT
+status_t entropy_testutils_drain_observe_fifo(dif_entropy_src_t *entropy_src);
+
+/**
  * Waits for the entropy_src to reach a certain state.
  *
  * @param entropy_src Entropy source handle.
@@ -64,12 +70,26 @@ status_t entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
                                           dif_entropy_src_main_fsm_t state);
 
 /**
+ * Stops EDN instances and CSRNG.
+ *
+ * Stops EDN instances before stopping CSRNG.
+ */
+OT_WARN_UNUSED_RESULT
+status_t entropy_testutils_stop_csrng_edn(void);
+
+/**
  * Stops all entropy complex blocks.
  *
  * Stops EDN and CSRNG instances before stopping the entropy source.
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_stop_all(void);
+
+/**
+ * Disables all entropy source health tests.
+ */
+OT_WARN_UNUSED_RESULT
+status_t entropy_testutils_disable_health_tests(dif_entropy_src_t *entropy_src);
 
 /**
  * Throws test assertion if there are any errors detected in any of the entropy

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -249,19 +249,30 @@ status_t flash_ctrl_testutils_backdoor_init(
     dif_flash_ctrl_state_t *flash_state);
 
 /**
- * This is a backdoor API to be used with dvsim testbench.
- * Backdoor variables present on flash may not be updated when read by software
- * after written in the testbench due to the cache. So this function implements
- * a workaround to invalidate the cache and force it to update. Before using
- * this function `flash_ctrl_testutils_backdoor_init` should be called.
+ * This detects changes in a specific byte in flash memory contents with a
+ * timeout. In some cases the party updating it uses a backdoor overwrite,
+ * so this code flushes the read buffers since the backdoor API has no
+ * mechanism to flush.
  *
- * @param flash_state A flash_ctrl handle.
- * @param addr The address to a `const uint32_t` variable where the testbench
- * will write to.
- * @param timeout Timeout.
+ * The `flash_ctrl_testutils_backdoor_init` function should be called prior
+ * to this.
+ *
+ * @param addr The volatile address of a uint8_t variable where an update
+ * is expected.
+ * @param prior_data The prior data value.
+ * @param timeout_usec Timeout in microseconds.
  */
 OT_WARN_UNUSED_RESULT
-status_t flash_ctrl_testutils_backdoor_wait_update(
-    dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout);
+status_t flash_ctrl_testutils_backdoor_wait_update(const volatile uint8_t *addr,
+                                                   uint8_t prior_data,
+                                                   size_t timeout_usec);
 
+/**
+ * Write to log any faults set in the status register.
+ *
+ * @param flash_state A flash_ctrl state handle.
+ */
+OT_WARN_UNUSED_RESULT
+status_t flash_ctrl_testutils_show_faults(
+    const dif_flash_ctrl_state_t *flash_state);
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_

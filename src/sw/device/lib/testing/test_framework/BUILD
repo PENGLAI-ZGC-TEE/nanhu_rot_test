@@ -1,16 +1,19 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
     "cw310_params",
-    "opentitan_functest",
+    "fpga_params",
+    "opentitan_test",
     "verilator_params",
 )
 load("//rules:linker.bzl", "ld_library")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -28,10 +31,10 @@ cc_library(
     hdrs = ["coverage.h"],
     linkopts = ["-lgcc"],
     deps = [
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/device/silicon_creator/lib:crc32",
         "//third_party/llvm_compiler_rt",
     ],
 )
@@ -56,6 +59,11 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
     ],
+)
+
+cc_library(
+    name = "status_headers",
+    hdrs = ["status.h"],
 )
 
 cc_library(
@@ -162,6 +170,29 @@ alias(
     }),
 )
 
+cc_library(
+    name = "ottf_isrs",
+    srcs = [
+        "ottf_isrs.S",
+        "ottf_isrs.c",
+        "ottf_macros.h",
+    ],
+    hdrs = [
+        "ottf_isrs.h",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":check",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+    ],
+)
+
 # This target provides start files without providing the full OTTF, and can be
 # used to bootstrap post-ROM execution without pulling in the full OTTF. This is
 # useful for programs in `sw/device/examples/` and `sw/device/sca/` that do not
@@ -174,29 +205,24 @@ alias(
 cc_library(
     name = "ottf_start",
     srcs = [
-        "ottf_isrs.S",
-        "ottf_isrs.c",
-        "ottf_start.S",
-    ],
-    hdrs = [
-        "ottf_isrs.h",
         "ottf_macros.h",
+        "ottf_start.S",
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":check",
+        ":ottf_isrs",
         ":test_framework_manifest_def",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crt",
+        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
-        "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
-        "//sw/device/silicon_creator/lib/base:static_critical_epmp_state",
-        "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
+        "//sw/device/silicon_creator/lib/base:static_critical",
     ],
 )
 
@@ -204,6 +230,18 @@ cc_library(
     name = "ottf_test_config",
     hdrs = [
         "ottf_test_config.h",
+    ],
+)
+
+cc_library(
+    name = "ottf_utils",
+    hdrs = ["ottf_utils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/testing/test_framework:ujson_ottf_commands",
     ],
 )
 
@@ -247,6 +285,20 @@ cc_library(
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/json:ottf",
+        "//sw/device/lib/ujson",
+    ],
+)
+
+cc_library(
+    name = "ujson_ottf_commands",
+    srcs = ["ujson_ottf_commands.c"],
+    hdrs = ["ujson_ottf_commands.h"],
+    deps = [
+        ":ujson_ottf",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/json:mem",
         "//sw/device/lib/ujson",
     ],
 )
@@ -260,7 +312,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             ":check",
-            ":ottf_start",
+            ":ottf_isrs",
             ":ottf_test_config",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/runtime:print",
@@ -282,34 +334,39 @@ _FLOW_CONTROL_MESSAGE = (
     "Everywhere that Mary went the lamb was sure to go."
 )
 
-opentitan_functest(
+opentitan_test(
     name = "ottf_flow_control_functest",
     srcs = ["ottf_flow_control_functest.c"],
-    cw310 = cw310_params(
-        test_cmds = [
-            "--exec=\"fpga load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
-            "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
-            "--exec=\"console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control\"",
-            "console",
-            "--flow-control",
-            "--send=\"{}\n\"".format(_FLOW_CONTROL_MESSAGE),
-            "--exit-success=\"RESULT:{}\"".format(_FLOW_CONTROL_MESSAGE),
-            "--exit-failure=\"PASS|FAIL\"",
-        ],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
     ),
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-    ],
+    fpga = fpga_params(
+        flow_control_message = _FLOW_CONTROL_MESSAGE,
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            --exec="console --non-interactive --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control"
+            console
+            --flow-control
+            --send="{flow_control_message}\n"
+            --exit-success="RESULT:{flow_control_message}"
+            --exit-failure="PASS|FAIL"
+        """,
+    ),
     verilator = verilator_params(
-        test_cmds = [
-            "--exec \"console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control\"",
-            "console",
-            "--flow-control",
-            "--send=\"{}\n\"".format(_FLOW_CONTROL_MESSAGE),
-            "--exit-success=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
-            "--exit-failure=\"PASS|FAIL\"",
-        ],
+        flow_control_message = _FLOW_CONTROL_MESSAGE,
+        test_cmd = """
+            --exec "console --non-interactive --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control"
+            console
+            --flow-control
+            --send="{flow_control_message}\n"
+            --exit-success="{flow_control_message}"
+            --exit-failure="PASS|FAIL"
+        """,
     ),
     deps = [
         ":check",

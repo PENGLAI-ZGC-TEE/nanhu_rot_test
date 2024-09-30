@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_COMMAND_H_
@@ -17,9 +17,15 @@ extern "C" {
     value(_, EnterNormalSleep) \
     value(_, EnterDeepSleep) \
     value(_, I2cTargetAddress) \
-    value(_, I2cReadTransaction) \
-    value(_, I2cWriteTransaction) \
-    value(_, I2cWriteTransactionSlow) \
+    value(_, I2cStartTransferWrite) \
+    value(_, I2cStartTransferWriteSlow) \
+    value(_, I2cStartTransferRead) \
+    value(_, I2cStartTransferWriteRead) \
+    value(_, I2cTestConfig) \
+    value(_, MemRead) \
+    value(_, MemRead32) \
+    value(_, MemWrite) \
+    value(_, MemWrite32) \
     value(_, PinmuxConfig) \
     value(_, SpiConfigureJedecId) \
     value(_, SpiReadStatus) \

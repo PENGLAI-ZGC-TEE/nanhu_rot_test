@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,9 +11,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 
-#include "/nfs/home/zhangdongrong/Desktop/nexus-am/tests/nanhuv2_rot_test/src/rv_plic_regs.h"  // Generated.
-
-// #include "rv_plic_regs.h"  // Generated.
+#include "rv_plic_regs.h"  // Generated.
 
 const uint32_t kDifRvPlicMinPriority = 0;
 const uint32_t kDifRvPlicMaxPriority = RV_PLIC_PRIO0_PRIO0_MASK;

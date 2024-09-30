@@ -1,4 +1,4 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -47,6 +47,7 @@ cc_library(
     hdrs = ["aes_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:csrng_shared",
@@ -85,6 +86,14 @@ cc_library(
 )
 
 cc_library(
+    name = "binary_blob",
+    hdrs = ["binary_blob.h"],
+    deps = [
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
     name = "clkmgr_testutils",
     srcs = ["clkmgr_testutils.c"],
     hdrs = ["clkmgr_testutils.h"],
@@ -103,7 +112,20 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
+    name = "edn_testutils",
+    srcs = ["edn_testutils.c"],
+    hdrs = ["edn_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:csrng_shared",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/testing:rand_testutils",
     ],
 )
 
@@ -113,7 +135,7 @@ cc_library(
     hdrs = ["entropy_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/edn/data:edn_regs",
+        "//hw/ip/edn/data:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
@@ -130,7 +152,7 @@ cc_library(
     hdrs = ["flash_ctrl_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -147,10 +169,28 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":flash_ctrl_testutils",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
+    name = "hexstr",
+    srcs = ["hexstr.c"],
+    hdrs = ["hexstr.h"],
+    deps = [
+        "//sw/device/lib/base:status",
+    ],
+)
+
+cc_test(
+    name = "hexstr_unittest",
+    srcs = ["hexstr_unittest.cc"],
+    deps = [
+        ":hexstr",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -160,7 +200,7 @@ cc_library(
     hdrs = ["hmac_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/hmac/data:hmac_regs",
+        "//hw/ip/hmac/data:hmac_c_regs",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:ibex",
@@ -174,11 +214,12 @@ cc_library(
     hdrs = ["i2c_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/i2c/data:i2c_regs",
+        "//hw/ip/i2c/data:i2c_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
@@ -189,18 +230,20 @@ cc_library(
     hdrs = ["keymgr_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/keymgr/data:keymgr_regs",
+        ":entropy_testutils",
+        ":flash_ctrl_testutils",
+        ":kmac_testutils",
+        ":otp_ctrl_testutils",
+        ":rstmgr_testutils",
+        "//hw/ip/keymgr/data:keymgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:kmac_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
@@ -240,6 +283,19 @@ cc_library(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
+    name = "otbn_testutils_rsa",
+    srcs = ["otbn_testutils_rsa.c"],
+    hdrs = ["otbn_testutils_rsa.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":otbn_testutils",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:otbn",
+        "//sw/otbn/crypto:rsa",
     ],
 )
 
@@ -310,6 +366,15 @@ cc_library(
 )
 
 cc_library(
+    name = "randomness_quality",
+    srcs = ["randomness_quality.c"],
+    hdrs = ["randomness_quality.h"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "rstmgr_testutils",
     srcs = ["rstmgr_testutils.c"],
     hdrs = ["rstmgr_testutils.h"],
@@ -374,6 +439,20 @@ cc_library(
 )
 
 cc_library(
+    name = "ret_sram_testutils",
+    srcs = ["ret_sram_testutils.c"],
+    hdrs = ["ret_sram_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+cc_library(
     name = "spi_device_testutils",
     srcs = ["spi_device_testutils.c"],
     hdrs = ["spi_device_testutils.h"],
@@ -392,7 +471,10 @@ cc_library(
     hdrs = ["spi_host_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":pinmux_testutils",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/testing/test_framework:check",
     ],
@@ -415,6 +497,37 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
+    name = "sysrst_ctrl_testutils",
+    srcs = ["sysrst_ctrl_testutils.c"],
+    hdrs = ["sysrst_ctrl_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    visibility = ["//sw/device/tests:__pkg__"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
+    name = "uart_testutils",
+    srcs = ["uart_testutils.c"],
+    hdrs = ["uart_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/ip/uart/data:uart_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
@@ -455,6 +568,18 @@ cc_library(
     hdrs = ["usb_testutils_streams.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":usb_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
+    name = "usb_logging",
+    srcs = ["usb_logging.c"],
+    hdrs = ["usb_logging.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":pinmux_testutils",
         ":usb_testutils",
         "//sw/device/lib/testing/test_framework:check",
     ],

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_SPI_DEVICE_H_
@@ -60,25 +60,25 @@ enum {
 // TODO(#11740): Auto-generated macros for HW constants.
 enum {
   /**
-   * Size of the SFDP area in spi_device buffer in bytes.
+   * Size of the SFDP area in spi_device egress buffer in bytes.
    *
    * spi_device provides 256 bytes for the SFDP table.
    */
   kSpiDeviceSfdpAreaNumBytes = 256,
   /**
-   * Offset of the SFDP area in spi_device buffer.
+   * Offset of the SFDP area in spi_device egress buffer.
    */
   kSpiDeviceSfdpAreaOffset = 0xc00,
   /**
-   * Offset of the payload area in spi_device buffer.
+   * Offset of the payload area in spi_device ingress buffer.
    */
-  kSpiDevicePayloadAreaOffset = 0xd00,
+  kSpiDevicePayloadAreaOffset = 0x0,
   /**
-   * Size of the payload area in spi_device buffer in bytes.
+   * Size of the payload area in spi_device ingress buffer in bytes.
    */
   kSpiDevicePayloadAreaNumBytes = 256,
   /**
-   * Size of the payload area in spi_device buffer in words.
+   * Size of the payload area in spi_device ingress buffer in words.
    */
   kSpiDevicePayloadAreaNumWords =
       kSpiDevicePayloadAreaNumBytes / sizeof(uint32_t),
@@ -323,6 +323,8 @@ typedef struct spi_device_cmd {
   uint32_t address;
   /**
    * Payload size in bytes.
+   *
+   * This value must never exceed `kSpiDevicePayloadAreaNumBytes`.
    */
   size_t payload_byte_count;
   /**
@@ -340,6 +342,7 @@ typedef struct spi_device_cmd {
  *
  * @param[out] cmd SPI flash command.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd);
 
 /**
@@ -353,6 +356,7 @@ void spi_device_flash_status_clear(void);
 /**
  * Gets the SPI flash status register.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t spi_device_flash_status_get(void);
 
 #ifdef __cplusplus

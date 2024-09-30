@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,17 +9,16 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
-// #include "sw/device/lib/runtime/print.h"
-#include "printf.h"
+#include "sw/device/lib/runtime/print.h"
+
 /**
  * Ensure that log_fields_t is always 20 bytes.
  *
  * The assertion below helps prevent inadvertant changes to the struct.
  * Please see the description of log_fields_t in log.h for more details.
  */
-//zdr
-// static_assert(sizeof(log_fields_t) == 40,
-//               "log_fields_t must always be 40 bytes.");
+static_assert(sizeof(log_fields_t) == 20,
+              "log_fields_t must always be 20 bytes.");
 
 /**
  * Converts a severity to a static string.
@@ -45,24 +44,32 @@ static const char *stringify_severity(log_severity_t severity) {
  * @param log the log data to log.
  * @param ... format parameters matching the format string.
  */
-void base_log_internal_core(log_fields_t log, ...) {
-  const char* base_name = log.file_name;
+void base_log_internal_core(const log_fields_t *log, ...) {
+  size_t file_name_len =
+      (size_t)(((const char *)memchr(log->file_name, '\0', PTRDIFF_MAX)) -
+               log->file_name);
+  const char *base_name = memrchr(log->file_name, '/', file_name_len);
+  if (base_name == NULL) {
+    base_name = log->file_name;
+  } else {
+    ++base_name;  // Remove the final '/'.
+  }
 
   // A small global counter that increments with each log line. This can be
   // useful for seeing how many times this function has been called, even if
   // nothing was printed for some time.
   static uint16_t global_log_counter = 0;
 
-  printf("%s%05d %s:%d] ", stringify_severity(log.severity),
-              global_log_counter, base_name, log.line);
+  base_printf("%s%05d %s:%d] ", stringify_severity(log->severity),
+              global_log_counter, base_name, log->line);
   ++global_log_counter;
 
   va_list args;
   va_start(args, log);
-  vprintf(log.format, args);
+  base_vprintf(log->format, args);
   va_end(args);
 
-  printf("\r\n");
+  base_printf("\r\n");
 }
 
 /**

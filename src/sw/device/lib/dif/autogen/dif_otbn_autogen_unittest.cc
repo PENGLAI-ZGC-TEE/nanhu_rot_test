@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -82,7 +82,7 @@ TEST_F(IrqGetTypeTest, Success) {
   dif_irq_type_t type;
 
   EXPECT_DIF_OK(dif_otbn_irq_get_type(&otbn_, kDifOtbnIrqDone, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public OtbnTest {};
@@ -152,8 +152,8 @@ TEST_F(AcknowledgeStateTest, NullArgs) {
 }
 
 TEST_F(AcknowledgeStateTest, AckSnapshot) {
-  const uint32_t num_irqs = 1;
-  const uint32_t irq_mask = (1u << num_irqs) - 1;
+  constexpr uint32_t num_irqs = 1;
+  constexpr uint32_t irq_mask = (uint64_t{1} << num_irqs) - 1;
   dif_otbn_irq_state_snapshot_t irq_snapshot = 1;
 
   // Test a few snapshots.

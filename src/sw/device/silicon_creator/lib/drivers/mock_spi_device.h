@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,6 +25,7 @@ class MockSpiDevice : public global_mock::GlobalMock<MockSpiDevice> {
 }  // namespace internal
 
 using MockSpiDevice = testing::StrictMock<internal::MockSpiDevice>;
+using NiceMockSpiDevice = testing::NiceMock<internal::MockSpiDevice>;
 
 }  // namespace rom_test
 

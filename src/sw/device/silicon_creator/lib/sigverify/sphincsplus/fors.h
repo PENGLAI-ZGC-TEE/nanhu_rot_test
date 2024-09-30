@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -30,12 +30,10 @@ extern "C" {
  * @param ctx Context object.
  * @param fors_addr A FORS tree address.
  * @param[out] pk Resulting public key.
- * @return Error code indicating if the operation succeeded.
  */
-OT_WARN_UNUSED_RESULT
-rom_error_t fors_pk_from_sig(const uint32_t *sig, const uint8_t *m,
-                             const spx_ctx_t *ctx, const spx_addr_t *fors_addr,
-                             uint32_t *pk);
+void fors_pk_from_sig(const uint32_t *sig, const uint8_t *m,
+                      const spx_ctx_t *ctx, const spx_addr_t *fors_addr,
+                      uint32_t *pk);
 
 #ifdef __cplusplus
 }

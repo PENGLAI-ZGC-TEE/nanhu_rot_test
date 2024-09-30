@@ -1,4 +1,4 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -37,6 +37,16 @@ cc_library(
 )
 
 cc_library(
+    name = "mem",
+    srcs = ["mem.c"],
+    hdrs = ["mem.h"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+    ],
+)
+
+cc_library(
     name = "pinmux",
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
@@ -72,5 +82,12 @@ cc_library(
     name = "provisioning_data",
     srcs = ["provisioning_data.c"],
     hdrs = ["provisioning_data.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "ottf",
+    srcs = ["ottf.c"],
+    hdrs = ["ottf.h"],
     deps = ["//sw/device/lib/ujson"],
 )

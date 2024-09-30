@@ -1,0 +1,373 @@
+内容不同的同名文件列表（排除只有第一行不同和只有行末尾空格差异的文件）：
+
+文件名: pinmux.h
+  code --diff tmp_src/include/sw/device/lib/testing/json/pinmux.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/pinmux.h
+------------------------------------------------------------
+文件名: pinmux.h
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/pinmux.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/json/pinmux.h
+------------------------------------------------------------
+文件名: pinmux.h
+  code --diff tmp_src/src/sw/device/lib/testing/json/pinmux.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/pinmux.h
+------------------------------------------------------------
+文件名: pinmux.h
+  code --diff tmp_src/src/sw/device/silicon_creator/lib/drivers/pinmux.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/json/pinmux.h
+------------------------------------------------------------
+文件名: dif_rv_plic.c
+  code --diff tmp_src/include/sw/device/lib/dif/dif_rv_plic.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/dif/dif_rv_plic.c
+------------------------------------------------------------
+文件名: dif_rv_plic.c
+  code --diff tmp_src/src/sw/device/lib/dif/dif_rv_plic.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/dif/dif_rv_plic.c
+------------------------------------------------------------
+文件名: dif_hmac.c
+  code --diff tmp_src/include/sw/device/lib/dif/dif_hmac.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/dif/dif_hmac.c
+------------------------------------------------------------
+文件名: dif_hmac.c
+  code --diff tmp_src/src/sw/device/lib/dif/dif_hmac.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/dif/dif_hmac.c
+------------------------------------------------------------
+文件名: hmac.h
+  code --diff tmp_src/include/sw/device/lib/crypto/drivers/hmac.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/drivers/hmac.h
+------------------------------------------------------------
+文件名: hmac.h
+  code --diff tmp_src/include/sw/device/lib/crypto/drivers/hmac.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/hmac.h
+------------------------------------------------------------
+文件名: hmac.h
+  code --diff tmp_src/include/sw/device/lib/crypto/drivers/hmac.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/vendor/cryptoc/include/cryptoc/hmac.h
+------------------------------------------------------------
+文件名: hmac.h
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/hmac.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/drivers/hmac.h
+------------------------------------------------------------
+文件名: hmac.h
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/hmac.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/vendor/cryptoc/include/cryptoc/hmac.h
+------------------------------------------------------------
+文件名: hmac.h
+  code --diff tmp_src/src/sw/device/silicon_creator/lib/drivers/hmac.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/drivers/hmac.h
+------------------------------------------------------------
+文件名: hmac.h
+  code --diff tmp_src/src/sw/device/silicon_creator/lib/drivers/hmac.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/vendor/cryptoc/include/cryptoc/hmac.h
+------------------------------------------------------------
+文件名: print.c
+  code --diff tmp_src/src/sw/device/lib/runtime/print.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/runtime/print.c
+------------------------------------------------------------
+文件名: hmac_functest.c
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/hmac_functest.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/tests/crypto/hmac_functest.c
+------------------------------------------------------------
+文件名: hardened.h
+  code --diff tmp_src/include/sw/device/lib/base/hardened.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/hardened.h
+------------------------------------------------------------
+文件名: hardened.h
+  code --diff tmp_src/src/sw/device/lib/base/hardened.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/hardened.h
+------------------------------------------------------------
+文件名: hart.h
+  code --diff tmp_src/include/sw/device/lib/runtime/hart.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/runtime/hart.h
+------------------------------------------------------------
+文件名: hart.h
+  code --diff tmp_src/src/sw/device/lib/runtime/hart.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/runtime/hart.h
+------------------------------------------------------------
+文件名: mod_exp_ibex.c
+  code --diff tmp_src/src/sw/device/silicon_creator/lib/sigverify/mod_exp_ibex.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/sigverify/mod_exp_ibex.c
+------------------------------------------------------------
+文件名: ibex.c
+  code --diff tmp_src/include/sw/device/lib/runtime/ibex.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/ibex.c
+------------------------------------------------------------
+文件名: ibex.c
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/ibex.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/runtime/ibex.c
+------------------------------------------------------------
+文件名: ibex.c
+  code --diff tmp_src/src/sw/device/lib/runtime/ibex.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/ibex.c
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/include/sw/device/lib/testing/test_framework/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/include/sw/device/lib/testing/test_framework/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/internal/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/include/sw/device/lib/testing/test_framework/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/include/sw/device/lib/base/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/test_framework/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/include/sw/device/lib/base/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/internal/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/include/sw/device/lib/base/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/include/sw/device/lib/base/internal/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/test_framework/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/include/sw/device/lib/base/internal/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/include/sw/device/lib/base/internal/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/include/sw/device/lib/crypto/impl/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/test_framework/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/include/sw/device/lib/crypto/impl/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/include/sw/device/lib/crypto/impl/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/internal/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/src/sw/device/lib/testing/test_framework/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/src/sw/device/lib/testing/test_framework/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/internal/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/src/sw/device/lib/testing/test_framework/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/src/sw/device/lib/base/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/test_framework/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/src/sw/device/lib/base/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/internal/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/src/sw/device/lib/base/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/src/sw/device/lib/base/internal/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/test_framework/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/src/sw/device/lib/base/internal/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/status.h
+------------------------------------------------------------
+文件名: status.h
+  code --diff tmp_src/src/sw/device/lib/base/internal/status.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/status.h
+------------------------------------------------------------
+文件名: shutdown.h
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/shutdown.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/shutdown.h
+------------------------------------------------------------
+文件名: ibex.h
+  code --diff tmp_src/include/sw/device/lib/runtime/ibex.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/ibex.h
+------------------------------------------------------------
+文件名: ibex.h
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/ibex.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/runtime/ibex.h
+------------------------------------------------------------
+文件名: ibex.h
+  code --diff tmp_src/src/sw/device/lib/runtime/ibex.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/runtime/ibex.h
+------------------------------------------------------------
+文件名: ibex.h
+  code --diff tmp_src/src/sw/device/lib/runtime/ibex.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/ibex.h
+------------------------------------------------------------
+文件名: ibex.h
+  code --diff tmp_src/src/sw/device/silicon_creator/lib/drivers/ibex.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/runtime/ibex.h
+------------------------------------------------------------
+文件名: hmac.c
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/hmac.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/drivers/hmac.c
+------------------------------------------------------------
+文件名: hmac.c
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/hmac.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/vendor/cryptoc/hmac.c
+------------------------------------------------------------
+文件名: hmac.c
+  code --diff tmp_src/src/sw/device/lib/crypto/driver/hmac.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/drivers/hmac.c
+------------------------------------------------------------
+文件名: hmac.c
+  code --diff tmp_src/src/sw/device/lib/crypto/driver/hmac.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/hmac.c
+------------------------------------------------------------
+文件名: hmac.c
+  code --diff tmp_src/src/sw/device/lib/crypto/driver/hmac.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/vendor/cryptoc/hmac.c
+------------------------------------------------------------
+文件名: status.c
+  code --diff tmp_src/include/sw/device/lib/testing/test_framework/status.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/status.c
+------------------------------------------------------------
+文件名: status.c
+  code --diff tmp_src/include/sw/device/lib/testing/test_framework/status.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/status.c
+------------------------------------------------------------
+文件名: status.c
+  code --diff tmp_src/include/sw/device/lib/base/status.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/test_framework/status.c
+------------------------------------------------------------
+文件名: status.c
+  code --diff tmp_src/include/sw/device/lib/base/status.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/status.c
+------------------------------------------------------------
+文件名: status.c
+  code --diff tmp_src/src/sw/device/lib/testing/test_framework/status.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/status.c
+------------------------------------------------------------
+文件名: status.c
+  code --diff tmp_src/src/sw/device/lib/testing/test_framework/status.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/status.c
+------------------------------------------------------------
+文件名: status.c
+  code --diff tmp_src/src/sw/device/lib/base/status.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/test_framework/status.c
+------------------------------------------------------------
+文件名: status.c
+  code --diff tmp_src/src/sw/device/lib/base/status.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/status.c
+------------------------------------------------------------
+文件名: status.c
+  code --diff tmp_src/src/sw/device/lib/crypto/impl/status.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/test_framework/status.c
+------------------------------------------------------------
+文件名: status.c
+  code --diff tmp_src/src/sw/device/lib/crypto/impl/status.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/status.c
+------------------------------------------------------------
+文件名: entropy_testutils.c
+  code --diff tmp_src/src/sw/device/lib/testing/entropy_testutils.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/entropy_testutils.c
+------------------------------------------------------------
+文件名: ecdh_p256.h
+  code --diff tmp_src/include/sw/device/lib/crypto/impl/sm2/ecdh_p256.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/ecc/ecdh_p256.h
+------------------------------------------------------------
+文件名: otbn.h
+  code --diff tmp_src/include/sw/device/lib/crypto/drivers/otbn.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/drivers/otbn.h
+------------------------------------------------------------
+文件名: otbn.h
+  code --diff tmp_src/include/sw/device/lib/crypto/drivers/otbn.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/otbn.h
+------------------------------------------------------------
+文件名: otbn.h
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/otbn.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/drivers/otbn.h
+------------------------------------------------------------
+文件名: otbn.h
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/otbn.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/otbn.h
+------------------------------------------------------------
+文件名: abs_mmio.c
+  code --diff tmp_src/include/sw/device/lib/base/abs_mmio.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/abs_mmio.c
+------------------------------------------------------------
+文件名: abs_mmio.c
+  code --diff tmp_src/src/sw/device/lib/base/abs_mmio.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/abs_mmio.c
+------------------------------------------------------------
+文件名: isr_testutils.c
+  code --diff tmp_src/include/sw/device/lib/testing/autogen/isr_testutils.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/autogen/isr_testutils.c
+------------------------------------------------------------
+文件名: isr_testutils.c
+  code --diff tmp_src/src/sw/device/lib/testing/autogen/isr_testutils.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/autogen/isr_testutils.c
+------------------------------------------------------------
+文件名: isr_testutils.h
+  code --diff tmp_src/include/sw/device/lib/testing/autogen/isr_testutils.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/autogen/isr_testutils.h
+------------------------------------------------------------
+文件名: dif_kmac.c
+  code --diff tmp_src/src/sw/device/lib/dif/dif_kmac.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/dif/dif_kmac.c
+------------------------------------------------------------
+文件名: hash.h
+  code --diff tmp_src/include/sw/device/lib/crypto/include/hash.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/sigverify/sphincsplus/hash.h
+------------------------------------------------------------
+文件名: hash.h
+  code --diff tmp_src/include/sw/device/lib/crypto/impl/include/hash.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/sigverify/sphincsplus/hash.h
+------------------------------------------------------------
+文件名: hash.h
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/sigverify/sphincsplus/hash.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/include/hash.h
+------------------------------------------------------------
+文件名: hash.h
+  code --diff tmp_src/src/sw/device/silicon_creator/lib/sigverify/sphincsplus/hash.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/include/hash.h
+------------------------------------------------------------
+文件名: ecdsa_p256.c
+  code --diff tmp_src/src/sw/device/lib/crypto/impl/sm2/ecdsa_p256.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/ecc/ecdsa_p256.c
+------------------------------------------------------------
+文件名: p256_common.c
+  code --diff tmp_src/src/sw/device/lib/crypto/impl/sm2/p256_common.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/ecc/p256_common.c
+------------------------------------------------------------
+文件名: hmac_testutils.h
+  code --diff tmp_src/include/sw/device/lib/testing/hmac_testutils.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/hmac_testutils.h
+------------------------------------------------------------
+文件名: hmac_testutils.h
+  code --diff tmp_src/src/sw/device/lib/testing/hmac_testutils.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/hmac_testutils.h
+------------------------------------------------------------
+文件名: abs_mmio.h
+  code --diff tmp_src/include/sw/device/lib/base/abs_mmio.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/abs_mmio.h
+------------------------------------------------------------
+文件名: rsa_verify.c
+  code --diff tmp_src/src/sw/device/silicon_creator/lib/sigverify/rsa_verify.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/sigverify/rsa_verify.c
+------------------------------------------------------------
+文件名: aes.h
+  code --diff tmp_src/include/sw/device/lib/crypto/drivers/aes.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/include/aes.h
+------------------------------------------------------------
+文件名: dif_hmac.h
+  code --diff tmp_src/include/sw/device/lib/dif/dif_hmac.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/dif/dif_hmac.h
+------------------------------------------------------------
+文件名: dif_hmac.h
+  code --diff tmp_src/src/sw/device/lib/dif/dif_hmac.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/dif/dif_hmac.h
+------------------------------------------------------------
+文件名: keymgr_testutils.c
+  code --diff tmp_src/include/sw/device/lib/testing/keymgr_testutils.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/keymgr_testutils.c
+------------------------------------------------------------
+文件名: keymgr_testutils.c
+  code --diff tmp_src/src/sw/device/lib/testing/keymgr_testutils.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/keymgr_testutils.c
+------------------------------------------------------------
+文件名: chip_specific_startup.c
+  code --diff tmp_src/include/sw/device/lib/testing/json/chip_specific_startup.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/rom/e2e/chip_specific_startup.c
+------------------------------------------------------------
+文件名: rand_testutils.c
+  code --diff tmp_src/include/sw/device/lib/testing/rand_testutils.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/rand_testutils.c
+------------------------------------------------------------
+文件名: rand_testutils.c
+  code --diff tmp_src/src/sw/device/lib/testing/rand_testutils.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/rand_testutils.c
+------------------------------------------------------------
+文件名: hmac_testutils.c
+  code --diff tmp_src/include/sw/device/lib/testing/hmac_testutils.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/hmac_testutils.c
+------------------------------------------------------------
+文件名: hmac_testutils.c
+  code --diff tmp_src/src/sw/device/lib/testing/hmac_testutils.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/hmac_testutils.c
+------------------------------------------------------------
+文件名: otbn.c
+  code --diff tmp_src/src/sw/device/lib/crypto/driver/otbn.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/drivers/otbn.c
+------------------------------------------------------------
+文件名: otbn.c
+  code --diff tmp_src/src/sw/device/lib/crypto/driver/otbn.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/otbn.c
+------------------------------------------------------------
+文件名: dif_edn.c
+  code --diff tmp_src/src/sw/device/lib/dif/dif_edn.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/dif/dif_edn.c
+------------------------------------------------------------
+文件名: kmac.c
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/kmac.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/drivers/kmac.c
+------------------------------------------------------------
+文件名: kmac.c
+  code --diff tmp_src/src/sw/device/lib/crypto/driver/kmac.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/kmac.c
+------------------------------------------------------------
+文件名: kmac.c
+  code --diff tmp_src/src/sw/device/silicon_creator/lib/drivers/kmac.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/drivers/kmac.c
+------------------------------------------------------------
+文件名: dif_keymgr.c
+  code --diff tmp_src/src/sw/device/lib/dif/dif_keymgr.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/dif/dif_keymgr.c
+------------------------------------------------------------
+文件名: status_unittest.cc
+  code --diff tmp_src/include/sw/device/lib/base/status_unittest.cc ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/status_unittest.cc
+------------------------------------------------------------
+文件名: status_unittest.cc
+  code --diff tmp_src/src/sw/device/lib/base/status_unittest.cc ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/status_unittest.cc
+------------------------------------------------------------
+文件名: dif_rv_plic_autogen.c
+  code --diff tmp_src/include/sw/device/lib/dif/autogen/dif_rv_plic_autogen.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/dif/autogen/dif_rv_plic_autogen.c
+------------------------------------------------------------
+文件名: dif_rv_plic_autogen.c
+  code --diff tmp_src/src/sw/device/lib/dif/autogen/dif_rv_plic_autogen.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/dif/autogen/dif_rv_plic_autogen.c
+------------------------------------------------------------
+文件名: mod_exp_otbn.c
+  code --diff tmp_src/src/sw/device/silicon_creator/lib/sigverify/mod_exp_otbn.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/sigverify/mod_exp_otbn.c
+------------------------------------------------------------
+文件名: sha256.h
+  code --diff tmp_src/include/sw/device/lib/crypto/impl/sha2/sha256.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/vendor/cryptoc/include/cryptoc/sha256.h
+------------------------------------------------------------
+文件名: csrng_testutils.c
+  code --diff tmp_src/src/sw/device/lib/testing/csrng_testutils.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/csrng_testutils.c
+------------------------------------------------------------
+文件名: ecdsa_p256.h
+  code --diff tmp_src/include/sw/device/lib/crypto/impl/sm2/ecdsa_p256.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/impl/ecc/ecdsa_p256.h
+------------------------------------------------------------
+文件名: mmio.h
+  code --diff tmp_src/include/sw/device/lib/base/mmio.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/base/mmio.h
+------------------------------------------------------------
+文件名: pinmux.c
+  code --diff tmp_src/include/sw/device/lib/testing/json/pinmux.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/pinmux.c
+------------------------------------------------------------
+文件名: pinmux.c
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/pinmux.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/json/pinmux.c
+------------------------------------------------------------
+文件名: log.c
+  code --diff tmp_src/include/sw/device/lib/runtime/log.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/runtime/log.c
+------------------------------------------------------------
+文件名: log.c
+  code --diff tmp_src/src/sw/device/lib/runtime/log.c ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/runtime/log.c
+------------------------------------------------------------
+文件名: check.h
+  code --diff tmp_src/include/sw/device/lib/testing/test_framework/check.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/testing/test_framework/check.h
+------------------------------------------------------------
+文件名: kmac.h
+  code --diff tmp_src/include/sw/device/lib/crypto/drivers/kmac.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/silicon_creator/lib/drivers/kmac.h
+------------------------------------------------------------
+文件名: kmac.h
+  code --diff tmp_src/include/sw/device/silicon_creator/lib/drivers/kmac.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/drivers/kmac.h
+------------------------------------------------------------
+文件名: kmac.h
+  code --diff tmp_src/src/sw/device/silicon_creator/lib/drivers/kmac.h ../../../../thinclient_drives/tmp/opentitan_ROT/sw/device/lib/crypto/drivers/kmac.h
+------------------------------------------------------------
+
+总共有 123 对文件内容不同。

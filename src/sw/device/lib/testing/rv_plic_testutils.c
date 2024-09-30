@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,8 +9,6 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-
-
 
 void rv_plic_testutils_irq_range_enable(dif_rv_plic_t *plic,
                                         dif_rv_plic_target_t target,

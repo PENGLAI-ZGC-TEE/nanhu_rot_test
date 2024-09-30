@@ -1,4 +1,4 @@
-/* Copyright lowRISC contributors. */
+/* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
@@ -48,6 +48,14 @@ _manifest_code_end = _text_end - _ottf_start_address;
  * slot for use in the manifest.
  */
 _manifest_entry_point = _ottf_start - _ottf_start_address;
+/*
+ * The value kHardenedBoolFalse (0x1d4) is selected if the code is linked in
+ * the flash region.  Otherwise, the value kHardenedBoolTrue (0x739) is
+ * selected.
+ */
+_manifest_address_translation = (_text_start >= ORIGIN(eflash) &&
+                                 _text_start < (ORIGIN(eflash)
+                                              + LENGTH(eflash))) ? 0x1d4 : 0x739;
 
 /**
  * NOTE: We have to align each section to word boundaries as our current
@@ -56,8 +64,24 @@ _manifest_entry_point = _ottf_start - _ottf_start_address;
 SECTIONS {
   .manifest _ottf_start_address : {
     KEEP(*(.manifest))
-    . = ALIGN(256);
+    . = ALIGN(4);
   } > ottf_flash
+
+  /**
+   * Immutable ROM_EXT section.
+   *
+   * Resides in the .text section so it is covered by the ePMP configuration
+   * that enables ROM_EXT execution.
+   */
+  .rom_ext_immutable : ALIGN(4) {
+    _text_start = .;
+    _rom_ext_immutable_start = .;
+    KEEP(*(.rom_ext_immutable))
+    /* Ensure section end is 256-byte aligned for interrupt vector after. */
+    . = ALIGN(256);
+    _rom_ext_immutable_end = .;
+  } > ottf_flash
+
 
   /**
    * Ibex interrupt vector. See 'ottf_start.S' for more information.
@@ -66,7 +90,6 @@ SECTIONS {
    * Ibex.
    */
   .vectors : ALIGN (256){
-    _text_start = .;
     *(.vectors)
   } > ottf_flash
 

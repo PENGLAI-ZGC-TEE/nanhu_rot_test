@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -10,7 +10,7 @@
 
 /**
  * This file represents the SPHINCS+ parameter set shake-128s, meaning:
- * - The hash function is SHAKE-256
+ * - The hash function is SHA2-256
  * - >= 128 bits of security for up to 2^64 signatures
  * - The parameter set is optimized to be small "s" rather than fast "f"
  *   - The "fast" variant is faster for signing but actually slower for
@@ -46,6 +46,10 @@ enum {
    * Winternitz parameter.
    */
   kSpxWotsW = 16,
+  /**
+   * Whether SHA-512 is required (boolean).
+   */
+  kSpxSha512 = 0,
   /**
    * Number of bytes in a hypertree address (for clarity).
    */
@@ -155,7 +159,7 @@ enum {
 /**
  * These constants are byte offsets within the hypertree address structure.
  *
- * It is customized for the hypertree address format that is used when SHAKE is
+ * It is customized for the hypertree address format that is used when SHA2 is
  * the underlying SPHINCS+ hash function. These values should not change if
  * parameters other than the hash function are altered.
  */
@@ -163,40 +167,36 @@ enum {
   /**
    * Byte used to specify the Merkle tree layer.
    */
-  kSpxOffsetLayer = 3,
+  kSpxOffsetLayer = 0,
   /**
    * Starting byte of the tree field (8 bytes).
    */
-  kSpxOffsetTree = 8,
+  kSpxOffsetTree = 1,
   /**
    * Byte used to specify the hash type (reason).
    */
-  kSpxOffsetType = 19,
+  kSpxOffsetType = 9,
   /**
-   * High byte of the key pair.
+   * The start of the 4 byte field used to specify the key pair address.
    */
-  kSpxOffsetKpAddr2 = 22,
-  /**
-   * Low byte of the key pair.
-   */
-  kSpxOffsetKpAddr1 = 23,
+  kSpxOffsetKpAddr = 10,
   /**
    * Byte for the chain address (i.e. which Winternitz chain).
    */
-  kSpxOffsetChainAddr = 27,
+  kSpxOffsetChainAddr = 17,
   /**
    * Byte for the hash address (i.e. where in the Winternitz chain).
    */
-  kSpxOffsetHashAddr = 31,
+  kSpxOffsetHashAddr = 21,
   /**
    * Byte for the height of this node in the FORS or Merkle tree.
    */
-  kSpxOffsetTreeHeight = 27,
+  kSpxOffsetTreeHeight = 17,
   /**
    * Starting byte for the tree index field (4 bytes) in the FORS or Merkle
    * tree.
    */
-  kSpxOffsetTreeIndex = 28,
+  kSpxOffsetTreeIndex = 18,
 };
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_PARAMS_H_

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -74,6 +74,8 @@ typedef enum dif_adc_ctrl_channel {
  */
 typedef enum dif_adc_ctrl_filter {
   DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_FILTER_ENUM_INIT_)
+
+      kDifAdcCtrlTrans,
 } dif_adc_ctrl_filter_t;
 
 #undef DIF_ADC_CTRL_FILTER_ENUM_INIT_
@@ -96,6 +98,10 @@ typedef enum dif_adc_ctrl_filter {
  */
 typedef enum dif_adc_ctrl_irq_cause {
   DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_IRQ_CAUSE_ENUM_INIT_)
+  /**
+   * Sample ready cause in Oneshot mode.
+   */
+  kDifAdcCtrlIrqCauseTrans = 1U << ADC_CTRL_ADC_INTR_STATUS_TRANS_BIT,
   /**
    * Sample ready cause in Oneshot mode.
    */
@@ -379,6 +385,17 @@ dif_result_t dif_adc_ctrl_irq_get_causes(const dif_adc_ctrl_t *adc_ctrl,
                                          uint32_t *causes);
 
 /**
+ * Gets the filter status.
+ *
+ * @param adc_ctrl An adc_ctrl handle.
+ * @param[out] status The current filter status.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_adc_ctrl_get_filter_status(const dif_adc_ctrl_t *adc_ctrl,
+                                            uint32_t *status);
+
+/**
  * Clears the cause(s) of a `debug_cable` IRQ.
  *
  * TODO(lowRISC/opentitan:#11354): future releases of the HW should hide the
@@ -454,6 +471,21 @@ dif_result_t dif_adc_ctrl_irq_cause_set_enabled(const dif_adc_ctrl_t *adc_ctrl,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_adc_ctrl_irq_cause_get_enabled(const dif_adc_ctrl_t *adc_ctrl,
                                                 uint32_t *enabled_causes);
+
+/**
+ * Wait enough time for CDC synchronization between block and CSRs.
+ *
+ * Wait long enough for any CDC synchronization between the AON part
+ * of the block and the CSRs to be complete. This is particularly important
+ * for the FILTER_STATUS register: this register can be updated by the HW
+ * and any update may take a while to become visible by the SW.
+ *
+ * @param adc_ctrl An adc_ctrl handle.
+ * @param aon_freq_hz Frequency of the AON clock in Hz.
+ * @return The result of the operation.
+ */
+dif_result_t dif_adc_ctrl_wait_cdc_sync(const dif_adc_ctrl_t *adc_ctrl,
+                                        uint32_t aon_freq_hz);
 
 #ifdef __cplusplus
 }  // extern "C"

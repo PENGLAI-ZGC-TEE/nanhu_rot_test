@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/i2c/doc/">I2C</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/i2c/">I2C</a> Device Interface Functions
  */
 
 #include <stdbool.h>
@@ -75,28 +75,31 @@ dif_result_t dif_i2c_alert_force(const dif_i2c_t *i2c, dif_i2c_alert_t alert);
  */
 typedef enum dif_i2c_irq {
   /**
-   * Host mode interrupt: raised when the FMT FIFO depth is less than the low
-   * threshold.
+   * Host mode interrupt: asserted whilst the FMT FIFO level is below the low
+   * threshold. This is a level status interrupt.
    */
   kDifI2cIrqFmtThreshold = 0,
   /**
-   * Host mode interrupt: raised if the RX FIFO is greater than the high
-   * threshold.
+   * Host mode interrupt: asserted whilst the RX FIFO level is above the high
+   * threshold. This is a level status interrupt.
    */
   kDifI2cIrqRxThreshold = 1,
   /**
-   * Host mode interrupt: raised if the FMT FIFO has overflowed.
+   * Target mode interrupt: asserted whilst the ACQ FIFO level is above the high
+   * threshold. This is a level status interrupt.
    */
-  kDifI2cIrqFmtOverflow = 2,
+  kDifI2cIrqAcqThreshold = 2,
   /**
    * Host mode interrupt: raised if the RX FIFO has overflowed.
    */
   kDifI2cIrqRxOverflow = 3,
   /**
-   * Host mode interrupt: raised if there is no ACK in response to an address or
-   * data write
+   * Host mode interrupt: raised if the controller FSM is halted, such as on an
+   * unexpected NACK or lost arbitration. Check !!CONTROLLER_EVENTS for the
+   * reason. The interrupt will be released when the bits in !!CONTROLLER_EVENTS
+   * are cleared.
    */
-  kDifI2cIrqNak = 4,
+  kDifI2cIrqControllerHalt = 4,
   /**
    * Host mode interrupt: raised if the SCL line drops early (not supported
    * without clock synchronization).
@@ -125,18 +128,20 @@ typedef enum dif_i2c_irq {
   kDifI2cIrqCmdComplete = 9,
   /**
    * Target mode interrupt: raised if the target is stretching clocks for a read
-   * command.  This is a level status interrupt.
+   * command. This is a level status interrupt.
    */
   kDifI2cIrqTxStretch = 10,
   /**
-   * Target mode interrupt: raised if TX FIFO has overflowed.
+   * Target mode interrupt: asserted whilst the TX FIFO level is below the low
+   * threshold. This is a level status interrupt.
    */
-  kDifI2cIrqTxOverflow = 11,
+  kDifI2cIrqTxThreshold = 11,
   /**
-   * Target mode interrupt: raised if ACQ FIFO becomes full.  This is a level
-   * status interrupt.
+   * Target mode interrupt: raised if the target is stretching clocks due to
+   * full ACQ FIFO or zero count in !!TARGET_ACK_CTRL.NBYTES (if enabled). This
+   * is a level status interrupt.
    */
-  kDifI2cIrqAcqFull = 12,
+  kDifI2cIrqAcqStretch = 12,
   /**
    * Target mode interrupt: raised if STOP is received without a preceding NACK
    * during an external host read.

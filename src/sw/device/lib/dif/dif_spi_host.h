@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -116,7 +116,10 @@ typedef struct dif_spi_host_segment {
   /** The segment type for this segment. */
   dif_spi_host_segment_type_t type;
   union {
-    uint8_t opcode;
+    struct {
+      dif_spi_host_width_t width;
+      uint8_t opcode;
+    } opcode;
     struct {
       dif_spi_host_width_t width;
       dif_spi_host_addr_mode_t mode;
@@ -450,6 +453,16 @@ dif_result_t dif_spi_host_error_get_enabled(const dif_spi_host_t *spi_host,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_host_get_error(const dif_spi_host_t *spi_host,
                                     dif_spi_host_errors_t *errors);
+
+/**
+ * Wait until the SPI Host is idle.
+ *
+ * @param spi_host A SPI Host handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_host_wait_until_idle(const dif_spi_host_t *spi_host);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

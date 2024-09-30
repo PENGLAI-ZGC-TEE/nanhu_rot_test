@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -52,6 +52,7 @@ rom_error_t spx_hash_initialize(spx_ctx_t *ctx) {
   return kmac_shake256_configure();
 }
 
+OT_WARN_UNUSED_RESULT
 rom_error_t spx_hash_message(const uint32_t *R, const uint32_t *pk,
                              const uint8_t *msg_prefix_1,
                              size_t msg_prefix_1_len,

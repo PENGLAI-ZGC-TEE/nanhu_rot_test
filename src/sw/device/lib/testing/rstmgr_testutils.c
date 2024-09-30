@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +12,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
+#define MODULE_ID MAKE_MODULE_ID('r', 'm', 'g')
 
 status_t rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
                                         dif_rstmgr_reset_info_bitfield_t info) {
@@ -97,10 +98,10 @@ status_t rstmgr_testutils_post_reset(
   return OK_STATUS();
 }
 
-dif_rstmgr_reset_info_bitfield_t rstmgr_testutils_reason_get() {
-  return retention_sram_get()->reset_reasons;
+dif_rstmgr_reset_info_bitfield_t rstmgr_testutils_reason_get(void) {
+  return retention_sram_get()->creator.reset_reasons;
 }
 
-void rstmgr_testutils_reason_clear() {
-  retention_sram_get()->reset_reasons = 0;
+void rstmgr_testutils_reason_clear(void) {
+  retention_sram_get()->creator.reset_reasons = 0;
 }

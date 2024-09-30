@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -23,16 +23,17 @@
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
-                             uint8_t byte_count, const uint8_t *data,
+                             size_t byte_count, const uint8_t *data,
                              bool skip_stop);
 
 /**
- * Construct and issue an I2C read operation as an I2C host.
+ * Construct and issue an I2C read transaction as an I2C host.
  *
  * @param i2c An I2C DIF handle.
  * @param addr The device address for the transaction.
  * @param byte_count The number of bytes to be read.
- * @return The result of the operation.
+ * @return kOk(nak) Where nak indicates whether the device acknowledged the read
+ * transaction (false) or not (true), otherwise an error.
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_issue_read(const dif_i2c_t *i2c, uint8_t addr,
@@ -73,7 +74,7 @@ status_t i2c_testutils_target_check_end(const dif_i2c_t *i2c,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint8_t byte_count,
+status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint16_t byte_count,
                                    const uint8_t *data);
 
 /**
@@ -99,7 +100,7 @@ status_t i2c_testutils_target_check_read(const dif_i2c_t *i2c, uint8_t *addr,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint8_t byte_count);
+status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint16_t byte_count);
 
 /**
  * Check completion of an I2C write as an I2C device.
@@ -107,7 +108,7 @@ status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint8_t byte_count);
  * @param i2c A I2C DIF handle.
  * @param byte_count The number of bytes to be written.
  * @param[out] addr Address that received the I2C write.
- * @param[out] bytes Array of bytes to store the result of the write.
+ * @param[out] bytes Array of bytes to stores the result of the write.
  * @param[out] cont_byte Received continuation byte. Can be null if test expects
  *                       STOP signal.
  * @return kOk(dir) Where dir indicates that repeated START has signaled that
@@ -116,19 +117,43 @@ status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint8_t byte_count);
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
-                                          uint8_t byte_count, uint8_t *addr,
+                                          uint16_t byte_count, uint8_t *addr,
                                           uint8_t *bytes, uint8_t *cont_byte);
 
 /**
- * Initialize the pinmux.
+ * Define the available platforms which i2c is mapped
+ */
+typedef enum i2c_pinmux_platform_id {
+  I2cPinmuxPlatformIdHyper310 = 0,
+  I2cPinmuxPlatformIdDvsim,
+  I2cPinmuxPlatformIdCw310Pmod,
+  I2cPinmuxPlatformIdCount,
+} i2c_pinmux_platform_id_t;
+
+/**
+ * Connect the i2c pins to mio pins via pinmux based on the platform the test is
+ * running.
  *
  * @param pimmux A pinmux handler.
- * @param kI2cIdx The i2c identifier.
+ * @param kI2cIdx The i2c instance identifier.
+ * @param platform The platform which the test is running.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
-                                                  uint8_t kI2cIdx);
+status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux,
+                                     uint8_t kI2cIdx,
+                                     i2c_pinmux_platform_id_t platform);
+
+/**
+ * Disconnect the i2c input pins from mio pads and wire it to zero.
+ *
+ * @param pimmux A pinmux handler.
+ * @param i2c_id The i2c instance identifier.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t i2c_testutils_detach_pinmux(const dif_pinmux_t *pinmux,
+                                     uint8_t i2c_id);
 
 /**
  * Return whether the fifo is empty.
@@ -137,20 +162,67 @@ status_t i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
  * @return `kOk(dir)` Where `dir` is true if the fifo is empty. Or an error.
  */
 OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_fifo_empty(const dif_i2c_t *i2c);
+static inline status_t i2c_testutils_fifo_empty(const dif_i2c_t *i2c) {
+  dif_i2c_status_t status;
+  TRY(dif_i2c_get_status(i2c, &status));
+  return OK_STATUS(status.rx_fifo_empty);
+}
 
 /**
- * Issue an i2c read transaction and read the fifo.
+ * Return whether the tx fifo is full.
+ *
+ * @param i2c An I2C DIF handle.
+ * @return `kOk(dir)` Where `dir` is true if the tx fifo is full. Or an error.
+ */
+OT_WARN_UNUSED_RESULT
+static inline status_t i2c_testutils_tx_fifo_full(const dif_i2c_t *i2c) {
+  dif_i2c_status_t status;
+  TRY(dif_i2c_get_status(i2c, &status));
+  return OK_STATUS(status.tx_fifo_full);
+}
+
+/**
+ * Return whether the tx fifo is empty.
+ *
+ * @param i2c An I2C DIF handle.
+ * @return `kOk(dir)` Where `dir` is true if the tx fifo is empty. Or an error.
+ */
+OT_WARN_UNUSED_RESULT
+static inline status_t i2c_testutils_tx_fifo_empty(const dif_i2c_t *i2c) {
+  dif_i2c_status_t status;
+  TRY(dif_i2c_get_status(i2c, &status));
+  return OK_STATUS(status.tx_fifo_empty);
+}
+
+/**
+ * Return whether the fmt fifo is empty.
+ *
+ * @param i2c An I2C DIF handle.
+ * @return `kOk(dir)` Where `dir` is true if the fmt fifo is empty. Or an error.
+ */
+OT_WARN_UNUSED_RESULT
+static inline status_t i2c_testutils_fmt_fifo_empty(const dif_i2c_t *i2c) {
+  dif_i2c_status_t status;
+  TRY(dif_i2c_get_status(i2c, &status));
+  return OK_STATUS(status.fmt_fifo_empty);
+}
+
+/**
+ * Issue an i2c read transaction, check for a nak and retry until timeout in
+ * case of nak or read the fifo in case of ack.
  *
  * @param i2c  An I2C DIF handle.
  * @param addr The device address for the transaction.
  * @param byte_count The number of bytes to be read.
  * @param[out] data Buffer to receive the fifo data.
- * @return The result of the operation.
+ * @param timeout Timeout in microseconds.
+ * @return Return an error code if fails to read, otherwise `kOk(nak_count)`,
+ * where `nak_count` is the number of NAKs received or attempts needed before
+ * the success`.
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
-                            uint8_t byte_count, uint8_t *data);
+                            size_t byte_count, uint8_t *data, size_t timeout);
 
 /**
  * Set the i2c timing parameters based on the desired speed mode.
@@ -161,4 +233,24 @@ status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed);
+
+/**
+ * Busy spin until the i2c host get idle.
+ *
+ * @param i2c An I2C DIF handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t i2c_testutils_wait_host_idle(const dif_i2c_t *i2c);
+
+/**
+ * Busy spin until the fmt_fifo gets empty (meaning that it has finished the all
+ * the transactions issued) or until a controller halted event is detected.
+ * In the latter case, it will not clear the controller halt event.
+ *
+ * @param i2c An I2C DIF handle.
+ * @return Return an error code if something went wrong, otherwise `kOk(halted)`
+ * where `halted` is 1 if the controller was halted and 0 if fmt_fifo was empty.
+ */
+status_t i2c_testutils_wait_transaction_finish(const dif_i2c_t *i2c);
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_I2C_TESTUTILS_H_

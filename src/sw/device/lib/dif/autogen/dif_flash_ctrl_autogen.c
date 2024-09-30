@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -92,8 +92,8 @@ static bool flash_ctrl_get_irq_bit_index(dif_flash_ctrl_irq_t irq,
 }
 
 static dif_irq_type_t irq_types[] = {
-    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeStatus, kDifIrqTypeStatus, kDifIrqTypeStatus,
+    kDifIrqTypeStatus, kDifIrqTypeEvent,  kDifIrqTypeEvent,
 };
 
 OT_WARN_UNUSED_RESULT

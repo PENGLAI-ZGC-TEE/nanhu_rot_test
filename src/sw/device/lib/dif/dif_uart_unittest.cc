@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -62,6 +62,12 @@ class ConfigTest : public UartTest {};
 
 TEST_F(ConfigTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_uart_configure(nullptr, config_));
+}
+
+TEST_F(ConfigTest, BadRxBreakLevel) {
+  dif_uart_config_t config = config_;
+  config.rx_break_level = (dif_uart_rx_break_level_t)5;
+  EXPECT_DIF_BADARG(dif_uart_configure(&uart_, config));
 }
 
 TEST_F(ConfigTest, DefaultTxRxEnabled) {
@@ -143,6 +149,29 @@ TEST_F(ConfigTest, ParityOdd) {
   EXPECT_DIF_OK(dif_uart_configure(&uart_, config_));
 }
 
+class RxBreakLevelSetTest : public UartTest {};
+
+TEST_F(RxBreakLevelSetTest, UartNull) {
+  EXPECT_DIF_BADARG(
+      dif_uart_rx_break_level_set(nullptr, kDifUartRxBreakLevel2));
+}
+
+TEST_F(RxBreakLevelSetTest, Success) {
+  EXPECT_MASK32(UART_CTRL_REG_OFFSET,
+                {
+                    {UART_CTRL_RXBLVL_OFFSET, UART_CTRL_RXBLVL_MASK,
+                     UART_CTRL_RXBLVL_VALUE_BREAK2},
+                });
+  EXPECT_DIF_OK(dif_uart_rx_break_level_set(&uart_, kDifUartRxBreakLevel2));
+
+  EXPECT_MASK32(UART_CTRL_REG_OFFSET,
+                {
+                    {UART_CTRL_RXBLVL_OFFSET, UART_CTRL_RXBLVL_MASK,
+                     UART_CTRL_RXBLVL_VALUE_BREAK16},
+                });
+  EXPECT_DIF_OK(dif_uart_rx_break_level_set(&uart_, kDifUartRxBreakLevel16));
+}
+
 class WatermarkRxSetTest : public UartTest {};
 
 TEST_F(WatermarkRxSetTest, UartNull) {
@@ -165,9 +194,9 @@ TEST_F(WatermarkRxSetTest, Success) {
   EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET,
                 {
                     {UART_FIFO_CTRL_RXILVL_OFFSET, UART_FIFO_CTRL_RXILVL_MASK,
-                     UART_FIFO_CTRL_RXILVL_VALUE_RXLVL126},
+                     UART_FIFO_CTRL_RXILVL_VALUE_RXLVL62},
                 });
-  EXPECT_DIF_OK(dif_uart_watermark_rx_set(&uart_, kDifUartWatermarkByte126));
+  EXPECT_DIF_OK(dif_uart_watermark_rx_set(&uart_, kDifUartWatermarkByte62));
 }
 
 class WatermarkTxSetTest : public UartTest {};
@@ -177,7 +206,7 @@ TEST_F(WatermarkTxSetTest, NullArgs) {
 }
 
 TEST_F(WatermarkTxSetTest, InvalidWatermark) {
-  EXPECT_EQ(dif_uart_watermark_tx_set(&uart_, kDifUartWatermarkByte126),
+  EXPECT_EQ(dif_uart_watermark_tx_set(&uart_, kDifUartWatermarkByte62),
             kDifError);
 }
 
@@ -195,9 +224,9 @@ TEST_F(WatermarkTxSetTest, Success) {
   EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET,
                 {
                     {UART_FIFO_CTRL_TXILVL_OFFSET, UART_FIFO_CTRL_TXILVL_MASK,
-                     UART_FIFO_CTRL_TXILVL_VALUE_TXLVL64},
+                     UART_FIFO_CTRL_TXILVL_VALUE_TXLVL16},
                 });
-  EXPECT_DIF_OK(dif_uart_watermark_tx_set(&uart_, kDifUartWatermarkByte64));
+  EXPECT_DIF_OK(dif_uart_watermark_tx_set(&uart_, kDifUartWatermarkByte16));
 }
 
 class SetEnableTest : public UartTest {};

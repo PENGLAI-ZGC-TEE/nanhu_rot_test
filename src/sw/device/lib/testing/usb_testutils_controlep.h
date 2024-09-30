@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,12 +11,27 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/testing/usb_testutils.h"
 
+// DPI test numbers
+typedef enum usb_testutils_test_number {
+  kUsbTestNumberSmoke = 0,
+  kUsbTestNumberStreams,
+  kUsbTestNumberIso,
+  kUsbTestNumberMixed,
+  kUsbTestNumberSuspend,
+  kUsbTestNumberExc,
+  kUsbTestNumberPinCfg,
+} usb_testutils_test_number_t;
+
 typedef enum usb_testutils_ctstate {
   kUsbTestutilsCtIdle,
   kUsbTestutilsCtWaitIn,      // Queued IN data stage, waiting ack
   kUsbTestutilsCtStatOut,     // Waiting for OUT status stage
-  kUsbTestutilsCtAddrStatIn,  // Queued status stage, waiting ack.
-                              // After which, set dev_addr
+  kUsbTestutilsCtAddrStatIn,  // Queued Status stage of SET_ADDRESS; awaiting
+                              // host acknowledgement, after which the device
+                              // address will be set.
+  kUsbTestutilsCtCfgStatIn,   // Queued Status stage of SET_CONFIGURATION;
+                              // awaiting acknowledgement from host, after which
+                              // the new Configuration will be selected.
   kUsbTestutilsCtStatIn,      // Queued status stage, waiting ack
   kUsbTestutilsCtError        // Something bad
 } usb_testutils_ctstate_t;
@@ -32,10 +47,20 @@ typedef enum usb_testutils_device_state {
 
 typedef struct usb_testutils_controlep_ctx {
   usb_testutils_ctx_t *ctx;
-  int ep;
+  uint8_t ep;
   usb_testutils_ctstate_t ctrlstate;
   usb_testutils_device_state_t device_state;
-  uint32_t new_dev;
+  /**
+   * New Device Address, to be set upon successful Status stage
+   */
+  uint8_t new_dev;
+  /**
+   * New Device Configuration, to be set upon successful Status stage
+   */
+  uint8_t new_config;
+  /**
+   * Current Device Configuration
+   */
   uint8_t usb_config;
   /**
    * USB configuration descriptor
@@ -63,11 +88,22 @@ typedef struct usb_testutils_controlep_ctx {
  */
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
-                                      usb_testutils_ctx_t *ctx, int ep,
+                                      usb_testutils_ctx_t *ctx, uint8_t ep,
                                       const uint8_t *cfg_dscr,
                                       size_t cfg_dscr_len,
                                       const uint8_t *test_dscr,
                                       size_t test_dscr_len);
+
+/**
+ * Wait until the device configuration has been set by the host.
+ *
+ * @param ctctx uninitialized context for this instance.
+ * @param ctx initialized context for usbdev driver.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_controlep_config_wait(
+    usb_testutils_controlep_ctx_t *ctctx, usb_testutils_ctx_t *ctx);
 
 /***********************************************************************/
 /* Below this point are macros used to construct the USB configuration */
@@ -126,7 +162,7 @@ status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
   USB_EP_DSCR_LEN,                 /* bLength                              */ \
       5,                           /* bDescriptorType                      */ \
       (ep) | (((in) << 7) & 0x80), /* bEndpointAddress, top bit set for IN */ \
-      0x02,                        /* bmAttributes (0x02=bulk, data)       */ \
+      kUsbTransferTypeBulk,        /* bmAttributes (0x02=bulk, data)       */ \
       (maxsize)&0xff,              /* wMaxPacketSize[0]                    */ \
       (maxsize) >> 8,              /* wMaxPacketSize[1]                    */ \
       (interval)                   /* bInterval                            */

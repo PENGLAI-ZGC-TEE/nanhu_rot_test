@@ -1,4 +1,4 @@
-/* Copyright lowRISC contributors. */
+/* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
@@ -15,6 +15,7 @@
     . == ORIGIN(ram_main),
     "Error: .static_critical section not at the base address of main RAM.");
 
+  KEEP(*(.static_critical.version))
   KEEP(*(.static_critical.boot_measurements))
   KEEP(*(.static_critical.epmp_state))
   KEEP(*(.static_critical.sec_mmio_ctx))

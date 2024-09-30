@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,6 +25,7 @@ class MockRstmgr : public global_mock::GlobalMock<MockRstmgr> {
 }  // namespace internal
 
 using MockRstmgr = testing::StrictMock<internal::MockRstmgr>;
+using NiceMockRstmgr = testing::NiceMock<internal::MockRstmgr>;
 
 }  // namespace rom_test
 

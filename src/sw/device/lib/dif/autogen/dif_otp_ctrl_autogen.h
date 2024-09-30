@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,7 +10,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/otp_ctrl/doc/">OTP_CTRL</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/otp_ctrl/">OTP_CTRL</a> Device Interface
+ * Functions
  */
 
 #include <stdbool.h>

@@ -1,7 +1,7 @@
 // Generated register defines for kmac
 
 // Copyright information found in source file:
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 
 // Licensing information found in source file:
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -29,8 +29,8 @@ extern "C" {
 // Width of the hash counter in the entropy
 #define KMAC_PARAM_HASH_CNT_W 10
 
-// Number of words for the LFSR seed used for entropy generation
-#define KMAC_PARAM_NUM_SEEDS_ENTROPY_LFSR 5
+// Number of words for the PRNG seed used for entropy generation
+#define KMAC_PARAM_NUM_SEEDS_ENTROPY 6
 
 // Number of alerts
 #define KMAC_PARAM_NUM_ALERTS 2
@@ -108,7 +108,6 @@ extern "C" {
 #define KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT 19
 #define KMAC_CFG_SHADOWED_MSG_MASK_BIT 20
 #define KMAC_CFG_SHADOWED_ENTROPY_READY_BIT 24
-#define KMAC_CFG_SHADOWED_ERR_PROCESSED_BIT 25
 #define KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT 26
 
 // KMAC/ SHA3 command register.
@@ -124,6 +123,7 @@ extern "C" {
 #define KMAC_CMD_CMD_VALUE_DONE 0x16
 #define KMAC_CMD_ENTROPY_REQ_BIT 8
 #define KMAC_CMD_HASH_CNT_CLR_BIT 9
+#define KMAC_CMD_ERR_PROCESSED_BIT 10
 
 // KMAC/SHA3 Status register.
 #define KMAC_STATUS_REG_OFFSET 0x1c
@@ -169,95 +169,75 @@ extern "C" {
   ((bitfield_field32_t) { .mask = KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_MASK, .index = KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_OFFSET })
 
 // Entropy Seed
-#define KMAC_ENTROPY_SEED_SEED_FIELD_WIDTH 32
-#define KMAC_ENTROPY_SEED_MULTIREG_COUNT 5
-
-// Entropy Seed
-#define KMAC_ENTROPY_SEED_0_REG_OFFSET 0x2c
-#define KMAC_ENTROPY_SEED_0_REG_RESVAL 0x0u
-
-// Entropy Seed
-#define KMAC_ENTROPY_SEED_1_REG_OFFSET 0x30
-#define KMAC_ENTROPY_SEED_1_REG_RESVAL 0x0u
-
-// Entropy Seed
-#define KMAC_ENTROPY_SEED_2_REG_OFFSET 0x34
-#define KMAC_ENTROPY_SEED_2_REG_RESVAL 0x0u
-
-// Entropy Seed
-#define KMAC_ENTROPY_SEED_3_REG_OFFSET 0x38
-#define KMAC_ENTROPY_SEED_3_REG_RESVAL 0x0u
-
-// Entropy Seed
-#define KMAC_ENTROPY_SEED_4_REG_OFFSET 0x3c
-#define KMAC_ENTROPY_SEED_4_REG_RESVAL 0x0u
+#define KMAC_ENTROPY_SEED_REG_OFFSET 0x2c
+#define KMAC_ENTROPY_SEED_REG_RESVAL 0x0u
 
 // KMAC Secret Key
 #define KMAC_KEY_SHARE0_KEY_FIELD_WIDTH 32
 #define KMAC_KEY_SHARE0_MULTIREG_COUNT 16
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_0_REG_OFFSET 0x40
+#define KMAC_KEY_SHARE0_0_REG_OFFSET 0x30
 #define KMAC_KEY_SHARE0_0_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_1_REG_OFFSET 0x44
+#define KMAC_KEY_SHARE0_1_REG_OFFSET 0x34
 #define KMAC_KEY_SHARE0_1_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_2_REG_OFFSET 0x48
+#define KMAC_KEY_SHARE0_2_REG_OFFSET 0x38
 #define KMAC_KEY_SHARE0_2_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_3_REG_OFFSET 0x4c
+#define KMAC_KEY_SHARE0_3_REG_OFFSET 0x3c
 #define KMAC_KEY_SHARE0_3_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_4_REG_OFFSET 0x50
+#define KMAC_KEY_SHARE0_4_REG_OFFSET 0x40
 #define KMAC_KEY_SHARE0_4_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_5_REG_OFFSET 0x54
+#define KMAC_KEY_SHARE0_5_REG_OFFSET 0x44
 #define KMAC_KEY_SHARE0_5_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_6_REG_OFFSET 0x58
+#define KMAC_KEY_SHARE0_6_REG_OFFSET 0x48
 #define KMAC_KEY_SHARE0_6_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_7_REG_OFFSET 0x5c
+#define KMAC_KEY_SHARE0_7_REG_OFFSET 0x4c
 #define KMAC_KEY_SHARE0_7_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_8_REG_OFFSET 0x60
+#define KMAC_KEY_SHARE0_8_REG_OFFSET 0x50
 #define KMAC_KEY_SHARE0_8_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_9_REG_OFFSET 0x64
+#define KMAC_KEY_SHARE0_9_REG_OFFSET 0x54
 #define KMAC_KEY_SHARE0_9_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_10_REG_OFFSET 0x68
+#define KMAC_KEY_SHARE0_10_REG_OFFSET 0x58
 #define KMAC_KEY_SHARE0_10_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_11_REG_OFFSET 0x6c
+#define KMAC_KEY_SHARE0_11_REG_OFFSET 0x5c
 #define KMAC_KEY_SHARE0_11_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_12_REG_OFFSET 0x70
+#define KMAC_KEY_SHARE0_12_REG_OFFSET 0x60
 #define KMAC_KEY_SHARE0_12_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_13_REG_OFFSET 0x74
+#define KMAC_KEY_SHARE0_13_REG_OFFSET 0x64
 #define KMAC_KEY_SHARE0_13_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_14_REG_OFFSET 0x78
+#define KMAC_KEY_SHARE0_14_REG_OFFSET 0x68
 #define KMAC_KEY_SHARE0_14_REG_RESVAL 0x0u
 
 // KMAC Secret Key
-#define KMAC_KEY_SHARE0_15_REG_OFFSET 0x7c
+#define KMAC_KEY_SHARE0_15_REG_OFFSET 0x6c
 #define KMAC_KEY_SHARE0_15_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
@@ -265,71 +245,71 @@ extern "C" {
 #define KMAC_KEY_SHARE1_MULTIREG_COUNT 16
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_0_REG_OFFSET 0x80
+#define KMAC_KEY_SHARE1_0_REG_OFFSET 0x70
 #define KMAC_KEY_SHARE1_0_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_1_REG_OFFSET 0x84
+#define KMAC_KEY_SHARE1_1_REG_OFFSET 0x74
 #define KMAC_KEY_SHARE1_1_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_2_REG_OFFSET 0x88
+#define KMAC_KEY_SHARE1_2_REG_OFFSET 0x78
 #define KMAC_KEY_SHARE1_2_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_3_REG_OFFSET 0x8c
+#define KMAC_KEY_SHARE1_3_REG_OFFSET 0x7c
 #define KMAC_KEY_SHARE1_3_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_4_REG_OFFSET 0x90
+#define KMAC_KEY_SHARE1_4_REG_OFFSET 0x80
 #define KMAC_KEY_SHARE1_4_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_5_REG_OFFSET 0x94
+#define KMAC_KEY_SHARE1_5_REG_OFFSET 0x84
 #define KMAC_KEY_SHARE1_5_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_6_REG_OFFSET 0x98
+#define KMAC_KEY_SHARE1_6_REG_OFFSET 0x88
 #define KMAC_KEY_SHARE1_6_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_7_REG_OFFSET 0x9c
+#define KMAC_KEY_SHARE1_7_REG_OFFSET 0x8c
 #define KMAC_KEY_SHARE1_7_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_8_REG_OFFSET 0xa0
+#define KMAC_KEY_SHARE1_8_REG_OFFSET 0x90
 #define KMAC_KEY_SHARE1_8_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_9_REG_OFFSET 0xa4
+#define KMAC_KEY_SHARE1_9_REG_OFFSET 0x94
 #define KMAC_KEY_SHARE1_9_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_10_REG_OFFSET 0xa8
+#define KMAC_KEY_SHARE1_10_REG_OFFSET 0x98
 #define KMAC_KEY_SHARE1_10_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_11_REG_OFFSET 0xac
+#define KMAC_KEY_SHARE1_11_REG_OFFSET 0x9c
 #define KMAC_KEY_SHARE1_11_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_12_REG_OFFSET 0xb0
+#define KMAC_KEY_SHARE1_12_REG_OFFSET 0xa0
 #define KMAC_KEY_SHARE1_12_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_13_REG_OFFSET 0xb4
+#define KMAC_KEY_SHARE1_13_REG_OFFSET 0xa4
 #define KMAC_KEY_SHARE1_13_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_14_REG_OFFSET 0xb8
+#define KMAC_KEY_SHARE1_14_REG_OFFSET 0xa8
 #define KMAC_KEY_SHARE1_14_REG_RESVAL 0x0u
 
 // KMAC Secret Key, 2nd share.
-#define KMAC_KEY_SHARE1_15_REG_OFFSET 0xbc
+#define KMAC_KEY_SHARE1_15_REG_OFFSET 0xac
 #define KMAC_KEY_SHARE1_15_REG_RESVAL 0x0u
 
 // Secret Key length in bit.
-#define KMAC_KEY_LEN_REG_OFFSET 0xc0
+#define KMAC_KEY_LEN_REG_OFFSET 0xb0
 #define KMAC_KEY_LEN_REG_RESVAL 0x0u
 #define KMAC_KEY_LEN_LEN_MASK 0x7u
 #define KMAC_KEY_LEN_LEN_OFFSET 0
@@ -346,51 +326,51 @@ extern "C" {
 #define KMAC_PREFIX_MULTIREG_COUNT 11
 
 // cSHAKE Prefix register.
-#define KMAC_PREFIX_0_REG_OFFSET 0xc4
+#define KMAC_PREFIX_0_REG_OFFSET 0xb4
 #define KMAC_PREFIX_0_REG_RESVAL 0x0u
 
 // cSHAKE Prefix register.
-#define KMAC_PREFIX_1_REG_OFFSET 0xc8
+#define KMAC_PREFIX_1_REG_OFFSET 0xb8
 #define KMAC_PREFIX_1_REG_RESVAL 0x0u
 
 // cSHAKE Prefix register.
-#define KMAC_PREFIX_2_REG_OFFSET 0xcc
+#define KMAC_PREFIX_2_REG_OFFSET 0xbc
 #define KMAC_PREFIX_2_REG_RESVAL 0x0u
 
 // cSHAKE Prefix register.
-#define KMAC_PREFIX_3_REG_OFFSET 0xd0
+#define KMAC_PREFIX_3_REG_OFFSET 0xc0
 #define KMAC_PREFIX_3_REG_RESVAL 0x0u
 
 // cSHAKE Prefix register.
-#define KMAC_PREFIX_4_REG_OFFSET 0xd4
+#define KMAC_PREFIX_4_REG_OFFSET 0xc4
 #define KMAC_PREFIX_4_REG_RESVAL 0x0u
 
 // cSHAKE Prefix register.
-#define KMAC_PREFIX_5_REG_OFFSET 0xd8
+#define KMAC_PREFIX_5_REG_OFFSET 0xc8
 #define KMAC_PREFIX_5_REG_RESVAL 0x0u
 
 // cSHAKE Prefix register.
-#define KMAC_PREFIX_6_REG_OFFSET 0xdc
+#define KMAC_PREFIX_6_REG_OFFSET 0xcc
 #define KMAC_PREFIX_6_REG_RESVAL 0x0u
 
 // cSHAKE Prefix register.
-#define KMAC_PREFIX_7_REG_OFFSET 0xe0
+#define KMAC_PREFIX_7_REG_OFFSET 0xd0
 #define KMAC_PREFIX_7_REG_RESVAL 0x0u
 
 // cSHAKE Prefix register.
-#define KMAC_PREFIX_8_REG_OFFSET 0xe4
+#define KMAC_PREFIX_8_REG_OFFSET 0xd4
 #define KMAC_PREFIX_8_REG_RESVAL 0x0u
 
 // cSHAKE Prefix register.
-#define KMAC_PREFIX_9_REG_OFFSET 0xe8
+#define KMAC_PREFIX_9_REG_OFFSET 0xd8
 #define KMAC_PREFIX_9_REG_RESVAL 0x0u
 
 // cSHAKE Prefix register.
-#define KMAC_PREFIX_10_REG_OFFSET 0xec
+#define KMAC_PREFIX_10_REG_OFFSET 0xdc
 #define KMAC_PREFIX_10_REG_RESVAL 0x0u
 
 // KMAC/SHA3 Error Code
-#define KMAC_ERR_CODE_REG_OFFSET 0xf0
+#define KMAC_ERR_CODE_REG_OFFSET 0xe0
 #define KMAC_ERR_CODE_REG_RESVAL 0x0u
 
 // Memory area: Keccak State (1600 bit) memory.

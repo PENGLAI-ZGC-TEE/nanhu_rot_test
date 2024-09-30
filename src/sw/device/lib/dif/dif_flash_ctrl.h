@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,8 +7,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/flash_ctrl/doc/">Flash Controller</a> Device
- * Interface Functions
+ * @brief <a href="/hw/top_earlgrey/ip_autogen/flash_ctrl/doc/">Flash
+ * Controller</a> Device Interface Functions
  */
 
 #include "sw/device/lib/base/macros.h"
@@ -77,6 +77,7 @@ typedef struct dif_flash_ctrl_device_info {
  * @return A `dif_flash_ctrl_device_info_t` representing the feature sizes for
  * various components of the flash.
  */
+OT_WARN_UNUSED_RESULT
 dif_flash_ctrl_device_info_t dif_flash_ctrl_get_device_info(void);
 
 /**
@@ -168,6 +169,10 @@ typedef struct dif_flash_ctrl_status {
    * Flash controller undergoing init.
    */
   bool controller_init_wip : 1;
+  /**
+   * Flash controller initialized.
+   */
+  bool controller_initialized : 1;
 } dif_flash_ctrl_status_t;
 
 /**

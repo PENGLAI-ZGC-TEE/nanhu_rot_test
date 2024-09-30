@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -35,15 +35,14 @@ class InitTest : public SpiDeviceTest {};
 TEST_F(InitTest, Init) {
   EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_CFG_REG_OFFSET,
                      {
-                         {SPI_DEVICE_CFG_CPOL_BIT, 0},
-                         {SPI_DEVICE_CFG_CPHA_BIT, 0},
                          {SPI_DEVICE_CFG_TX_ORDER_BIT, 0},
                          {SPI_DEVICE_CFG_RX_ORDER_BIT, 0},
-                         {SPI_DEVICE_CFG_TIMER_V_OFFSET, 0x7f},
-                         {SPI_DEVICE_CFG_ADDR_4B_EN_BIT, 0},
                          {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 0},
                      });
-
+  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_ADDR_MODE_REG_OFFSET,
+                     {
+                         {SPI_DEVICE_ADDR_MODE_ADDR_4B_EN_BIT, 0},
+                     });
   EXPECT_ABS_WRITE32(
       base_ + SPI_DEVICE_JEDEC_CC_REG_OFFSET,
       {
@@ -76,15 +75,9 @@ TEST_F(InitTest, Init) {
   std::memcpy(sfdp_buffer.data(), &kSpiDeviceSfdpTable,
               sizeof(kSpiDeviceSfdpTable));
   uint32_t offset =
-      base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDeviceSfdpAreaOffset;
+      base_ + SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET + kSpiDeviceSfdpAreaOffset;
   for (size_t i = 0; i < sfdp_buffer.size(); ++i) {
     EXPECT_ABS_WRITE32(offset, sfdp_buffer[i]);
-    offset += sizeof(uint32_t);
-  }
-
-  offset = base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
-  for (size_t i = 0; i < kSpiDevicePayloadAreaNumWords; ++i) {
-    EXPECT_ABS_WRITE32(offset, 0);
     offset += sizeof(uint32_t);
   }
 
@@ -234,8 +227,8 @@ TEST_P(CmdGetTest, CmdGet) {
   EXPECT_ABS_READ32(base_ + SPI_DEVICE_UPLOAD_STATUS2_REG_OFFSET,
                     {{SPI_DEVICE_UPLOAD_STATUS2_PAYLOAD_DEPTH_OFFSET,
                       GetParam().payload.size()}});
-  uint32_t offset =
-      base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
+  uint32_t offset = base_ + SPI_DEVICE_INGRESS_BUFFER_REG_OFFSET +
+                    kSpiDevicePayloadAreaOffset;
   for (size_t i = 0; i < GetParam().payload.size(); i += sizeof(uint32_t)) {
     EXPECT_ABS_READ32(offset + i, payload_area[i / sizeof(uint32_t)]);
   }

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -134,11 +134,15 @@ enum {
    *
    * The length is in 32-bit words.
    */
-  kDifKmacEntropySeedWords = 5,
+  kDifKmacEntropySeedWords = 6,
   /**
    * The offset of the second share within the output state register.
    */
   kDifKmacStateShareOffset = 0x100,
+  /**
+   * The size of the Keccak state in words (i.e. 1600 bits).
+   */
+  kDifKmacStateWords = 1600 / 8 / sizeof(uint32_t),
 };
 
 /**
@@ -362,39 +366,49 @@ typedef enum dif_kmac_error {
   /**
    * No error has occured.
    */
-  kDifErrorNone,
+  kDifErrorNone = 0,
 
   /**
    * The Key Manager has raised an error because the secret key is not valid.
    */
-  kDifErrorKeyNotValid,
+  kDifErrorKeyNotValid = 1,
 
   /**
    * An attempt was made to write data into the message FIFO but the KMAC unit
    * was not in the correct state to receive the data.
    */
-  kDifErrorSoftwarePushedMessageFifo,
+  kDifErrorSoftwarePushedMessageFifo = 2,
 
   /**
-   * An invalid state transition was attempted (e.g. idle -> run without
-   * intermediate process state).
+   * SW issued a command while a HW application interface was using KMAC.
    */
-  kDifErrorSoftwarePushedWrongCommand,
+  kDifErrorSoftwareIssuedCommandWhileAppInterfaceActive = 3,
 
   /**
    * The entropy wait timer has expired.
    */
-  kDifErrorEntropyWaitTimerExpired = 0x04000000,
+  kDifErrorEntropyWaitTimerExpired = 4,
 
   /**
    * Incorrect entropy mode when entropy is ready.
    */
-  kDifErrorEntropyModeIncorrect,
+  kDifErrorEntropyModeIncorrect = 5,
 
-  /**
-   * An error was encountered but the cause is unknown.
-   */
-  kDifErrorUnknownError,
+  kDifErrorUnexpectedModeStrength = 6,
+
+  kDifErrorIncorrectFunctionName = 7,
+
+  kDifErrorSoftwareCommandSequence = 8,
+
+  kDifErrorSoftwareHashingWithoutEntropyReady = 9,
+
+  kDifErrorShadowRegisterUpdate = 0xC0,
+
+  kDifErrorFatalError = 0xC1,
+
+  kDifErrorPackerIntegrity = 0xC2,
+
+  kDifErrorMsgFifoIntegrity = 0xC3,
 } dif_kmac_error_t;
 
 /**
@@ -652,18 +666,31 @@ dif_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
  * If `processed` is not provided then this function will block until `len`
  * bytes have been written to `out` or an error occurs.
  *
+ * Normally, the capacity part of Keccak state is and should not be read
+ * as part of a regular cryptographic operation. However, this function
+ * can also read the capacity for testing purposes.
+ * When `capacity` is a non-NULL pointer, at the end of the operation, the
+ * capacity part of the Keccak state is also read and written into this buffer.
+ * The capacity is read for each output round, meaning that if the requested
+ * digest is larger than a single Keccak round can provide (i.e. the rate), then
+ * the additional rounds also update this buffer. Hence it should be large
+ * enough to accommodate `ceil(digest_len/rate_len) * capacity_len`.
+ * `capacity` can be set to NULL to skip reading the capacity.
+ *
  * @param kmac A KMAC handle.
  * @param operation_state A KMAC operation state context.
  * @param[out] out Pointer to output buffer.
  * @param[out] len Number of 32-bit words to write to output buffer.
  * @param[out] processed Number of 32-bit words written to output buffer
  * (optional).
+ * @param[out] capacity Optional buffer to read capacity along with the digest.
  * @preturn The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_squeeze(const dif_kmac_t *kmac,
                               dif_kmac_operation_state_t *operation_state,
-                              uint32_t *out, size_t len, size_t *processed);
+                              uint32_t *out, size_t len, size_t *processed,
+                              uint32_t *capacity);
 
 /**
  * Ends a squeeze operation and resets the hardware so it is ready for a new
@@ -686,11 +713,12 @@ dif_result_t dif_kmac_end(const dif_kmac_t *kmac,
  *
  * @param kmac A KMAC handle.
  * @param[out] error The current error code.
+ * @param[out] info Optional additional error information.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac,
-                                dif_kmac_error_t *error);
+dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac, dif_kmac_error_t *error,
+                                uint32_t *info);
 
 /**
  * Clear the current error code and reset the state machine to the idle state
@@ -706,6 +734,34 @@ dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_reset(const dif_kmac_t *kmac,
                             dif_kmac_operation_state_t *operation_state);
+
+/**
+ * Let the KMAC HW know that SW has processed the errors the HW has flagged.
+ *
+ * @param kmac A KMAC handle
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_err_processed(const dif_kmac_t *kmac);
+
+/**
+ * Report whether the hardware currently indicates an error.
+ *
+ * @param kmac A KMAC handle.
+ * @param[out] error Whether hardware currently indicates an error.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_has_error_occurred(const dif_kmac_t *kmac, bool *error);
+
+/**
+ * Clear the `kmac_err` IRQ.
+ *
+ * @param kmac A KMAC handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_clear_err_irq(const dif_kmac_t *kmac);
 
 /**
  * Fetch the current status of the message FIFO used to buffer absorbed data.

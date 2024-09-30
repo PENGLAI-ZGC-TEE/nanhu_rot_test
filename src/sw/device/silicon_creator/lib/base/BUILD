@@ -1,8 +1,7 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules:linker.bzl", "ld_library")
 
@@ -96,6 +95,17 @@ cc_library(
     alwayslink = True,
 )
 
+cc_library(
+    name = "static_critical_version",
+    srcs = ["static_critical_version.c"],
+    hdrs = ["static_critical_version.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+    ],
+    # This library provides a special symbol that the linker will find.
+    alwayslink = True,
+)
+
 ld_library(
     name = "static_critical_sections",
     includes = [
@@ -104,6 +114,23 @@ ld_library(
 )
 
 cc_library(
+    name = "static_critical",
+    deps = [
+        ":static_critical_boot_measurements",
+        ":static_critical_epmp_state",
+        ":static_critical_sec_mmio",
+        ":static_critical_sections",
+        ":static_critical_version",
+    ],
+)
+
+cc_library(
     name = "chip",
     hdrs = ["chip.h"],
+)
+
+cc_library(
+    name = "util",
+    srcs = ["util.c"],
+    hdrs = ["util.h"],
 )

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -62,13 +62,13 @@ TEST_F(IrqGetTypeTest, NullArgs) {
   dif_irq_type_t type;
 
   EXPECT_DIF_BADARG(dif_spi_device_irq_get_type(
-      nullptr, kDifSpiDeviceIrqGenericRxFull, &type));
+      nullptr, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, &type));
 
   EXPECT_DIF_BADARG(dif_spi_device_irq_get_type(
-      &spi_device_, kDifSpiDeviceIrqGenericRxFull, nullptr));
+      &spi_device_, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, nullptr));
 
   EXPECT_DIF_BADARG(dif_spi_device_irq_get_type(
-      nullptr, kDifSpiDeviceIrqGenericRxFull, nullptr));
+      nullptr, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, nullptr));
 }
 
 TEST_F(IrqGetTypeTest, BadIrq) {
@@ -76,7 +76,7 @@ TEST_F(IrqGetTypeTest, BadIrq) {
 
   EXPECT_DIF_BADARG(dif_spi_device_irq_get_type(
       &spi_device_,
-      static_cast<dif_spi_device_irq_t>(kDifSpiDeviceIrqTpmHeaderNotEmpty + 1),
+      static_cast<dif_spi_device_irq_t>(kDifSpiDeviceIrqTpmRdfifoDrop + 1),
       &type));
 }
 
@@ -84,8 +84,8 @@ TEST_F(IrqGetTypeTest, Success) {
   dif_irq_type_t type;
 
   EXPECT_DIF_OK(dif_spi_device_irq_get_type(
-      &spi_device_, kDifSpiDeviceIrqGenericRxFull, &type));
-  EXPECT_EQ(type, 0);
+      &spi_device_, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, &type));
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public SpiDeviceTest {};
@@ -123,13 +123,13 @@ TEST_F(IrqIsPendingTest, NullArgs) {
   bool is_pending;
 
   EXPECT_DIF_BADARG(dif_spi_device_irq_is_pending(
-      nullptr, kDifSpiDeviceIrqGenericRxFull, &is_pending));
+      nullptr, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, &is_pending));
 
   EXPECT_DIF_BADARG(dif_spi_device_irq_is_pending(
-      &spi_device_, kDifSpiDeviceIrqGenericRxFull, nullptr));
+      &spi_device_, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, nullptr));
 
   EXPECT_DIF_BADARG(dif_spi_device_irq_is_pending(
-      nullptr, kDifSpiDeviceIrqGenericRxFull, nullptr));
+      nullptr, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, nullptr));
 }
 
 TEST_F(IrqIsPendingTest, BadIrq) {
@@ -145,17 +145,17 @@ TEST_F(IrqIsPendingTest, Success) {
   // Get the first IRQ state.
   irq_state = false;
   EXPECT_READ32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
-                {{SPI_DEVICE_INTR_STATE_GENERIC_RX_FULL_BIT, true}});
+                {{SPI_DEVICE_INTR_STATE_UPLOAD_CMDFIFO_NOT_EMPTY_BIT, true}});
   EXPECT_DIF_OK(dif_spi_device_irq_is_pending(
-      &spi_device_, kDifSpiDeviceIrqGenericRxFull, &irq_state));
+      &spi_device_, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, &irq_state));
   EXPECT_TRUE(irq_state);
 
   // Get the last IRQ state.
   irq_state = true;
   EXPECT_READ32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
-                {{SPI_DEVICE_INTR_STATE_TPM_HEADER_NOT_EMPTY_BIT, false}});
+                {{SPI_DEVICE_INTR_STATE_TPM_RDFIFO_DROP_BIT, false}});
   EXPECT_DIF_OK(dif_spi_device_irq_is_pending(
-      &spi_device_, kDifSpiDeviceIrqTpmHeaderNotEmpty, &irq_state));
+      &spi_device_, kDifSpiDeviceIrqTpmRdfifoDrop, &irq_state));
   EXPECT_FALSE(irq_state);
 }
 
@@ -168,8 +168,8 @@ TEST_F(AcknowledgeStateTest, NullArgs) {
 }
 
 TEST_F(AcknowledgeStateTest, AckSnapshot) {
-  const uint32_t num_irqs = 12;
-  const uint32_t irq_mask = (1u << num_irqs) - 1;
+  constexpr uint32_t num_irqs = 8;
+  constexpr uint32_t irq_mask = (uint64_t{1} << num_irqs) - 1;
   dif_spi_device_irq_state_snapshot_t irq_snapshot = 1;
 
   // Test a few snapshots.
@@ -206,8 +206,8 @@ TEST_F(AcknowledgeAllTest, Success) {
 class IrqAcknowledgeTest : public SpiDeviceTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {
-  EXPECT_DIF_BADARG(
-      dif_spi_device_irq_acknowledge(nullptr, kDifSpiDeviceIrqGenericRxFull));
+  EXPECT_DIF_BADARG(dif_spi_device_irq_acknowledge(
+      nullptr, kDifSpiDeviceIrqUploadCmdfifoNotEmpty));
 }
 
 TEST_F(IrqAcknowledgeTest, BadIrq) {
@@ -218,22 +218,22 @@ TEST_F(IrqAcknowledgeTest, BadIrq) {
 TEST_F(IrqAcknowledgeTest, Success) {
   // Clear the first IRQ state.
   EXPECT_WRITE32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
-                 {{SPI_DEVICE_INTR_STATE_GENERIC_RX_FULL_BIT, true}});
-  EXPECT_DIF_OK(dif_spi_device_irq_acknowledge(&spi_device_,
-                                               kDifSpiDeviceIrqGenericRxFull));
+                 {{SPI_DEVICE_INTR_STATE_UPLOAD_CMDFIFO_NOT_EMPTY_BIT, true}});
+  EXPECT_DIF_OK(dif_spi_device_irq_acknowledge(
+      &spi_device_, kDifSpiDeviceIrqUploadCmdfifoNotEmpty));
 
   // Clear the last IRQ state.
   EXPECT_WRITE32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
-                 {{SPI_DEVICE_INTR_STATE_TPM_HEADER_NOT_EMPTY_BIT, true}});
-  EXPECT_DIF_OK(dif_spi_device_irq_acknowledge(
-      &spi_device_, kDifSpiDeviceIrqTpmHeaderNotEmpty));
+                 {{SPI_DEVICE_INTR_STATE_TPM_RDFIFO_DROP_BIT, true}});
+  EXPECT_DIF_OK(dif_spi_device_irq_acknowledge(&spi_device_,
+                                               kDifSpiDeviceIrqTpmRdfifoDrop));
 }
 
 class IrqForceTest : public SpiDeviceTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(
-      dif_spi_device_irq_force(nullptr, kDifSpiDeviceIrqGenericRxFull, true));
+  EXPECT_DIF_BADARG(dif_spi_device_irq_force(
+      nullptr, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
@@ -244,15 +244,15 @@ TEST_F(IrqForceTest, BadIrq) {
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
-                 {{SPI_DEVICE_INTR_TEST_GENERIC_RX_FULL_BIT, true}});
-  EXPECT_DIF_OK(dif_spi_device_irq_force(&spi_device_,
-                                         kDifSpiDeviceIrqGenericRxFull, true));
+                 {{SPI_DEVICE_INTR_TEST_UPLOAD_CMDFIFO_NOT_EMPTY_BIT, true}});
+  EXPECT_DIF_OK(dif_spi_device_irq_force(
+      &spi_device_, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
-                 {{SPI_DEVICE_INTR_TEST_TPM_HEADER_NOT_EMPTY_BIT, true}});
-  EXPECT_DIF_OK(dif_spi_device_irq_force(
-      &spi_device_, kDifSpiDeviceIrqTpmHeaderNotEmpty, true));
+                 {{SPI_DEVICE_INTR_TEST_TPM_RDFIFO_DROP_BIT, true}});
+  EXPECT_DIF_OK(dif_spi_device_irq_force(&spi_device_,
+                                         kDifSpiDeviceIrqTpmRdfifoDrop, true));
 }
 
 class IrqGetEnabledTest : public SpiDeviceTest {};
@@ -261,13 +261,13 @@ TEST_F(IrqGetEnabledTest, NullArgs) {
   dif_toggle_t irq_state;
 
   EXPECT_DIF_BADARG(dif_spi_device_irq_get_enabled(
-      nullptr, kDifSpiDeviceIrqGenericRxFull, &irq_state));
+      nullptr, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, &irq_state));
 
   EXPECT_DIF_BADARG(dif_spi_device_irq_get_enabled(
-      &spi_device_, kDifSpiDeviceIrqGenericRxFull, nullptr));
+      &spi_device_, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, nullptr));
 
   EXPECT_DIF_BADARG(dif_spi_device_irq_get_enabled(
-      nullptr, kDifSpiDeviceIrqGenericRxFull, nullptr));
+      nullptr, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, nullptr));
 }
 
 TEST_F(IrqGetEnabledTest, BadIrq) {
@@ -283,17 +283,17 @@ TEST_F(IrqGetEnabledTest, Success) {
   // First IRQ is enabled.
   irq_state = kDifToggleDisabled;
   EXPECT_READ32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
-                {{SPI_DEVICE_INTR_ENABLE_GENERIC_RX_FULL_BIT, true}});
+                {{SPI_DEVICE_INTR_ENABLE_UPLOAD_CMDFIFO_NOT_EMPTY_BIT, true}});
   EXPECT_DIF_OK(dif_spi_device_irq_get_enabled(
-      &spi_device_, kDifSpiDeviceIrqGenericRxFull, &irq_state));
+      &spi_device_, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, &irq_state));
   EXPECT_EQ(irq_state, kDifToggleEnabled);
 
   // Last IRQ is disabled.
   irq_state = kDifToggleEnabled;
   EXPECT_READ32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
-                {{SPI_DEVICE_INTR_ENABLE_TPM_HEADER_NOT_EMPTY_BIT, false}});
+                {{SPI_DEVICE_INTR_ENABLE_TPM_RDFIFO_DROP_BIT, false}});
   EXPECT_DIF_OK(dif_spi_device_irq_get_enabled(
-      &spi_device_, kDifSpiDeviceIrqTpmHeaderNotEmpty, &irq_state));
+      &spi_device_, kDifSpiDeviceIrqTpmRdfifoDrop, &irq_state));
   EXPECT_EQ(irq_state, kDifToggleDisabled);
 }
 
@@ -303,7 +303,7 @@ TEST_F(IrqSetEnabledTest, NullArgs) {
   dif_toggle_t irq_state = kDifToggleEnabled;
 
   EXPECT_DIF_BADARG(dif_spi_device_irq_set_enabled(
-      nullptr, kDifSpiDeviceIrqGenericRxFull, irq_state));
+      nullptr, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, irq_state));
 }
 
 TEST_F(IrqSetEnabledTest, BadIrq) {
@@ -318,18 +318,18 @@ TEST_F(IrqSetEnabledTest, Success) {
 
   // Enable first IRQ.
   irq_state = kDifToggleEnabled;
-  EXPECT_MASK32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
-                {{SPI_DEVICE_INTR_ENABLE_GENERIC_RX_FULL_BIT, 0x1, true}});
+  EXPECT_MASK32(
+      SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
+      {{SPI_DEVICE_INTR_ENABLE_UPLOAD_CMDFIFO_NOT_EMPTY_BIT, 0x1, true}});
   EXPECT_DIF_OK(dif_spi_device_irq_set_enabled(
-      &spi_device_, kDifSpiDeviceIrqGenericRxFull, irq_state));
+      &spi_device_, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, irq_state));
 
   // Disable last IRQ.
   irq_state = kDifToggleDisabled;
-  EXPECT_MASK32(
-      SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
-      {{SPI_DEVICE_INTR_ENABLE_TPM_HEADER_NOT_EMPTY_BIT, 0x1, false}});
+  EXPECT_MASK32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
+                {{SPI_DEVICE_INTR_ENABLE_TPM_RDFIFO_DROP_BIT, 0x1, false}});
   EXPECT_DIF_OK(dif_spi_device_irq_set_enabled(
-      &spi_device_, kDifSpiDeviceIrqTpmHeaderNotEmpty, irq_state));
+      &spi_device_, kDifSpiDeviceIrqTpmRdfifoDrop, irq_state));
 }
 
 class IrqDisableAllTest : public SpiDeviceTest {};

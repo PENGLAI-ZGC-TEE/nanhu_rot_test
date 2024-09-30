@@ -1,7 +1,7 @@
 // Generated register defines for rstmgr
 
 // Copyright information found in source file:
-// Copyright lowRISC contributors.Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 
 // Licensing information found in source file:
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------------
 
   /**
-   * Compute the MEPC to that will be saved to the stack by the associated ISR
+   * Compute the MEPC that will be saved to the stack by the associated ISR
    * handler sub-routine below.
    *
    * This subroutine is only invoked for IRQs that are synchronous. Specifically,
@@ -23,8 +23,8 @@
    * Before loading the instruction pointed to by the `mepc` we should check
    * whether the `mepc` address is invalid by checking the `mcause` register for
    * the `Instruction access fault` code (1u). If it is invalid, return the
-   * unmodified `mpec`, as attempting to load an instruction at an invalid address
-   * below will cause another exception.
+   * unmodified `mpec`, as attempting to load an instruction at an invalid
+   * address below will cause another exception.
    */
   .balign 4
   .type compute_mepc_on_synchronous_irq, @function
@@ -121,6 +121,7 @@ handler_exception:
   jal save_current_sp_to_tcb
 
   // Jump to the exception handler.
+  mv a0, sp
   jal ottf_exception_handler
 
   // Return from ISR.
@@ -181,6 +182,7 @@ handler_irq_software:
   jal save_current_sp_to_tcb
 
   // Jump to the software ISR.
+  mv a0, sp
   jal ottf_software_isr
 
   // Return from ISR.
@@ -241,6 +243,7 @@ handler_irq_timer:
   jal save_current_sp_to_tcb
 
   // Jump to timer ISR.
+  mv a0, sp
   jal ottf_timer_isr
 
   // Return from ISR.
@@ -301,6 +304,7 @@ handler_irq_external:
   jal save_current_sp_to_tcb
 
   // Jump to external ISR.
+  mv a0, sp
   jal ottf_external_isr
 
   // Return from ISR.
@@ -361,6 +365,7 @@ handler_irq_internal:
   jal save_current_sp_to_tcb
 
   // Jump to the internal ISR.
+  mv a0, sp
   jal ottf_internal_isr
 
   // Return from ISR.

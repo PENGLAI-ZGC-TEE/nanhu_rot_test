@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,8 @@
 #define OPENTITAN_SW_DEVICE_LIB_BASE_MATH_H_
 
 #include <stdint.h>
+
+#include "sw/device/lib/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,7 +44,26 @@ extern "C" {
  * @param[out] rem_out An optional out-parameter for the remainder.
  * @return The quotient.
  */
+OT_WARN_UNUSED_RESULT
 uint64_t udiv64_slow(uint64_t a, uint64_t b, uint64_t *rem_out);
+
+/**
+ * Computes ceil(a / b) in an overflow-safe way.
+ *
+ * If `b == 0`, this function produces undefined behavior.
+ *
+ * @param a The dividend.
+ * @param b The divisor.
+ * @return Result, ceil(a / b).
+ */
+OT_WARN_UNUSED_RESULT
+inline size_t ceil_div(size_t a, size_t b) {
+  size_t out = a / b;
+  if (a % b != 0) {
+    out++;
+  }
+  return out;
+}
 
 #ifdef __cplusplus
 }  // extern "C"

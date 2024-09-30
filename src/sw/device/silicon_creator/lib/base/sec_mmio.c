@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -43,7 +43,7 @@ static void upsert_register(uint32_t addr, uint32_t value) {
     }
   }
   if (launder32(i) == last_index && launder32(i) < kSecMmioRegFileSize) {
-    HARDENED_CHECK_EQ((uint32_t)j, UINT32_MAX);
+    HARDENED_CHECK_EQ(j, SIZE_MAX);
     sec_mmio_ctx.addrs[i] = addr;
     sec_mmio_ctx.values[i] = value;
     ++sec_mmio_ctx.last_index;
@@ -64,7 +64,7 @@ void sec_mmio_init(void) {
     sec_mmio_ctx.values[i] = UINT32_MAX;
   }
   HARDENED_CHECK_EQ(i, kEntryCount);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
   uint32_t check = kSecMmioValZero ^ sec_mmio_ctx.last_index;
   check ^= sec_mmio_ctx.write_count;
   check ^= sec_mmio_ctx.check_count;
@@ -81,10 +81,11 @@ void sec_mmio_next_stage_init(void) {
     sec_mmio_ctx.values[i] = UINT32_MAX;
   }
   HARDENED_CHECK_EQ(i, kEntryCount);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
   HARDENED_CHECK_EQ(sec_mmio_ctx.check_count, 0);
 }
 
+OT_WARN_UNUSED_RESULT
 uint32_t sec_mmio_read32(uint32_t addr) {
   uint32_t value = abs_mmio_read32(addr);
   uint32_t masked_value = value ^ kSecMmioMaskVal;
@@ -134,7 +135,37 @@ void sec_mmio_check_values(uint32_t rnd_offset) {
   }
   // Check for loop completion.
   HARDENED_CHECK_EQ(i, last_index);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
+  ++sec_mmio_ctx.check_count;
+}
+
+void sec_mmio_check_values_except_otp(uint32_t rnd_offset, uint32_t otp_base) {
+  const uint32_t last_index = sec_mmio_ctx.last_index;
+  // Pick a random starting offset.
+  uint32_t offset = ((uint64_t)rnd_offset * (uint64_t)last_index) >> 32;
+  enum { kStep = 1 };
+  size_t i = 0, r = last_index - 1;
+  // Make sure the otp_base is 64K aligned and not zero.
+  HARDENED_CHECK_EQ(otp_base & 0x0000FFFF, 0);
+  HARDENED_CHECK_NE(otp_base & 0xFFFF0000, 0);
+  for (; launder32(i) < last_index && launder32(r) < last_index; ++i, --r) {
+    uint32_t address = sec_mmio_ctx.addrs[offset];
+    // Avoid the 64K aligned and 64K sized region at otp_base.
+    if ((address & 0xFFFF0000) != otp_base) {
+      uint32_t read_value = abs_mmio_read32(launder32(address));
+      HARDENED_CHECK_EQ(read_value ^ kSecMmioMaskVal,
+                        sec_mmio_ctx.values[offset]);
+    } else {
+      HARDENED_CHECK_EQ(address & 0xFFFF0000, otp_base);
+    }
+    offset += kStep;
+    if (offset >= last_index) {
+      offset -= last_index;
+    }
+  }
+  // Check for loop completion.
+  HARDENED_CHECK_EQ(i, last_index);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
   ++sec_mmio_ctx.check_count;
 }
 

@@ -1,9 +1,10 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/memory.h"
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
@@ -19,8 +20,8 @@ static size_t compute_num_leading_bytes(const void *left, const void *right,
   if (len < alignof(uint32_t)) {
     return len;
   }
-  const size_t left_ahead = misalignment32_of((uintptr_t)left);
-  const size_t right_ahead = misalignment32_of((uintptr_t)right);
+  const size_t left_ahead = OT_UNSIGNED(misalignment32_of((uintptr_t)left));
+  const size_t right_ahead = OT_UNSIGNED(misalignment32_of((uintptr_t)right));
   if (right == NULL || left_ahead == right_ahead) {
     return (4 - left_ahead) & 0x3;
   }
@@ -53,7 +54,8 @@ static void compute_alignment(const void *left, const void *right, size_t len,
 }
 
 static uint32_t repeat_byte_to_u32(uint8_t byte) {
-  return byte << 24 | byte << 16 | byte << 8 | byte;
+  const uint32_t word = byte;
+  return word << 24 | word << 16 | word << 8 | word;
 }
 
 void *OT_PREFIX_IF_NOT_RV32(memcpy)(void *restrict dest,
@@ -120,6 +122,10 @@ int OT_PREFIX_IF_NOT_RV32(memcmp)(const void *lhs, const void *rhs,
     }
   }
   for (; i < tail_offset; i += sizeof(uint32_t)) {
+#if OT_BUILD_FOR_STATIC_ANALYZER
+    assert(&lhs8[i] != NULL);
+    assert(&rhs8[i] != NULL);
+#endif
     uint32_t word_left = __builtin_bswap32(read_32(&lhs8[i]));
     uint32_t word_right = __builtin_bswap32(read_32(&rhs8[i]));
     static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
@@ -156,6 +162,10 @@ int memrcmp(const void *lhs, const void *rhs, size_t len) {
   }
   for (; end > body_offset; end -= sizeof(uint32_t)) {
     const size_t i = end - sizeof(uint32_t);
+#if OT_BUILD_FOR_STATIC_ANALYZER
+    assert(&lhs8[i] != NULL);
+    assert(&rhs8[i] != NULL);
+#endif
     uint32_t word_left = read_32(&lhs8[i]);
     uint32_t word_right = read_32(&rhs8[i]);
     static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,

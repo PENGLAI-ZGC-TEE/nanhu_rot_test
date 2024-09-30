@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/hmac/doc/">HMAC</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/hmac/">HMAC</a> Device Interface Functions
  */
 
 #include <stdbool.h>
@@ -76,15 +76,24 @@ dif_result_t dif_hmac_alert_force(const dif_hmac_t *hmac,
  */
 typedef enum dif_hmac_irq {
   /**
-   * HMAC-256 completes a message with key
+   * HMAC/SHA-2 has completed.
    */
   kDifHmacIrqHmacDone = 0,
   /**
-   * Message FIFO empty condition
+   * The message FIFO is empty. This interrupt is raised only if the message
+   * FIFO is actually writable by software, i.e., if all of the following
+   * conditions are met: i) The HMAC block is not running in HMAC mode and
+   * performing the second round of computing the final hash of the outer key as
+   * well as the result of the first round using the inner key. ii) Software has
+   * not yet written the Process or Stop command to finish the hashing
+   * operation. For the interrupt to be raised, the message FIFO must also have
+   * been full previously. Otherwise, the hardware empties the FIFO faster than
+   * software can fill it and there is no point in interrupting the software to
+   * inform it about the message FIFO being empty.
    */
   kDifHmacIrqFifoEmpty = 1,
   /**
-   * HMAC error occurred. ERR_CODE register shows which error occurred
+   * HMAC error has occurred. ERR_CODE register shows which error occurred.
    */
   kDifHmacIrqHmacErr = 2,
 } dif_hmac_irq_t;

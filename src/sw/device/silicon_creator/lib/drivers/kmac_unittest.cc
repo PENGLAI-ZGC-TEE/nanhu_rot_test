@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -27,9 +27,9 @@ class KmacTest : public rom_test::RomTest {
    */
   void ExpectPollState(uint32_t flag, bool err) {
     // Test assumption: the status flags idle/absorb/squeeze are bits 0..2.
-    static_assert(KMAC_STATUS_SHA3_IDLE_BIT < 3);
-    static_assert(KMAC_STATUS_SHA3_ABSORB_BIT < 3);
-    static_assert(KMAC_STATUS_SHA3_SQUEEZE_BIT < 3);
+    static_assert(KMAC_STATUS_SHA3_IDLE_BIT < 3, "");
+    static_assert(KMAC_STATUS_SHA3_ABSORB_BIT < 3, "");
+    static_assert(KMAC_STATUS_SHA3_SQUEEZE_BIT < 3, "");
 
     // Calculate the status flags that are not this flag.
     uint32_t other_status_flag1 = (flag + 1) % 3;
@@ -75,6 +75,40 @@ class KmacTest : public rom_test::RomTest {
 
 class ConfigureTest : public KmacTest {};
 
+TEST_F(ConfigureTest, SuccessKeyMgr) {
+  ExpectPollState(KMAC_STATUS_SHA3_IDLE_BIT, /*err=*/false);
+
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_PERIOD_REG_OFFSET,
+                     (KMAC_ENTROPY_PERIOD_WAIT_TIMER_MASK
+                      << KMAC_ENTROPY_PERIOD_WAIT_TIMER_OFFSET) |
+                         (KMAC_ENTROPY_PERIOD_PRESCALER_MASK
+                          << KMAC_ENTROPY_PERIOD_PRESCALER_OFFSET));
+
+  // Expected configuration.
+  uint32_t cfg =
+      (KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256
+       << KMAC_CFG_SHADOWED_KSTRENGTH_OFFSET) |
+      (KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE << KMAC_CFG_SHADOWED_MODE_OFFSET) |
+      (KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_SW_MODE
+       << KMAC_CFG_SHADOWED_ENTROPY_MODE_OFFSET) |
+      (1 << KMAC_CFG_SHADOWED_ENTROPY_READY_BIT) |
+      (1 << KMAC_CFG_SHADOWED_MSG_MASK_BIT) |
+      (1 << KMAC_CFG_SHADOWED_SIDELOAD_BIT);
+
+  EXPECT_ABS_WRITE32_SHADOWED(base_ + KMAC_CFG_SHADOWED_REG_OFFSET, cfg);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0x5d2a3764);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0x37d3ecba);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0xe1859094);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0xb153e3fe);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0x09596819);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0x3e85a6e8);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0xb6dcdaba);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0x50dc409c);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0x11e1ebd1);
+
+  EXPECT_EQ(kmac_keymgr_configure(), kErrorOk);
+}
+
 TEST_F(ConfigureTest, Success) {
   ExpectPollState(KMAC_STATUS_SHA3_IDLE_BIT, /*err=*/false);
 
@@ -94,11 +128,15 @@ TEST_F(ConfigureTest, Success) {
       (1 << KMAC_CFG_SHADOWED_ENTROPY_READY_BIT);
 
   EXPECT_ABS_WRITE32_SHADOWED(base_ + KMAC_CFG_SHADOWED_REG_OFFSET, cfg);
-  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_0_REG_OFFSET, 0);
-  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_1_REG_OFFSET, 0);
-  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_2_REG_OFFSET, 0);
-  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_3_REG_OFFSET, 0);
-  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_4_REG_OFFSET, 0);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0x5d2a3764);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0x37d3ecba);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0xe1859094);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0xb153e3fe);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0x09596819);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0x3e85a6e8);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0xb6dcdaba);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0x50dc409c);
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_SEED_REG_OFFSET, 0x11e1ebd1);
 
   EXPECT_EQ(kmac_shake256_configure(), kErrorOk);
 }

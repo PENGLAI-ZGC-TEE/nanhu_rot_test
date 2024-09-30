@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -26,6 +26,7 @@ class MockAbsMmio : public global_mock::GlobalMock<MockAbsMmio> {
 }  // namespace internal
 
 using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
+using NiceMockAbsMmio = testing::NiceMock<internal::MockAbsMmio>;
 
 /**
  * Expect an abs_mmio read at the given address, returning the given 8-bit

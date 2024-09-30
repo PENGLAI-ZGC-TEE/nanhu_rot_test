@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -140,11 +140,20 @@ const dif_pinmux_index_t kPinmuxTestutilsGpioMioOutPins[kDifGpioNumPins] = {
     kTopEarlgreyPinmuxMioOutIor12, kTopEarlgreyPinmuxMioOutIor13};
 
 uint32_t pinmux_testutils_get_testable_gpios_mask(void) {
-  if (kDeviceType == kDeviceFpgaCw310) {
-    // Only IOA2 to IOA8 are available for use as GPIOs.
-    return 0x1fc;
-  } else {
-    return 0xffffffff;
+  switch (kDeviceType) {
+    case kDeviceSimDV:
+    case kDeviceSimVerilator:
+      // All GPIOs are testable in DV.
+      return 0xffffffff;
+    case kDeviceFpgaCw310:
+      // Only IOR6, IOR7, and IOR10 to IOR13 are available for use as GPIOs.
+      return 0xfc000000;
+    case kDeviceSilicon:
+      // IOA3/6, IOB6, IOC9-12, IOR5-7 and IOR10-13.
+      return 0xfe0f0248;
+    default:
+      CHECK(false);
+      return 0;
   }
 }
 
@@ -156,6 +165,8 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   dif_pinmux_pad_attr_t attr_out;
   CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, pad, kDifPinmuxPadKindMio,
                                           attr, &attr_out));
+  // Let the change propagate.
+  busy_spin_micros(100);
   bool state;
   // The value read is unmodified by the internal pull resistors and represents
   // the upper bit of the 4 possible states [Strong0, Weak0, Weak1,
@@ -170,6 +181,8 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
                (state ? 0 : kDifPinmuxPadAttrPullResistorUp);
   CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, pad, kDifPinmuxPadKindMio,
                                           attr, &attr_out));
+  // Let the change propagate.
+  busy_spin_micros(100);
   // Combine the result of the contest between the external signal in internal
   // pull resistors.  This represents the lower bit of the 4 possible states.
   CHECK_DIF_OK(dif_gpio_read(gpio, io, &state));

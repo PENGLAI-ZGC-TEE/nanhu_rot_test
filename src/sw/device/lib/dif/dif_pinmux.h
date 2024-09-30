@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -145,6 +145,7 @@ typedef enum dif_pinmux_pad_attr_flags {
   kDifPinmuxPadAttrKeeper = 1 << 4,
   kDifPinmuxPadAttrSchmittTrigger = 1 << 5,
   kDifPinmuxPadAttrOpenDrain = 1 << 6,
+  kDifPinmuxPadAttrInputDisable = 1 << 7,
 } dif_pinmux_pad_attr_flags_t;
 
 /**

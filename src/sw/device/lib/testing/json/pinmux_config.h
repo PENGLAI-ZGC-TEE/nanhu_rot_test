@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define MODULE_ID MAKE_MODULE_ID('j', 'p', 'x')
 
 //  Dependencies between usjon structure definitions can be a little tricky:
 //  - If not generating an implementation, we can just include the dependency.
@@ -36,6 +38,8 @@ UJSON_SERDE_STRUCT(PinmuxOutputSelection, pinmux_output_selection_t,
     field(input, pinmux_input_selection_t)  \
     field(output, pinmux_output_selection_t)
 UJSON_SERDE_STRUCT(PinmuxConfig, pinmux_config_t, STRUCT_PINMUX_CONFIG);
+
+#undef MODULE_ID
 
 // clang-format on
 #ifndef RUST_PREPROCESSOR_EMIT

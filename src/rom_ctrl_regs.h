@@ -1,7 +1,7 @@
 // Generated register defines for rom_ctrl
 
 // Copyright information found in source file:
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 
 // Licensing information found in source file:
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -102,10 +102,6 @@ extern "C" {
 #define ROM_CTRL_EXP_DIGEST_7_REG_OFFSET 0x44
 #define ROM_CTRL_EXP_DIGEST_7_REG_RESVAL 0x0u
 
-// Memory area: ROM data
-#define ROM_CTRL_ROM_REG_OFFSET 0x0
-#define ROM_CTRL_ROM_SIZE_WORDS 8192
-#define ROM_CTRL_ROM_SIZE_BYTES 32768
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,6 +25,16 @@ extern "C" {
 enum {
   kPwrmgrSecMmioAllResetsEnable = 1,
 };
+
+/**
+ * Synchronize across clock domain.
+ *
+ * Synchronizes across clock domains by setting the CDC_SYNC register and
+ * waiting for it to clear.
+ *
+ * @param n Number of synchronizations to perform.
+ */
+void pwrmgr_cdc_sync(uint32_t n);
 
 /**
  * Enable all resets.

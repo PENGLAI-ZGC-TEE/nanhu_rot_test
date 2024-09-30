@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/sysrst_ctrl/doc/">SYSRST_CTRL</a> Device Interface
+ * @brief <a href="/book/hw/ip/sysrst_ctrl/">SYSRST_CTRL</a> Device Interface
  * Functions
  */
 

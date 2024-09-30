@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,7 +10,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/adc_ctrl/doc/">ADC_CTRL</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/adc_ctrl/">ADC_CTRL</a> Device Interface
+ * Functions
  */
 
 #include <stdbool.h>
@@ -77,9 +78,9 @@ dif_result_t dif_adc_ctrl_alert_force(const dif_adc_ctrl_t *adc_ctrl,
  */
 typedef enum dif_adc_ctrl_irq {
   /**
-   * ADC match or measurement event done
+   * ADC match or measurement event has occurred
    */
-  kDifAdcCtrlIrqMatchDone = 0,
+  kDifAdcCtrlIrqMatchPending = 0,
 } dif_adc_ctrl_irq_t;
 
 /**

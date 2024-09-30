@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -73,7 +73,7 @@ static bool kmac_get_irq_bit_index(dif_kmac_irq_t irq,
 
 static dif_irq_type_t irq_types[] = {
     kDifIrqTypeEvent,
-    kDifIrqTypeEvent,
+    kDifIrqTypeStatus,
     kDifIrqTypeEvent,
 };
 

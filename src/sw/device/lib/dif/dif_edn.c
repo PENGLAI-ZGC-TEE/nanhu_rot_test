@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,8 +7,6 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
-
-#include "sw/device/lib/runtime/log.h"
 
 #include "edn_regs.h"  // Generated
 
@@ -78,6 +76,7 @@ dif_result_t dif_edn_set_auto_mode(const dif_edn_t *edn,
   if (dif_multi_bit_bool_to_toggle(edn_en) != kDifToggleDisabled) {
     return kDifError;
   }
+
   // Ensure neither automatic nor boot request mode is set.
   ctrl_reg = bitfield_field32_write(ctrl_reg, EDN_CTRL_AUTO_REQ_MODE_FIELD,
                                     kMultiBitBool4False);
@@ -95,6 +94,7 @@ dif_result_t dif_edn_set_auto_mode(const dif_edn_t *edn,
   ctrl_reg = bitfield_field32_write(ctrl_reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
                                     kMultiBitBool4False);
   mmio_region_write32(edn->base_addr, EDN_CTRL_REG_OFFSET, ctrl_reg);
+
   // Fill the reseed command FIFO.
   mmio_region_write32(edn->base_addr, EDN_RESEED_CMD_REG_OFFSET,
                       config.reseed_cmd.cmd);
@@ -110,6 +110,7 @@ dif_result_t dif_edn_set_auto_mode(const dif_edn_t *edn,
     mmio_region_write32(edn->base_addr, EDN_GENERATE_CMD_REG_OFFSET,
                         config.generate_cmd.seed_material.data[i]);
   }
+
   // Set the maximum number of requests between reseeds.
   mmio_region_write32(edn->base_addr,
                       EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_REG_OFFSET,
@@ -140,12 +141,13 @@ dif_result_t dif_edn_set_auto_mode(const dif_edn_t *edn,
   // Wait until CSRNG acknowledges command.
   ready = false;
   while (!ready) {
-    DIF_RETURN_IF_ERROR(dif_edn_get_status(edn, kDifEdnStatusReady, &ready));
+    DIF_RETURN_IF_ERROR(dif_edn_get_status(edn, kDifEdnStatusCsrngAck, &ready));
   }
 
   // Read request acknowledge error and return accordingly.
   bool ack_err;
-  DIF_RETURN_IF_ERROR(dif_edn_get_status(edn, kDifEdnStatusCsrngAck, &ack_err));
+  DIF_RETURN_IF_ERROR(
+      dif_edn_get_status(edn, kDifEdnStatusCsrngStatus, &ack_err));
   return ack_err ? kDifError : kDifOk;
 }
 
@@ -155,19 +157,26 @@ dif_result_t dif_edn_get_status(const dif_edn_t *edn, dif_edn_status_t flag,
     return kDifBadArg;
   }
 
-  uint32_t bit;
+  uint32_t reg = mmio_region_read32(edn->base_addr, EDN_SW_CMD_STS_REG_OFFSET);
+  uint32_t field_val;
   switch (flag) {
+    case kDifEdnStatusRegReady:
+      *set = bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_REG_RDY_BIT);
+      break;
     case kDifEdnStatusReady:
-      bit = EDN_SW_CMD_STS_CMD_RDY_BIT;
+      *set = bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_RDY_BIT);
+      break;
+    case kDifEdnStatusCsrngStatus:
+      field_val = bitfield_field32_read(reg, EDN_SW_CMD_STS_CMD_STS_FIELD);
+      *set = field_val ? true : false;
       break;
     case kDifEdnStatusCsrngAck:
-      bit = EDN_SW_CMD_STS_CMD_STS_BIT;
+      *set = bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_ACK_BIT);
       break;
     default:
       return kDifBadArg;
   }
-  uint32_t reg = mmio_region_read32(edn->base_addr, EDN_SW_CMD_STS_REG_OFFSET);
-  *set = bitfield_bit32_read(reg, bit);
+
   return kDifOk;
 }
 
@@ -278,7 +287,7 @@ dif_result_t dif_edn_instantiate(
     return kDifBadArg;
   }
   return csrng_send_app_cmd(
-      edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
+      edn->base_addr, kCsrngAppCmdTypeEdnSw,
       (csrng_app_cmd_t){
           .id = kCsrngAppCmdInstantiate,
           .entropy_src_enable =
@@ -294,7 +303,7 @@ dif_result_t dif_edn_reseed(const dif_edn_t *edn,
   }
   dif_csrng_seed_material_t seed_material2;
   memcpy(&seed_material2, seed_material, sizeof(seed_material2));
-  return csrng_send_app_cmd(edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(edn->base_addr, kCsrngAppCmdTypeEdnSw,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdReseed,
                                 .seed_material = &seed_material2,
@@ -308,7 +317,7 @@ dif_result_t dif_edn_update(const dif_edn_t *edn,
   }
   dif_csrng_seed_material_t seed_material2;
   memcpy(&seed_material2, seed_material, sizeof(seed_material2));
-  return csrng_send_app_cmd(edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(edn->base_addr, kCsrngAppCmdTypeEdnSw,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdUpdate,
                                 .seed_material = &seed_material2,
@@ -323,7 +332,7 @@ dif_result_t dif_edn_generate_start(const dif_edn_t *edn, size_t len) {
   // Round up the number of 128bit blocks. Aligning with respect to uint32_t.
   // TODO(#6112): Consider using a canonical reference for alignment operations.
   const uint32_t num_128bit_blocks = (len + 3) / 4;
-  return csrng_send_app_cmd(edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(edn->base_addr, kCsrngAppCmdTypeEdnSw,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdGenerate,
                                 .generate_len = num_128bit_blocks,
@@ -334,9 +343,9 @@ dif_result_t dif_edn_uninstantiate(const dif_edn_t *edn) {
   if (edn == NULL) {
     return kDifBadArg;
   }
-  return csrng_send_app_cmd(edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(edn->base_addr, kCsrngAppCmdTypeEdnSw,
                             (csrng_app_cmd_t){
-                                .id = kCsrngAppCmdUnisntantiate,
+                                .id = kCsrngAppCmdUninstantiate,
                             });
 }
 

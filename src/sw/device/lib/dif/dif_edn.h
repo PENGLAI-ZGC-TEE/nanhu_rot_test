@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -40,6 +40,21 @@ enum {
    * instantiate and seed commands.
    */
   kDifEntropySeedMaterialMaxWordLen = 12,
+};
+
+enum {
+  /**
+   * Maximum generate length supported in CSRNG generate commands.
+   */
+  kDifEntropySeedMaterialMaxGlen = 4095,
+};
+
+enum {
+  /**
+   * Maximum number of generate commands between reseed commands in
+   * the EDN auto mode.
+   */
+  kDifMaxNumReqsBetweenReseeds = 0xffffffff,
 };
 
 enum {
@@ -110,14 +125,108 @@ typedef struct dif_edn_auto_params {
  */
 typedef enum dif_edn_status {
   /**
+   * SW command register is ready to receive the next word of a command.
+   */
+  kDifEdnStatusRegReady,
+  /**
    * Device is ready to receive a command.
    */
   kDifEdnStatusReady,
+  /**
+   * Device has received an error from the CSRNG block.
+   */
+  kDifEdnStatusCsrngStatus,
   /**
    * Device has recieved an ACK from the CSRNG block.
    */
   kDifEdnStatusCsrngAck,
 } dif_edn_status_t;
+
+/**
+ * EDN SM states as defined in the EDN state machine RTL.
+ */
+typedef enum dif_edn_sm_state {
+  /**
+   * Device is idle.
+   */
+  kDifEdnSmStateIdle = 193,
+  /**
+   * Boot mode: load the instantiate command.
+   */
+  kDifEdnSmStateBootLoadIns = 455,
+  /**
+   * Boot mode: wait for instantiate command ack.
+   */
+  kDifEdnSmStateBootInsAckWait = 121,
+  /**
+   * Boot mode: load the generate command.
+   */
+  kDifEdnSmStateBootLoadGen = 3,
+  /**
+   * Boot mode: wait for generate command ack.
+   */
+  kDifEdnSmStateBootGenAckWait = 119,
+  /**
+   * Boot mode: signal a done pulse.
+   */
+  kDifEdnSmStateBootPulse = 169,
+  /**
+   * Boot mode: stay in done state until reset.
+   */
+  kDifEdnSmStateBootDone = 240,
+  /**
+   * Boot mode: load the uninstantiate command.
+   */
+  kDifEdnSmStateBootLoadUni = 309,
+  /**
+   * Boot mode: wait for uninstantiate command ack.
+   */
+  kDifEdnSmStateBootUniAckWait = 44,
+  /**
+   * Auto mode: load the instantiate command.
+   */
+  kDifEdnSmStateAutoLoadIns = 444,
+  /**
+   * Auto mode: wait for first instantiate command ack.
+   */
+  kDifEdnSmStateAutoFirstAckWait = 419,
+  /**
+   * Auto mode: wait for instantiate command ack.
+   */
+  kDifEdnSmStateAutoAckWait = 146,
+  /**
+   * Auto mode: determine next command to be sent.
+   */
+  kDifEdnSmStateAutoDispatch = 353,
+  /**
+   * Auto mode: capture the gen fifo count.
+   */
+  kDifEdnSmStateAutoCaptGenCnt = 270,
+  /**
+   * Auto mode: send the generate command.
+   */
+  kDifEdnSmStateAutoSendGenCmd = 477,
+  /**
+   * Auto mode: capture the reseed fifo count.
+   */
+  kDifEdnSmStateAutoCaptReseedCnt = 191,
+  /**
+   * Auto mode: send the reseed command.
+   */
+  kDifEdnSmStateAutoSendReseedCmd = 106,
+  /**
+   * Sw port: no hw request mode.
+   */
+  kDifEdnSmStateSWPortMode = 149,
+  /**
+   * Stop accepting entropy from CSRNG.
+   */
+  kDifEdnSmStateRejectCsrngEntropy = 24,
+  /**
+   * Illegal state reached and hang.
+   */
+  kDifEdnSmStateError = 382,
+} dif_edn_sm_state_t;
 
 /**
  * Enumeration of EDN FIFOs, which indicates which part of the hardware

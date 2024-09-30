@@ -1,7 +1,7 @@
 // Generated register defines for sram_ctrl
 
 // Copyright information found in source file:
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 
 // Licensing information found in source file:
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -33,6 +33,8 @@ extern "C" {
 #define SRAM_CTRL_STATUS_SCR_KEY_VALID_BIT 3
 #define SRAM_CTRL_STATUS_SCR_KEY_SEED_VALID_BIT 4
 #define SRAM_CTRL_STATUS_INIT_DONE_BIT 5
+#define SRAM_CTRL_STATUS_READBACK_ERROR_BIT 6
+#define SRAM_CTRL_STATUS_SRAM_ALERT_BIT 7
 
 // Lock register for execution enable register.
 #define SRAM_CTRL_EXEC_REGWEN_REG_OFFSET 0x8
@@ -57,6 +59,27 @@ extern "C" {
 #define SRAM_CTRL_CTRL_REG_RESVAL 0x0u
 #define SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT 0
 #define SRAM_CTRL_CTRL_INIT_BIT 1
+
+// Clearable SRAM key request status.
+#define SRAM_CTRL_SCR_KEY_ROTATED_REG_OFFSET 0x18
+#define SRAM_CTRL_SCR_KEY_ROTATED_REG_RESVAL 0x9u
+#define SRAM_CTRL_SCR_KEY_ROTATED_SUCCESS_MASK 0xfu
+#define SRAM_CTRL_SCR_KEY_ROTATED_SUCCESS_OFFSET 0
+#define SRAM_CTRL_SCR_KEY_ROTATED_SUCCESS_FIELD \
+  ((bitfield_field32_t) { .mask = SRAM_CTRL_SCR_KEY_ROTATED_SUCCESS_MASK, .index = SRAM_CTRL_SCR_KEY_ROTATED_SUCCESS_OFFSET })
+
+// Lock register for readback enable register.
+#define SRAM_CTRL_READBACK_REGWEN_REG_OFFSET 0x1c
+#define SRAM_CTRL_READBACK_REGWEN_REG_RESVAL 0x1u
+#define SRAM_CTRL_READBACK_REGWEN_READBACK_REGWEN_BIT 0
+
+// readback enable.
+#define SRAM_CTRL_READBACK_REG_OFFSET 0x20
+#define SRAM_CTRL_READBACK_REG_RESVAL 0x9u
+#define SRAM_CTRL_READBACK_EN_MASK 0xfu
+#define SRAM_CTRL_READBACK_EN_OFFSET 0
+#define SRAM_CTRL_READBACK_EN_FIELD \
+  ((bitfield_field32_t) { .mask = SRAM_CTRL_READBACK_EN_MASK, .index = SRAM_CTRL_READBACK_EN_OFFSET })
 
 #ifdef __cplusplus
 }  // extern "C"

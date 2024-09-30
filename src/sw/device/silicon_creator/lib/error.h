@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -26,23 +26,35 @@ extern "C" {
 enum module_ {
   // clang-format off
   kModuleUnknown = 0,
-  kModuleAlertHandler = MODULE_CODE('A', 'H'),
-  kModuleSigverify =    MODULE_CODE('S', 'V'),
-  kModuleKeymgr =       MODULE_CODE('K', 'M'),
-  kModuleManifest =     MODULE_CODE('M', 'A'),
-  kModuleRom =          MODULE_CODE('M', 'R'),
-  kModuleInterrupt =    MODULE_CODE('I', 'R'),
-  kModuleEpmp =         MODULE_CODE('E', 'P'),
-  kModuleKmac =         MODULE_CODE('K', 'C'),
-  kModuleOtbn =         MODULE_CODE('B', 'N'),
-  kModuleFlashCtrl =    MODULE_CODE('F', 'C'),
-  kModuleBootPolicy =   MODULE_CODE('B', 'P'),
-  kModuleBootstrap =    MODULE_CODE('B', 'S'),
-  kModuleLog =          MODULE_CODE('L', 'G'),
-  kModuleBootData =     MODULE_CODE('B', 'D'),
-  kModuleSpiDevice =    MODULE_CODE('S', 'P'),
-  kModuleAst =          MODULE_CODE('A', 'S'),
-  KModuleRnd =          MODULE_CODE('R', 'N'),
+  kModuleAlertHandler =    MODULE_CODE('A', 'H'),
+  kModuleSigverify =       MODULE_CODE('S', 'V'),
+  kModuleKeymgr =          MODULE_CODE('K', 'M'),
+  kModuleManifest =        MODULE_CODE('M', 'A'),
+  kModuleRom =             MODULE_CODE('M', 'R'),
+  kModuleInterrupt =       MODULE_CODE('I', 'R'),
+  kModuleEpmp =            MODULE_CODE('E', 'P'),
+  kModuleKmac =            MODULE_CODE('K', 'C'),
+  kModuleOtbn =            MODULE_CODE('B', 'N'),
+  kModuleFlashCtrl =       MODULE_CODE('F', 'C'),
+  kModuleBootPolicy =      MODULE_CODE('B', 'P'),
+  kModuleBootstrap =       MODULE_CODE('B', 'S'),
+  kModuleLog =             MODULE_CODE('L', 'G'),
+  kModuleBootData =        MODULE_CODE('B', 'D'),
+  kModuleSpiDevice =       MODULE_CODE('S', 'P'),
+  kModuleAst =             MODULE_CODE('A', 'S'),
+  kModuleRstmgr =          MODULE_CODE('R', 'S'),
+  KModuleRnd =             MODULE_CODE('R', 'N'),
+  kModuleBootSvc =         MODULE_CODE('B', 'C'),
+  kModuleBootLog =         MODULE_CODE('B', 'L'),
+  kModuleRomExt =          MODULE_CODE('R', 'E'),
+  kModuleRomExtInterrupt = MODULE_CODE('R', 'I'),
+  kModuleAsn1 =            MODULE_CODE('A', '1'),
+  kModuleRetRam =          MODULE_CODE('R', 'R'),
+  kModuleXModem =          MODULE_CODE('X', 'M'),
+  kModuleRescue =          MODULE_CODE('R', 'S'),
+  kModuleDice =            MODULE_CODE('D', 'C'),
+  kModuleCert =            MODULE_CODE('C', 'E'),
+  kModuleOwnership =       MODULE_CODE('O', 'W'),
   // clang-format on
 };
 
@@ -71,6 +83,7 @@ enum module_ {
 //       after the ROM is frozen.
 #define DEFINE_ERRORS(X) \
   X(kErrorOk,                         0x739), \
+  X(kErrorWriteBootdataThenReboot,    0x2ea), \
   X(kErrorUnknown,                    0xffffffff), \
   \
   X(kErrorSigverifyBadRsaSignature,   ERROR_(1, kModuleSigverify, kInvalidArgument)), \
@@ -79,6 +92,10 @@ enum module_ {
   X(kErrorSigverifyBadRsaKey,         ERROR_(4, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadSpxKey,         ERROR_(5, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyLargeRsaSignature, ERROR_(6, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadEcdsaSignature, ERROR_(7, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadAuthPartition,  ERROR_(8, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadEcdsaKey,       ERROR_(9, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadSpxConfig,      ERROR_(10, kModuleSigverify, kInvalidArgument)), \
   \
   X(kErrorKeymgrInternal,             ERROR_(1, kModuleKeymgr, kInternal)), \
   \
@@ -86,6 +103,7 @@ enum module_ {
   X(kErrorManifestBadCodeRegion,      ERROR_(2, kModuleManifest, kInternal)), \
   X(kErrorManifestBadSignedRegion,    ERROR_(3, kModuleManifest, kInternal)), \
   X(kErrorManifestBadExtension,       ERROR_(4, kModuleManifest, kInternal)), \
+  X(kErrorManifestBadVersionMajor,    ERROR_(5, kModuleManifest, kInternal)), \
   \
   X(kErrorAlertBadIndex,              ERROR_(1, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadClass,              ERROR_(2, kModuleAlertHandler, kInvalidArgument)), \
@@ -94,6 +112,7 @@ enum module_ {
   X(kErrorAlertBadCrc32,              ERROR_(5, kModuleAlertHandler, kInvalidArgument)), \
   \
   X(kErrorRomBootFailed,              ERROR_(1, kModuleRom, kFailedPrecondition)), \
+  X(kErrorRomResetReasonFault,        ERROR_(2, kModuleRom, kUnknown)), \
   \
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
   X(kErrorInterrupt,                  ERROR_(0, kModuleInterrupt, kUnknown)), \
@@ -101,6 +120,7 @@ enum module_ {
   X(kErrorEpmpBadCheck,               ERROR_(1, kModuleEpmp, kInternal)), \
   \
   X(kErrorKmacInvalidStatus,          ERROR_(1, kModuleKmac, kInternal)), \
+  X(kErrorKmacInvalidKeySize,         ERROR_(2, kModuleKmac, kInvalidArgument)), \
   \
   X(kErrorOtbnInvalidArgument,        ERROR_(1, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnBadOffsetLen,           ERROR_(2, kModuleOtbn, kInvalidArgument)), \
@@ -126,6 +146,7 @@ enum module_ {
   X(kErrorBootstrapProgramAddress,    ERROR_(2, kModuleBootstrap, kInvalidArgument)), \
   X(kErrorBootstrapInvalidState,      ERROR_(3, kModuleBootstrap, kInvalidArgument)), \
   X(kErrorBootstrapNotRequested,      ERROR_(4, kModuleBootstrap, kInternal)), \
+  X(kErrorBootstrapDisabledRomExt,    ERROR_(5, kModuleBootstrap, kInternal)), \
   \
   X(kErrorLogBadFormatSpecifier,      ERROR_(1, kModuleLog, kInternal)), \
   \
@@ -137,7 +158,68 @@ enum module_ {
   \
   X(kErrorAstInitNotDone,             ERROR_(1, kModuleAst, kInternal)), \
   \
-  X(kErrorRndBadCrc32,                ERROR_(1, KModuleRnd, kInvalidArgument))
+  X(kErrorRstmgrBadInit,              ERROR_(1, kModuleRstmgr, kInternal)), \
+  \
+  X(kErrorRndBadCrc32,                ERROR_(1, KModuleRnd, kInvalidArgument)), \
+  \
+  X(kErrorBootSvcBadHeader,           ERROR_(1, kModuleBootSvc, kInternal)), \
+  X(kErrorBootSvcBadSlot,             ERROR_(2, kModuleBootSvc, kInvalidArgument)), \
+  \
+  X(kErrorRomExtBootFailed,           ERROR_(1, kModuleRomExt, kFailedPrecondition)), \
+  \
+  X(kErrorXModemTimeoutStart,         ERROR_(1, kModuleXModem, kDeadlineExceeded)), \
+  X(kErrorXModemTimeoutPacket,        ERROR_(2, kModuleXModem, kDeadlineExceeded)), \
+  X(kErrorXModemTimeoutData,          ERROR_(3, kModuleXModem, kDeadlineExceeded)), \
+  X(kErrorXModemTimeoutCrc,           ERROR_(4, kModuleXModem, kDeadlineExceeded)), \
+  X(kErrorXModemTimeoutAck,           ERROR_(5, kModuleXModem, kDeadlineExceeded)), \
+  X(kErrorXModemCrc,                  ERROR_(6, kModuleXModem, kDataLoss)), \
+  X(kErrorXModemEndOfFile,            ERROR_(7, kModuleXModem, kOutOfRange)), \
+  X(kErrorXModemCancel,               ERROR_(8, kModuleXModem, kCancelled)), \
+  X(kErrorXModemUnknown,              ERROR_(9, kModuleXModem, kUnknown)), \
+  X(kErrorXModemProtocol,             ERROR_(10, kModuleXModem, kInvalidArgument)), \
+  X(kErrorXModemTooManyErrors,        ERROR_(11, kModuleXModem, kFailedPrecondition)), \
+  \
+  /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
+  X(kErrorRomExtInterrupt,            ERROR_(0, kModuleRomExtInterrupt, kUnknown)), \
+  \
+  X(kErrorBootLogInvalid,             ERROR_(1, kModuleBootLog, kInternal)), \
+  \
+  X(kErrorAsn1Internal,                       ERROR_(1, kModuleAsn1, kInternal)), \
+  X(kErrorAsn1StartInvalidArgument,           ERROR_(2, kModuleAsn1, kInvalidArgument)), \
+  X(kErrorAsn1PushBytesInvalidArgument,       ERROR_(3, kModuleAsn1, kInvalidArgument)), \
+  X(kErrorAsn1PushIntegerPadInvalidArgument,  ERROR_(4, kModuleAsn1, kInvalidArgument)), \
+  X(kErrorAsn1PushIntegerInvalidArgument,     ERROR_(5, kModuleAsn1, kInvalidArgument)), \
+  X(kErrorAsn1FinishBitstringInvalidArgument, ERROR_(6, kModuleAsn1, kInvalidArgument)), \
+  X(kErrorAsn1BufferExhausted,                ERROR_(7, kModuleAsn1, kResourceExhausted)), \
+  \
+  X(kErrorRetRamBadVersion,           ERROR_(1, kModuleRetRam, kUnknown)), \
+  \
+  X(kErrorRescueReboot,               ERROR_(0, kModuleRescue, kInternal)), \
+  X(kErrorRescueBadMode,              ERROR_(1, kModuleRescue, kInvalidArgument)), \
+  X(kErrorRescueImageTooBig,          ERROR_(2, kModuleRescue, kFailedPrecondition)), \
+  \
+  X(kErrorDiceInvalidKeyType,         ERROR_(0, kModuleDice, kInvalidArgument)), \
+  \
+  X(kErrorCertInternal,               ERROR_(0, kModuleCert, kInternal)), \
+  X(kErrorCertInvalidArgument,        ERROR_(1, kModuleCert, kInvalidArgument)), \
+  X(kErrorCertInvalidSize,            ERROR_(2, kModuleCert, kDataLoss)), \
+  \
+  X(kErrorOwnershipInvalidNonce,      ERROR_(0, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidMode,       ERROR_(1, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidSignature,  ERROR_(2, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidState,      ERROR_(3, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidRequest,    ERROR_(4, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidTag,        ERROR_(5, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidTagLength,  ERROR_(6, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipDuplicateItem,     ERROR_(7, kModuleOwnership, kAlreadyExists)), \
+  X(kErrorOwnershipFlashConfigLenth,  ERROR_(8, kModuleOwnership, kOutOfRange)), \
+  X(kErrorOwnershipInvalidInfoPage,   ERROR_(9, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipBadInfoPage,       ERROR_(10, kModuleOwnership, kInternal)), \
+  X(kErrorOwnershipNoOwner,           ERROR_(11, kModuleOwnership, kInternal)), \
+  X(kErrorOwnershipKeyNotFound,       ERROR_(12, kModuleOwnership, kNotFound)), \
+  \
+  /* This comment prevent clang from trying to format the macro. */
+
 // clang-format on
 
 #define ERROR_ENUM_INIT(name_, value_) name_ = value_
@@ -145,9 +227,7 @@ enum module_ {
 /**
  * Unified set of errors for ROM and ROM_EXT.
  */
-typedef enum rom_error {
-  DEFINE_ERRORS(ERROR_ENUM_INIT),
-} rom_error_t;
+typedef enum rom_error { DEFINE_ERRORS(ERROR_ENUM_INIT) } rom_error_t;
 
 /**
  * Evaluate an expression and return if the result is an error.

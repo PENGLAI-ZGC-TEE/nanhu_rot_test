@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +13,10 @@
 #include "sw/device/lib/dif/dif_rstmgr.h"
 
 #include "alert_handler_regs.h"
+
+enum {
+  kAlertHandlerTestutilsDefaultPingTimeout = 256,
+};
 
 typedef enum alert_handler_class_state {
   kCstateIdle = 0,
@@ -42,7 +46,7 @@ typedef struct alert_info_testutils_info {
  * `alert_handler_testutils_info_t`. This makes it easier to compare and display
  * the different fields.
  * @param dump Buffer containing the dump.
- * @param dump_size The size of the the `dump` in words.
+ * @param dump_size The size of the `dump` in words.
  * @param[out] info The parsed info.
  * @return The result of the operation.
  */
@@ -103,6 +107,6 @@ status_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds,
  *  cycles = udiv64_slow(micros * clockFreqHz, 1000000, NULL) *
  *           cycle_rescaling_factor();
  */
-uint32_t alert_handler_testutils_cycle_rescaling_factor();
+uint32_t alert_handler_testutils_cycle_rescaling_factor(void);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_ALERT_HANDLER_TESTUTILS_H_

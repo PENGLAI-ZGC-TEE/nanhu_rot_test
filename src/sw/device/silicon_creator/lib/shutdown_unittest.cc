@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -566,7 +566,7 @@ TEST_F(ShutdownDeathTest, InitializeInvalid) {
   EXPECT_DEATH(
       {
         SetupOtpReads();
-        shutdown_init(static_cast<lifecycle_state_t>(0));
+        OT_DISCARD(shutdown_init(static_cast<lifecycle_state_t>(0)));
       },
       "");
 }

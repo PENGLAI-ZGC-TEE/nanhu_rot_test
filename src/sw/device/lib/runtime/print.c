@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,7 +12,6 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
 
 // This is declared as an enum to force the values to be
@@ -40,6 +39,7 @@ enum {
   kHexLeLow = 'y',
   kHexLeHigh = 'Y',
   kStatusResult = 'r',
+  kFourCC = 'C',
 };
 
 // NOTE: all of the lengths of the strings below are given so that the NUL
@@ -68,98 +68,20 @@ void base_set_stdout(buffer_sink_t out) {
   base_stdout = out;
 }
 
-static const size_t kSpiDeviceFrameHeaderSizeBytes = 12;
-static uint32_t spi_device_frame_num = 0;
+static size_t base_dev_uart(void *data, const char *buf, size_t len) {
+  const dif_uart_t *uart = (const dif_uart_t *)data;
+  for (size_t i = 0; i < len; ++i) {
+    if (dif_uart_byte_send_polled(uart, (uint8_t)buf[i]) != kDifOk) {
+      return i;
+    }
+  }
+  return len;
+}
 
-/**
- * Sends data out of the SPI device.
- *
- * Data is packaged into a frame that is described below. Note, the 0xFF padding
- * is to account for packet loss on the host side due to shortcomings in the
- * HyperDebug firmware. The host side reads the header first, then decides how
- * many words to read from the data section.
- *
- * -----------------------------------------------
- * |   0xFF_FF_FF_FF Pad   | 4-bytes  |          |
- * -----------------------------------|          |
- * |      Frame Number     | 4-bytes  |  Header  |
- * -----------------------------------|          |
- * |   Data Length (bytes) | 4-bytes  |          |
- * -----------------------------------|----------|
- * |   0xFF_FF_FF_FF Pad   | 4-bytes  |          |
- * -----------------------------------|          |
- * |      Data (word aligned)         |   Data   |
- * -----------------------------------|          |
- * |     0xFF Pad Bytes    | <4-bytes |          |
- * -----------------------------------|----------|
- */
-// static size_t base_dev_spi_device(void *data, const char *buf, size_t len) {
-//   dif_spi_device_handle_t *spi_device = (dif_spi_device_handle_t *)data;
-
-//   const size_t kDataPacketSizeBytes = ((len + 3u) & ~3u) + 4;
-//   const size_t kFrameSizeBytes =
-//       kSpiDeviceFrameHeaderSizeBytes + kDataPacketSizeBytes;
-//   uint8_t frame_bytes[kFrameSizeBytes];
-
-//   // Construct the frame header packet.
-//   // Add the pad bytes.
-//   for (size_t i = 0; i < 4; ++i) {
-//     frame_bytes[i] = 0xff;
-//   }
-//   // Add the frame number.
-//   for (size_t i = 0; i < 4; ++i) {
-//     frame_bytes[i + 4] = (spi_device_frame_num >> (i * 8)) & 0xff;
-//   }
-//   // Add the data length.
-//   for (size_t i = 0; i < 4; ++i) {
-//     frame_bytes[i + 8] = (len >> (i * 8)) & 0xff;
-//   }
-
-//   // Construct the frame data packet.
-//   // Add the pad bytes.
-//   for (size_t i = 0; i < 4; ++i) {
-//     frame_bytes[i + 12] = 0xff;
-//   }
-//   // Add the data and pad bytes.
-//   for (size_t i = 0; i < ((len + 3u) & ~3u); ++i) {
-//     if (i < len) {
-//       frame_bytes[i + 16] = buf[i];
-//     } else {
-//       frame_bytes[i + 16] = 0xff;
-//     }
-//   }
-
-//   // Send the frame.
-//   if (dif_spi_device_send_polled(spi_device, frame_bytes,
-//                                  /*buf_len=*/kFrameSizeBytes) != kDifOk) {
-//     return 0;
-//   }
-//   spi_device_frame_num++;
-
-//   return len;
-// }
-
-// static size_t base_dev_uart(void *data, const char *buf, size_t len) {
-//   const dif_uart_t *uart = (const dif_uart_t *)data;
-//   for (size_t i = 0; i < len; ++i) {
-//     if (dif_uart_byte_send_polled(uart, (uint8_t)buf[i]) != kDifOk) {
-//       return i;
-//     }
-//   }
-//   return len;
-// }
-
-// void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device) {
-//   // Reset the frame counter.
-//   spi_device_frame_num = 0;
-//   base_set_stdout((buffer_sink_t){.data = (void *)spi_device,
-//                                   .sink = &base_dev_spi_device});
-// }
-
-// void base_uart_stdout(const dif_uart_t *uart) {
-//   base_set_stdout(
-//       (buffer_sink_t){.data = (void *)uart, .sink = &base_dev_uart});
-// }
+void base_uart_stdout(const dif_uart_t *uart) {
+  base_set_stdout(
+      (buffer_sink_t){.data = (void *)uart, .sink = &base_dev_uart});
+}
 
 size_t base_printf(const char *format, ...) {
   va_list args;
@@ -467,6 +389,20 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
       *bytes_written += out.sink(out.data, &value, 1);
       break;
     }
+    case kFourCC: {
+      uint32_t value = va_arg(*args, uint32_t);
+      for (size_t i = 0; i < sizeof(uint32_t); ++i, value >>= 8) {
+        uint8_t ch = (uint8_t)value;
+        if (ch >= 32 && ch < 127) {
+          *bytes_written += out.sink(out.data, (const char *)&ch, 1);
+        } else {
+          *bytes_written += out.sink(out.data, "\\x", 2);
+          *bytes_written += out.sink(out.data, &kDigitsLow[ch >> 4], 1);
+          *bytes_written += out.sink(out.data, &kDigitsLow[ch & 15], 1);
+        }
+      }
+      break;
+    }
     case kString: {
       size_t len = 0;
       if (spec.is_nonstd) {
@@ -687,6 +623,10 @@ size_t base_snhexdump_with(char *out, size_t out_len, base_hexdump_fmt_t fmt,
 
 size_t base_fhexdump_with(buffer_sink_t out, base_hexdump_fmt_t fmt,
                           const char *buf, size_t len) {
+  if (out.sink == NULL) {
+    out.sink = &base_dev_null;
+  }
+
   size_t bytes_written = 0;
   size_t bytes_per_line = fmt.bytes_per_word * fmt.words_per_line;
 

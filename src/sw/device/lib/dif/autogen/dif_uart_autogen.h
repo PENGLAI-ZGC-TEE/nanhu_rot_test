@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/uart/doc/">UART</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/uart/">UART</a> Device Interface Functions
  */
 
 #include <stdbool.h>
@@ -86,7 +86,7 @@ typedef enum dif_uart_irq {
   /**
    * Raised if the transmit FIFO has emptied and no transmit is ongoing.
    */
-  kDifUartIrqTxEmpty = 2,
+  kDifUartIrqTxDone = 2,
   /**
    * Raised if the receive FIFO has overflowed.
    */
@@ -108,6 +108,10 @@ typedef enum dif_uart_irq {
    * Raised if the receiver has detected a parity error.
    */
   kDifUartIrqRxParityErr = 7,
+  /**
+   * Raised if the transmit FIFO is empty.
+   */
+  kDifUartIrqTxEmpty = 8,
 } dif_uart_irq_t;
 
 /**

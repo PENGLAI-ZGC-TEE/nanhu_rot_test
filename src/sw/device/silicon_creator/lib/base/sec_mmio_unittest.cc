@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -183,7 +183,7 @@ TEST_F(SecMmioDeathTest, Read32OrDieSimulatedFault) {
       {
         EXPECT_ABS_READ32(0, 0x12345678);
         EXPECT_ABS_READ32(0, 0);
-        sec_mmio_read32(0);
+        OT_DISCARD(sec_mmio_read32(0));
       },
       "");
 }

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -72,6 +72,13 @@ typedef struct ottf_test_config {
    * enable interrupt handling before `test_main` begins.
    */
   bool enable_uart_flow_control;
+
+  /**
+   * Indicates that this test needs an explicit clear of the RSTMGR reset_reason
+   * register.  This may be necessary for tests that execute with the OTP
+   * configuration OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN set to true.
+   */
+  bool clear_reset_reason;
 
   /**
    * Name of the file in which `kOttfTestConfig` is defined. Most of the time,

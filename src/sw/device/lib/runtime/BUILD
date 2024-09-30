@@ -1,4 +1,4 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -42,6 +42,7 @@ cc_library(
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:stdasm",
     ],
@@ -91,7 +92,6 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:uart",
     ],
 )

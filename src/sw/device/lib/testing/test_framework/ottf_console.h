@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -41,6 +41,13 @@ void *ottf_console_get(void);
 void ottf_console_init(void);
 
 /**
+ * Configures the given UART to be used by the OTTF console.
+ *
+ * @param base_addr The base address of the UART to use.
+ */
+void ottf_console_configure_uart(uintptr_t base_addr);
+
+/**
  * Manage flow control by inspecting the OTTF console device's receive FIFO.
  *
  * @param uart A UART handle.
@@ -62,6 +69,17 @@ status_t ottf_console_flow_control(const dif_uart_t *uart,
  * at the CPU.
  */
 void ottf_console_flow_control_enable(void);
+
+/**
+ * Manage console flow control from interrupt context.
+ *
+ * Call this when a console UART interrupt triggers.
+ *
+ * @param exc_info The OTTF execution info passed to all ISRs.
+ * @return True if an RX Watermark IRQ was detected and handled. False
+ * otherwise.
+ */
+bool ottf_console_flow_control_isr(uint32_t *exc_info);
 
 /**
  * Returns the number of OTTF console flow control interrupts that have

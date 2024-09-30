@@ -1,8 +1,11 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/dif/dif_spi_host.h"
+
+#include <array>
+#include <utility>
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/global_mock.h"
@@ -284,7 +287,8 @@ class TransactionTest : public SpiHostTest {
 TEST_F(TransactionTest, IssueOpcode) {
   dif_spi_host_segment segment;
   segment.type = kDifSpiHostSegmentTypeOpcode;
-  segment.opcode = 0x5a;
+  segment.opcode.opcode = 0x5a;
+  segment.opcode.width = kDifSpiHostWidthStandard;
 
   EXPECT_WRITE32(SPI_HOST_CSID_REG_OFFSET, 0);
   EXPECT_READY(true);
@@ -361,9 +365,9 @@ TEST_F(TransactionTest, TransmitDual) {
 
   EXPECT_WRITE32(SPI_HOST_CSID_REG_OFFSET, 0);
   EXPECT_READY(true);
-  EXPECT_CALL(fifo_, write(&spi_host_, buf, sizeof(buf)));
   EXPECT_COMMAND_REG(/*length=*/sizeof(buf), /*width=*/kDifSpiHostWidthDual,
                      /*direction=*/kDifSpiHostDirectionTx, /*last=*/true);
+  EXPECT_CALL(fifo_, write(&spi_host_, buf, sizeof(buf)));
 
   EXPECT_DIF_OK(dif_spi_host_transaction(&spi_host_, 0, &segment, 1));
 }
@@ -399,10 +403,10 @@ TEST_F(TransactionTest, Transceive) {
 
   EXPECT_WRITE32(SPI_HOST_CSID_REG_OFFSET, 0);
   EXPECT_READY(true);
-  EXPECT_CALL(fifo_, write(&spi_host_, txbuf, sizeof(txbuf)));
   EXPECT_COMMAND_REG(
       /*length=*/sizeof(txbuf), /*width=*/kDifSpiHostWidthStandard,
       /*direction=*/kDifSpiHostDirectionBidirectional, /*last=*/true);
+  EXPECT_CALL(fifo_, write(&spi_host_, txbuf, sizeof(txbuf)));
   EXPECT_CALL(fifo_, read(&spi_host_, rxbuf, sizeof(rxbuf)));
 
   EXPECT_DIF_OK(dif_spi_host_transaction(&spi_host_, 0, &segment, 1));
@@ -425,9 +429,9 @@ TEST_F(TransactionTest, MultiSegmentTxRx) {
 
   EXPECT_WRITE32(SPI_HOST_CSID_REG_OFFSET, 0);
   EXPECT_READY(true);
-  EXPECT_CALL(fifo_, write(&spi_host_, txbuf, sizeof(txbuf)));
   EXPECT_COMMAND_REG(/*length=*/sizeof(txbuf), /*width=*/kDifSpiHostWidthDual,
                      /*direction=*/kDifSpiHostDirectionTx, /*last=*/false);
+  EXPECT_CALL(fifo_, write(&spi_host_, txbuf, sizeof(txbuf)));
   EXPECT_READY(true);
   EXPECT_COMMAND_REG(/*length=*/sizeof(rxbuf), /*width=*/kDifSpiHostWidthDual,
                      /*direction=*/kDifSpiHostDirectionRx, /*last=*/true);

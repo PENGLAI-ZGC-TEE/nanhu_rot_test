@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +13,7 @@ namespace {
 class ManifestTest : public rom_test::RomTest {
  protected:
   ManifestTest() {
+    manifest_.manifest_version.major = kManifestVersionMajor2;
     manifest_.length = sizeof(manifest_t) + 0x1000;
     manifest_.signed_region_end = sizeof(manifest_t) + 0x900;
     manifest_.code_start = sizeof(manifest_t);
@@ -78,6 +79,11 @@ TEST_F(ManifestTest, CodeRegionUnalignedEnd) {
   EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadCodeRegion);
 }
 
+TEST_F(ManifestTest, ExtensionOffsetUnaligned) {
+  manifest_.extensions.entries[1].offset = 1;
+  EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadExtension);
+}
+
 TEST_F(ManifestTest, EntryPointBeforeCodeStart) {
   manifest_.entry_point = manifest_.code_start - 1;
   EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadEntryPoint);
@@ -96,6 +102,29 @@ TEST_F(ManifestTest, EntryPointOutsideImage) {
 TEST_F(ManifestTest, EntryPointUnaligned) {
   ++manifest_.entry_point;
   EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadEntryPoint);
+}
+
+TEST_F(ManifestTest, ExtSpxKeyGet) {
+  char flash[CHIP_ROM_EXT_RESIZABLE_SIZE_MAX];
+  memset(flash, 0, sizeof(flash));
+  size_t ext_offset = CHIP_ROM_EXT_SIZE_MAX;
+
+  manifest_t *manifest = reinterpret_cast<manifest_t *>(&flash[0]);
+  memcpy(manifest, &manifest_, sizeof(manifest_));
+  manifest->length = ext_offset + sizeof(manifest_ext_spx_key_t);
+
+  manifest_ext_table_entry_t *entry = &manifest->extensions.entries[0];
+  entry->identifier = kManifestExtIdSpxKey;
+  entry->offset = ext_offset;
+
+  manifest_ext_header_t *header =
+      reinterpret_cast<manifest_ext_header_t *>(&flash[ext_offset]);
+  header->identifier = kManifestExtIdSpxKey;
+  header->name = kManifestExtNameSpxKey;
+
+  const manifest_ext_spx_key_t *result = nullptr;
+  EXPECT_EQ(manifest_ext_get_spx_key(manifest, &result), kErrorOk);
+  EXPECT_EQ(&result->header, header);
 }
 
 }  // namespace

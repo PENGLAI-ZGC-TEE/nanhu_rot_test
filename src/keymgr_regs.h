@@ -1,7 +1,7 @@
 // Generated register defines for keymgr
 
 // Copyright information found in source file:
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 
 // Licensing information found in source file:
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -64,6 +64,7 @@ extern "C" {
 #define KEYMGR_START_REG_OFFSET 0x14
 #define KEYMGR_START_REG_RESVAL 0x0u
 #define KEYMGR_START_EN_BIT 0
+#define KEYMGR_START_EN_VALUE_VALID_STATE 0x1
 
 // Key manager operation controls
 #define KEYMGR_CONTROL_SHADOWED_REG_OFFSET 0x18
@@ -78,6 +79,8 @@ extern "C" {
 #define KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT 0x3
 #define KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_DISABLE 0x4
 #define KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT 7
+#define KEYMGR_CONTROL_SHADOWED_CDI_SEL_VALUE_SEALING_CDI 0x0
+#define KEYMGR_CONTROL_SHADOWED_CDI_SEL_VALUE_ATTESTATION_CDI 0x1
 #define KEYMGR_CONTROL_SHADOWED_DEST_SEL_MASK 0x3u
 #define KEYMGR_CONTROL_SHADOWED_DEST_SEL_OFFSET 12
 #define KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD \

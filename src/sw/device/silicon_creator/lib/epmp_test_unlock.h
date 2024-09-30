@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -26,6 +26,7 @@ extern "C" {
  * @returns The result of the operation (`true` if address space unlocked
  * successfully).
  */
+OT_WARN_UNUSED_RESULT
 bool epmp_unlock_test_status(void);
 
 #ifdef __cplusplus

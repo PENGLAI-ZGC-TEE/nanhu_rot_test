@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_GPIO_H_
@@ -10,6 +10,8 @@ extern "C" {
 #endif
 // clang-format off
 
+#define MODULE_ID MAKE_MODULE_ID('j', 'g', 'h')
+
 #define ENUM_GPIO_SET_ACTION(_, value) \
     value(_, Write) \
     value(_, WriteAll) \
@@ -17,7 +19,15 @@ extern "C" {
     value(_, SetEnabled) \
     value(_, SetEnabledAll) \
     value(_, SetEnabledMasked) \
-    value(_, SetInputNoiseFilter)
+    value(_, SetInputNoiseFilter) \
+    value(_, IrqRestoreAll) \
+    value(_, IrqDisableAll) \
+    value(_, IrqAcknowledgeAll) \
+    value(_, IrqSetTriggerRisingEdge) \
+    value(_, IrqSetTriggerFallingEdge) \
+    value(_, IrqSetTriggerHigh) \
+    value(_, IrqSetTriggerLow)
+
 UJSON_SERDE_ENUM(GpioAction, gpio_action_t, ENUM_GPIO_SET_ACTION);
 
 #define STRUCT_GPIO_SET(field, string) \
@@ -36,6 +46,8 @@ UJSON_SERDE_STRUCT(GpioGet, gpio_get_t, STRUCT_GPIO_GET);
 status_t gpio_set(ujson_t *uj, const dif_gpio_t *gpio);
 status_t gpio_get(ujson_t *uj, const dif_gpio_t *gpio);
 #endif
+
+#undef MODULE_ID
 
 // clang-format on
 #ifdef __cplusplus

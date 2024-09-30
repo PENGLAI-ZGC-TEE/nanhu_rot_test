@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -143,7 +143,6 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
     bool entropy_fast_process = false;
     bool msg_mask = false;
     bool entropy_ready = false;
-    bool err_processed = false;
     bool enable_unsupported_mode_strength = false;
     uint16_t entropy_hash_threshold = 0;
     uint16_t entropy_wait_timer = 0;
@@ -212,7 +211,6 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
           config_reg_.entropy_fast_process},
          {KMAC_CFG_SHADOWED_MSG_MASK_BIT, config_reg_.msg_mask},
          {KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, config_reg_.entropy_ready},
-         {KMAC_CFG_SHADOWED_ERR_PROCESSED_BIT, config_reg_.err_processed},
          {KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT,
           config_reg_.enable_unsupported_mode_strength}});
   }
@@ -244,8 +242,7 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
 
   void ExpectEntropySeed(const uint32_t *seed) {
     for (uint32_t i = 0; i < kDifKmacEntropySeedWords; ++i) {
-      ptrdiff_t offset = KMAC_ENTROPY_SEED_0_REG_OFFSET + i * sizeof(uint32_t);
-      EXPECT_WRITE32(offset, seed[i]);
+      EXPECT_WRITE32(KMAC_ENTROPY_SEED_REG_OFFSET, seed[i]);
     }
   }
 
@@ -657,8 +654,8 @@ class KmacConfigureTest : public KmacTest {
   dif_kmac_config_t kmac_config_ = {
       .entropy_mode = kDifKmacEntropyModeIdle,
       .entropy_fast_process = false,
-      .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
-                       0x70410fef},
+      .entropy_seed = {0xb153e3fe, 0x09596819, 0x3e85a6e8, 0xb6dcdaba,
+                       0x50dc409c, 0x11e1ebd1},
       .entropy_hash_threshold = 0x03ff,
       .entropy_wait_timer = 0xffff,
       .entropy_prescaler = 0x03ff,
@@ -784,31 +781,44 @@ TEST_F(KmacStatusTest, BadArg) {
 
 class KmacGetErrorTest : public KmacTest {
  protected:
-  static constexpr std::array<dif_kmac_error_t, 7> kErrors = {
+  static constexpr std::array<dif_kmac_error_t, 14> kErrors = {
       kDifErrorNone,
       kDifErrorKeyNotValid,
       kDifErrorSoftwarePushedMessageFifo,
-      kDifErrorSoftwarePushedWrongCommand,
+      kDifErrorSoftwareIssuedCommandWhileAppInterfaceActive,
       kDifErrorEntropyWaitTimerExpired,
       kDifErrorEntropyModeIncorrect,
-      kDifErrorUnknownError};
+      kDifErrorUnexpectedModeStrength,
+      kDifErrorIncorrectFunctionName,
+      kDifErrorSoftwareCommandSequence,
+      kDifErrorSoftwareHashingWithoutEntropyReady,
+      kDifErrorShadowRegisterUpdate,
+      kDifErrorFatalError,
+      kDifErrorPackerIntegrity,
+      kDifErrorMsgFifoIntegrity,
+  };
   dif_kmac_error_t error_;
+  uint32_t info_;
   KmacGetErrorTest() { op_state_.squeezing = true; }
 };
-constexpr std::array<dif_kmac_error_t, 7> KmacGetErrorTest::kErrors;
+constexpr std::array<dif_kmac_error_t, 14> KmacGetErrorTest::kErrors;
 
 TEST_F(KmacGetErrorTest, Success) {
   for (auto err : kErrors) {
-    EXPECT_READ32(KMAC_ERR_CODE_REG_OFFSET, err);
-    EXPECT_DIF_OK(dif_kmac_get_error(&kmac_, &error_));
+    uint32_t reg = err << 24 | 0x500bad;
+    EXPECT_READ32(KMAC_ERR_CODE_REG_OFFSET, reg);
+    EXPECT_DIF_OK(dif_kmac_get_error(&kmac_, &error_, &info_));
     EXPECT_EQ(error_, err);
+    EXPECT_EQ(info_, 0x500bad);
   }
 }
 
 TEST_F(KmacGetErrorTest, BadArg) {
-  EXPECT_DIF_BADARG(dif_kmac_get_error(nullptr, &error_));
+  EXPECT_DIF_BADARG(dif_kmac_get_error(nullptr, &error_, &info_));
 
-  EXPECT_DIF_BADARG(dif_kmac_get_error(&kmac_, nullptr));
+  EXPECT_DIF_BADARG(dif_kmac_get_error(&kmac_, nullptr, &info_));
+
+  EXPECT_DIF_BADARG(dif_kmac_get_error(&kmac_, &error_, nullptr));
 }
 
 class KmacGetHashCounterTest : public KmacTest {
@@ -909,7 +919,7 @@ TEST_F(KmacSqueezeTest, GenerateExtraStatesSuccess) {
                    kOutShares[0].size() - 34);
 
   EXPECT_DIF_OK(dif_kmac_squeeze(&kmac_, &op_state_, out_buffer,
-                                 ARRAYSIZE(out_buffer), nullptr));
+                                 ARRAYSIZE(out_buffer), nullptr, nullptr));
 
   EXPECT_EQ(op_state_, expected_op_state_);
 
@@ -932,7 +942,7 @@ TEST_F(KmacSqueezeTest, FillOutBufferSuccess) {
                    ARRAYSIZE(out_buffer_));
 
   EXPECT_DIF_OK(dif_kmac_squeeze(&kmac_, &op_state_, out_buffer_,
-                                 ARRAYSIZE(out_buffer_), nullptr));
+                                 ARRAYSIZE(out_buffer_), nullptr, nullptr));
 
   EXPECT_EQ(op_state_, expected_op_state_);
 
@@ -954,7 +964,8 @@ TEST_F(KmacSqueezeTest, AppendSizeSuccess) {
   ExpectAppendSize();
   EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
                  {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_PROCESS}});
-  EXPECT_DIF_OK(dif_kmac_squeeze(&kmac_, &op_state_, nullptr, 0, nullptr));
+  EXPECT_DIF_OK(
+      dif_kmac_squeeze(&kmac_, &op_state_, nullptr, 0, nullptr, nullptr));
 
   EXPECT_EQ(op_state_, expected_op_state_);
 }
@@ -966,18 +977,19 @@ TEST_F(KmacSqueezeTest, JustProcessSuccess) {
   EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
                  {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_PROCESS}});
 
-  EXPECT_DIF_OK(dif_kmac_squeeze(&kmac_, &op_state_, nullptr, 0, nullptr));
+  EXPECT_DIF_OK(
+      dif_kmac_squeeze(&kmac_, &op_state_, nullptr, 0, nullptr, nullptr));
   EXPECT_EQ(op_state_, expected_op_state_);
   EXPECT_EQ(op_state_.d, 0);
 }
 
 TEST_F(KmacSqueezeTest, BadArg) {
   EXPECT_DIF_BADARG(dif_kmac_squeeze(NULL, &op_state_, out_buffer_,
-                                     ARRAYSIZE(out_buffer_), nullptr));
+                                     ARRAYSIZE(out_buffer_), nullptr, nullptr));
   EXPECT_DIF_BADARG(dif_kmac_squeeze(&kmac_, nullptr, out_buffer_,
-                                     ARRAYSIZE(out_buffer_), nullptr));
+                                     ARRAYSIZE(out_buffer_), nullptr, nullptr));
   EXPECT_DIF_BADARG(dif_kmac_squeeze(&kmac_, &op_state_, nullptr,
-                                     ARRAYSIZE(out_buffer_), nullptr));
+                                     ARRAYSIZE(out_buffer_), nullptr, nullptr));
 }
 
 TEST_F(KmacSqueezeTest, StarteMachineError) {
@@ -986,7 +998,7 @@ TEST_F(KmacSqueezeTest, StarteMachineError) {
                  {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_PROCESS}});
 
   EXPECT_EQ(dif_kmac_squeeze(&kmac_, &op_state_, out_buffer_,
-                             ARRAYSIZE(out_buffer_), nullptr),
+                             ARRAYSIZE(out_buffer_), nullptr, nullptr),
             kDifError);
 }
 
@@ -1001,16 +1013,14 @@ TEST_F(KmacSqueezeTest, RequestLessDataThanFixedLenError) {
                 {{KMAC_INTR_STATE_KMAC_ERR_BIT, true}});
 
   EXPECT_EQ(dif_kmac_squeeze(&kmac_, &op_state_, out_buffer_,
-                             ARRAYSIZE(out_buffer_), nullptr),
+                             ARRAYSIZE(out_buffer_), nullptr, nullptr),
             kDifError);
 }
 
 class KmacResetTest : public KmacTest {};
 
 TEST_F(KmacResetTest, Success) {
-  EXPECT_READ32(KMAC_CFG_SHADOWED_REG_OFFSET, 0);
-  EXPECT_WRITE32_SHADOWED(KMAC_CFG_SHADOWED_REG_OFFSET,
-                          {{KMAC_CFG_SHADOWED_ERR_PROCESSED_BIT, true}});
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET, {{KMAC_CMD_ERR_PROCESSED_BIT, true}});
   EXPECT_DIF_OK(dif_kmac_reset(&kmac_, &op_state_));
   EXPECT_EQ(op_state_.squeezing, false);
   EXPECT_EQ(op_state_.append_d, false);

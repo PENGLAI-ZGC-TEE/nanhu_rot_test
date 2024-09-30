@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -79,6 +79,16 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
   uint32_t entropy_conf_reg = bitfield_field32_write(
       0, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD,
       config.fips_enable ? kMultiBitBool4True : kMultiBitBool4False);
+
+  // Configure FIPS flag.
+  entropy_conf_reg = bitfield_field32_write(
+      entropy_conf_reg, ENTROPY_SRC_CONF_FIPS_FLAG_FIELD,
+      config.fips_flag ? kMultiBitBool4True : kMultiBitBool4False);
+
+  // Configure RNG FIPS.
+  entropy_conf_reg = bitfield_field32_write(
+      entropy_conf_reg, ENTROPY_SRC_CONF_RNG_FIPS_FIELD,
+      config.rng_fips ? kMultiBitBool4True : kMultiBitBool4False);
 
   // Configure entropy data register enable (enables firmware to read entropy).
   entropy_conf_reg = bitfield_field32_write(
@@ -169,6 +179,21 @@ dif_result_t dif_entropy_src_fw_override_configure(
       config.entropy_insert_enable ? kMultiBitBool4True : kMultiBitBool4False);
   mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_fw_override_sha3_start_insert(
+    const dif_entropy_src_t *entropy_src, dif_toggle_t enabled) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = bitfield_field32_write(
+      0, ENTROPY_SRC_FW_OV_SHA3_START_FW_OV_INSERT_START_FIELD,
+      dif_toggle_to_multi_bit_bool4(enabled));
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET, reg);
 
   return kDifOk;
 }
@@ -474,7 +499,7 @@ dif_result_t dif_entropy_src_observe_fifo_blocking_read(
   }
 
   // Check that we are in firmware override mode. We can only read from the
-  // override FIFO if we are.
+  // observe FIFO if we are.
   reg = mmio_region_read32(entropy_src->base_addr,
                            ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET);
   if (bitfield_field32_read(reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_FIELD) !=
@@ -507,7 +532,39 @@ dif_result_t dif_entropy_src_observe_fifo_blocking_read(
   return kDifOk;
 }
 
-dif_result_t dif_entropy_src_observe_fifo_write(
+dif_result_t dif_entropy_src_observe_fifo_nonblocking_read(
+    const dif_entropy_src_t *entropy_src, uint32_t *buf, size_t *len) {
+  if (entropy_src == NULL || len == NULL) {
+    return kDifBadArg;
+  }
+
+  // Check that we are in firmware override mode. We can only read from the
+  // observe FIFO if we are.
+  uint32_t reg = mmio_region_read32(entropy_src->base_addr,
+                                    ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET);
+  if (bitfield_field32_read(reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_FIELD) !=
+      kMultiBitBool4True) {
+    return kDifError;
+  }
+
+  // Read until FIFO is empty or we have read `*len` words.
+  size_t read_count = 0;
+  while (read_count < *len &&
+         mmio_region_read32(entropy_src->base_addr,
+                            ENTROPY_SRC_OBSERVE_FIFO_DEPTH_REG_OFFSET) > 0) {
+    uint32_t reg = mmio_region_read32(entropy_src->base_addr,
+                                      ENTROPY_SRC_FW_OV_RD_DATA_REG_OFFSET);
+    if (buf != NULL) {
+      buf[read_count++] = reg;
+    }
+  }
+  // Update `*len`.
+  *len = read_count;
+
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_fw_ov_data_write(
     const dif_entropy_src_t *entropy_src, const uint32_t *buf, size_t len,
     size_t *written) {
   if (entropy_src == NULL || buf == NULL) {
@@ -605,18 +662,6 @@ dif_result_t dif_entropy_src_has_fifo_overflowed(
 
   *has_overflowed = mmio_region_read32(
       entropy_src->base_addr, ENTROPY_SRC_FW_OV_RD_FIFO_OVERFLOW_REG_OFFSET);
-
-  return kDifOk;
-}
-
-dif_result_t dif_entropy_src_clear_fifo_overflow(
-    const dif_entropy_src_t *entropy_src) {
-  if (entropy_src == NULL) {
-    return kDifBadArg;
-  }
-
-  mmio_region_write32(entropy_src->base_addr,
-                      ENTROPY_SRC_FW_OV_RD_FIFO_OVERFLOW_REG_OFFSET, 0);
 
   return kDifOk;
 }

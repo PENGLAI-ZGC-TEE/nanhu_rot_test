@@ -1,10 +1,13 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 
 #include "sw/device/lib/base/multibits.h"
+
+#include "csrng_regs.h"  // Generated
+#include "edn_regs.h"    // Generated
 
 // The application command header is not specified as a register in the
 // hardware specification, so the fields are mapped here by hand. The
@@ -29,8 +32,39 @@ uint32_t csrng_cmd_header_build(
   return reg;
 }
 
-dif_result_t csrng_send_app_cmd(mmio_region_t base_addr, ptrdiff_t offset,
+dif_result_t csrng_send_app_cmd(mmio_region_t base_addr,
+                                csrng_app_cmd_type_t cmd_type,
                                 csrng_app_cmd_t cmd) {
+  ptrdiff_t cmd_reg_offset;
+  ptrdiff_t sts_reg_offset=0;
+  uint32_t rdy_bit_offset;
+  uint32_t reg_rdy_bit_offset =0;
+  uint32_t reg;
+  bool ready;
+
+  switch (cmd_type) {
+    case kCsrngAppCmdTypeCsrng:
+      cmd_reg_offset = CSRNG_CMD_REQ_REG_OFFSET;
+      sts_reg_offset = CSRNG_SW_CMD_STS_REG_OFFSET;
+      rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
+      reg_rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
+      break;
+    case kCsrngAppCmdTypeEdnSw:
+      cmd_reg_offset = EDN_SW_CMD_REQ_REG_OFFSET;
+      sts_reg_offset = EDN_SW_CMD_STS_REG_OFFSET;
+      rdy_bit_offset = EDN_SW_CMD_STS_CMD_RDY_BIT;
+      reg_rdy_bit_offset = EDN_SW_CMD_STS_CMD_REG_RDY_BIT;
+      break;
+    case kCsrngAppCmdTypeEdnGen:
+      cmd_reg_offset = EDN_GENERATE_CMD_REG_OFFSET;
+      break;
+    case kCsrngAppCmdTypeEdnRes:
+      cmd_reg_offset = EDN_RESEED_CMD_REG_OFFSET;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
   // Ensure the `seed_material` array is word-aligned, so it can be loaded to a
   // CPU register with natively aligned loads.
   if (cmd.seed_material != NULL &&
@@ -54,11 +88,31 @@ dif_result_t csrng_send_app_cmd(mmio_region_t base_addr, ptrdiff_t offset,
     return kDifOutOfRange;
   }
 
-  mmio_region_write32(base_addr, offset,
+  if ((cmd_type == kCsrngAppCmdTypeCsrng) ||
+      (cmd_type == kCsrngAppCmdTypeEdnSw)) {
+    // Wait for the status register to be ready to accept the next command.
+    do {
+      reg = mmio_region_read32(base_addr, sts_reg_offset);
+      ready = bitfield_bit32_read(reg, rdy_bit_offset);
+    } while (!ready);
+  }
+
+  mmio_region_write32(base_addr, cmd_reg_offset,
                       csrng_cmd_header_build(cmd.id, cmd.entropy_src_enable,
                                              cmd_len, cmd.generate_len));
   for (size_t i = 0; i < cmd_len; ++i) {
-    mmio_region_write32(base_addr, offset, cmd.seed_material->seed_material[i]);
+    // Before writing each word of additional data, the command ready or command
+    // reg ready bit needs to be polled if the command is issued to CSRNG or the
+    // SW register of EDN, respectively.
+    if (cmd_type == kCsrngAppCmdTypeCsrng ||
+        cmd_type == kCsrngAppCmdTypeEdnSw) {
+      do {
+        reg = mmio_region_read32(base_addr, sts_reg_offset);
+        ready = bitfield_bit32_read(reg, reg_rdy_bit_offset);
+      } while (!ready);
+    }
+    mmio_region_write32(base_addr, cmd_reg_offset,
+                        cmd.seed_material->seed_material[i]);
   }
   return kDifOk;
 }

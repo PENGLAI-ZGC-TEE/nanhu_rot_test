@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "sw/device/lib/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,6 +56,16 @@ typedef enum device_type {
    * development board with SCA capability, containing a Xilinx FPGA.
    */
   kDeviceFpgaCw305 = 3,
+  /**
+   * Represents the "ChipWhisperer CW340 FPGA" device, i.e., the particular
+   * FPGA board blessed for OpenTitan development, containing a Xilinx FPGA.
+   */
+  kDeviceFpgaCw340 = 4,
+  /**
+   * Represents the "Silicon" device, i.e., an instantiation of OpenTitan in
+   * Silicon.
+   */
+  kDeviceSilicon = 5,
 } device_type_t;
 
 /**
@@ -111,15 +123,31 @@ extern const uint64_t kUartBaudrate;
  * the NCO width, use NCO = 0xffff for this case since the error is tolerable.
  * Refer to #4263
  */
-#define CALCULATE_UART_NCO(baudrate, peripheral_clock)  \
+#define CALCULATE_UART_NCO_(baudrate, peripheral_clock) \
   (baudrate == 1500000 && peripheral_clock == 24000000) \
       ? 0xffff                                          \
-      : (((baudrate) << (16 + 4)) / (peripheral_clock))
+      : (uint32_t)(((uint64_t)(baudrate) << (16 + 4)) / (peripheral_clock))
+
+#define CALCULATE_UART_NCO(baudrate, peripheral_clock)      \
+  CALCULATE_UART_NCO_(baudrate, peripheral_clock) < 0x10000 \
+      ? CALCULATE_UART_NCO_(baudrate, peripheral_clock)     \
+      : 0;
 
 /**
  * The pre-calculated UART NCO value based on the Baudrate and Peripheral clock.
  */
 extern const uint32_t kUartNCOValue;
+
+/**
+ * Additional pre-calculated UART NCO values.  If the pre-calculated value is
+ * zero, then the corresponding baudrate is not supported.
+ */
+extern const uint32_t kUartBaud115K;
+extern const uint32_t kUartBaud230K;
+extern const uint32_t kUartBaud460K;
+extern const uint32_t kUartBaud921K;
+extern const uint32_t kUartBaud1M33;
+extern const uint32_t kUartBaud1M50;
 
 /**
  * Helper macro to calculate the time it takes to transmit the entire UART TX
@@ -128,8 +156,8 @@ extern const uint32_t kUartNCOValue;
  * This macro assumes 10 bits per byte (no parity bits) and a 128 byte deep TX
  * FIFO.
  */
-#define CALCULATE_UART_TX_FIFO_CPU_CYCLES(baud_rate_, cpu_freq_) \
-  ((cpu_freq_)*10 * 128 / (baud_rate_))
+#define CALCULATE_UART_TX_FIFO_CPU_CYCLES(baud_rate_, cpu_freq_, fifo_depth_) \
+  ((cpu_freq_)*10 * (fifo_depth_) / (baud_rate_))
 
 /**
  * The time it takes to transmit the entire UART TX fifo in CPU cycles.
@@ -173,16 +201,12 @@ extern const uintptr_t kDeviceTestStatusAddress;
 extern const uintptr_t kDeviceLogBypassUartAddress;
 
 /**
- * A knob to set jitter_enable in clkmgr.
- */
-extern const bool kJitterEnabled;
-
-/**
  * A platform-specific function to convert microseconds to cpu cycles.
  *
  * This is primarily used for spin waits that use the cpu cycle counters.
  * For platforms with clock periods slower than 1 us this will round up.
  */
+OT_WARN_UNUSED_RESULT
 uint64_t to_cpu_cycles(uint64_t usec);
 
 /**

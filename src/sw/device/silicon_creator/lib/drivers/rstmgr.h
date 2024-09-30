@@ -1,33 +1,36 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_RSTMGR_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_RSTMGR_H_
 
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdnoreturn.h>
+
+#include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * Alert Infomation captured by the reset manager during the last reset.
+ * Alert information or CPU crash dump captured by the reset manager during the
+ * last reset.
  */
-typedef struct RstMgrAlertInfo {
+typedef struct rstmgr_info {
   /**
-   * Length of alert information.
+   * Length.
    */
   uint32_t length;
   /**
-   * Alert info words.
+   * Alert information or CPU crash dump words.
    */
   uint32_t info[16];
-} rstmgr_alert_info_t;
-
-extern rstmgr_alert_info_t rstmgr_alert_info;
+} rstmgr_info_t;
 
 /**
  * Reset reason bitfield indices.
@@ -69,14 +72,27 @@ typedef enum rstmgr_reason {
 } rstmgr_reason_t;
 
 /**
+ * Get alert information captured during last reset.
+ *
+ * @param[out] info Alert information.
+ */
+void rstmgr_alert_info_collect(rstmgr_info_t *info);
+
+/**
+ * Get CPU crash dump captured during last reset.
+ *
+ * @param[out] info CPU crash dump.
+ */
+void rstmgr_cpu_info_collect(rstmgr_info_t *info);
+
+/**
  * Get the reason(s) for the last reset.
  *
  * The reset reason is a bitfield. Individual bits may be extracted using
  * the indices provided by the `rstmgr_reason_t` enumeration. The reset
  * reasons are not necessarily mutually exclusive.
- *
- * This function also captures alert information into `rstmgr_alert_info`.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t rstmgr_reason_get(void);
 
 /**
@@ -95,6 +111,11 @@ void rstmgr_reason_clear(uint32_t reasons);
 void rstmgr_alert_info_enable(void);
 
 /**
+ * Enable capturing of CPU crash dump in the event of a crash.
+ */
+void rstmgr_cpu_info_enable(void);
+
+/**
  * Requests a system reset.
  */
 #ifdef OT_PLATFORM_RV32
@@ -103,6 +124,27 @@ noreturn
 #endif
     void
     rstmgr_reset(void);
+
+/**
+ * Verifies that info collection is initialized properly.
+ *
+ * In order not to interfere with the operation of other software on the chip,
+ * this check is not enforced if `reasons` includes low power exit.
+ *
+ * @param reset_reasons Reset reasons.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t rstmgr_info_en_check(uint32_t reset_reasons);
+
+/**
+ * Bitfields for `OWNER_SW_CFG_ROM_RSTMGR_INFO_EN" OTP item.
+ *
+ * Defined here to be able to use in tests.
+ */
+#define RSTMGR_OTP_FIELD_ALERT_INFO_EN \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 0 }
+#define RSTMGR_OTP_FIELD_CPU_INFO_EN \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 1 }
 
 #ifdef __cplusplus
 }

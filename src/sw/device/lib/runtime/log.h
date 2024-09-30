@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -92,11 +92,30 @@ typedef struct log_fields {
 /**
  * Implementation detail.
  */
-void base_log_internal_core(log_fields_t log, ...);
+void base_log_internal_core(const log_fields_t *log, ...);
 /**
  * Implementation detail.
  */
 void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
+
+/**
+ * A macro that wraps the `OT_FAIL_IF_64_BIT` macro, providing the name
+ * of the LOG macro for better error messages.
+ *
+ * @param arg an arg/expression to check
+ */
+#define OT_FAIL_IF_64_BIT_LOG(arg) OT_FAIL_IF_64_BIT(arg, LOG)
+
+/**
+ * A macro that checks the variable arguments of the `LOG` function are valid
+ * at compile time, by asserting that each of the argument is not a standard
+ * C integer type with a width of 64 bits. Any such invalid argument will
+ * cause a relevant error via a static assertion.
+ *
+ * @param ... the variable args list
+ */
+#define OT_CHECK_VALID_LOG_ARGS(...) \
+  OT_VA_FOR_EACH(OT_FAIL_IF_64_BIT_LOG, ##__VA_ARGS__)
 
 /**
  * Basic logging macro that all other logging macros delegate to.
@@ -110,6 +129,7 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
  */
 #define LOG(severity, format, ...)                               \
   do {                                                           \
+    OT_CHECK_VALID_LOG_ARGS(__VA_ARGS__);                        \
     if (kDeviceLogBypassUartAddress != 0) {                      \
       /* clang-format off */                                     \
       /* Put DV-only log constants in .logs.* sections, which
@@ -123,9 +143,9 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
                            OT_VA_ARGS_COUNT(format, ##__VA_ARGS__), \
                            ##__VA_ARGS__); /* clang-format on */ \
     } else {                                                     \
-      log_fields_t log_fields =                                  \
+      static const log_fields_t log_fields =                     \
           LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__);     \
-      base_log_internal_core(log_fields, ##__VA_ARGS__);         \
+      base_log_internal_core(&log_fields, ##__VA_ARGS__);        \
     }                                                            \
   } while (false)
 

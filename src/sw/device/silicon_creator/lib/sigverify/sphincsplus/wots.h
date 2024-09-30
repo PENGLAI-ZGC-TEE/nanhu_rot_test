@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -30,12 +30,9 @@ extern "C" {
  * @param ctx Context object.
  * @param addr Hypertree address.
  * @param[out] pk Resulting WOTS public key.
- * @return Error code indicating if the operation succeeded.
  */
-OT_WARN_UNUSED_RESULT
-rom_error_t wots_pk_from_sig(const uint32_t *sig, const uint32_t *msg,
-                             const spx_ctx_t *ctx, spx_addr_t *addr,
-                             uint32_t *pk);
+void wots_pk_from_sig(const uint32_t *sig, const uint32_t *msg,
+                      const spx_ctx_t *ctx, spx_addr_t *addr, uint32_t *pk);
 
 #ifdef __cplusplus
 }

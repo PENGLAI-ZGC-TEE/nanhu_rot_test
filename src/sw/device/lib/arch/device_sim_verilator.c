@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,10 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/arch/device.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "rv_core_ibex_regs.h"
+#include "uart_regs.h"
 
 /**
  * @file
@@ -41,17 +45,29 @@ const uint64_t kUartBaudrate = 7200;
 const uint32_t kUartNCOValue =
     CALCULATE_UART_NCO(kUartBaudrate, kClockFreqPeripheralHz);
 
-const uint32_t kUartTxFifoCpuCycles =
-    CALCULATE_UART_TX_FIFO_CPU_CYCLES(kUartBaudrate, kClockFreqCpuHz);
+const uint32_t kUartBaud115K =
+    CALCULATE_UART_NCO(115200, kClockFreqPeripheralHz);
+const uint32_t kUartBaud230K =
+    CALCULATE_UART_NCO(115200 * 2, kClockFreqPeripheralHz);
+const uint32_t kUartBaud460K =
+    CALCULATE_UART_NCO(115200 * 4, kClockFreqPeripheralHz);
+const uint32_t kUartBaud921K =
+    CALCULATE_UART_NCO(115200 * 8, kClockFreqPeripheralHz);
+const uint32_t kUartBaud1M33 =
+    CALCULATE_UART_NCO(1333333, kClockFreqPeripheralHz);
+const uint32_t kUartBaud1M50 =
+    CALCULATE_UART_NCO(1500000, kClockFreqPeripheralHz);
+
+const uint32_t kUartTxFifoCpuCycles = CALCULATE_UART_TX_FIFO_CPU_CYCLES(
+    kUartBaudrate, kClockFreqCpuHz, UART_PARAM_TX_FIFO_DEPTH);
 
 const uint32_t kAstCheckPollCpuCycles =
     CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 
-// Defined in `hw/top_earlgrey/chip_earlgrey_verilator.core`
-const uintptr_t kDeviceTestStatusAddress = 0x411f0080;
+const uintptr_t kDeviceTestStatusAddress =
+    TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR +
+    RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET;
 
 const uintptr_t kDeviceLogBypassUartAddress = 0;
-
-const bool kJitterEnabled = false;
 
 void device_fpga_version_print(void) {}

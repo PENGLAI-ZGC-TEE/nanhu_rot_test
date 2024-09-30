@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -32,11 +32,9 @@ extern "C" {
  * @param ctx Context object.
  * @param addr Hypertree address.
  * @param[out] out Output buffer (at least `kSpxN` bytes).
- * @return Error code indicating if the operation succeeded.
  */
-OT_WARN_UNUSED_RESULT
-rom_error_t thash(const uint32_t *in, size_t inblocks, const spx_ctx_t *ctx,
-                  const spx_addr_t *addr, uint32_t *out);
+void thash(const uint32_t *in, size_t inblocks, const spx_ctx_t *ctx,
+           const spx_addr_t *addr, uint32_t *out);
 
 #ifdef __cplusplus
 }
