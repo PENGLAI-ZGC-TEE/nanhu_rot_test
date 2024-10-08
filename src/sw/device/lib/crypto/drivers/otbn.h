@@ -82,7 +82,7 @@ typedef struct otbn_app {
    * This pointer references OTBN's memory and is used to copy data at app load
    * time.
    */
-  const otbn_addr_t dmem_data_start_addr;
+   otbn_addr_t dmem_data_start_addr;
   /**
    * Application checksum.
    *
@@ -186,7 +186,7 @@ typedef struct otbn_app {
  * Initializes an `otbn_addr_t`.
  */
 #define OTBN_ADDR_T_INIT(app_name, symbol_name) \
-  ((uint32_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
+  ((uint32_t)(uintptr_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
 
 /**
  * Write to OTBN's data memory (DMEM)
@@ -235,7 +235,7 @@ status_t otbn_dmem_set(size_t num_words, const uint32_t src, otbn_addr_t dest);
  * @param[out] dest The main memory location to copy to.
  * @return Result of the operation.
  */
-status_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest);
+status_t otbn_dmem_read(size_t num_words, const otbn_addr_t src, uint32_t *dest);
 
 /**
  * Start the execution of the application loaded into OTBN.

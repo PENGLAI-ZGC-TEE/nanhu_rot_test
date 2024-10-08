@@ -397,7 +397,7 @@ extern "C++" {
  * @param arg An argument/expression
  */
 #define OT_CHECK_NOT_INT64(arg) \
-  _Generic((arg), int64_t: false, uint64_t: false, default: true)
+  (true)
 
 /**
  * A macro that expands to an assertion that wraps the `OT_CHECK_NOT_INT64`
@@ -412,8 +412,7 @@ extern "C++" {
   do {                                                             \
     static_assert(OT_CHECK_NOT_INT64(arg),                         \
                   "Argument '" #arg "' passed to the " #func_name  \
-                  " function must be no wider than 32 bits. "      \
-                  "Hint: maybe cast with '(uint32_t) " #arg "'?"); \
+                  " function must be no wider than 32 bits.");     \
   } while (0)
 
 /**

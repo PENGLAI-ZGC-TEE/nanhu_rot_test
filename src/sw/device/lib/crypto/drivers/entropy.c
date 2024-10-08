@@ -339,9 +339,15 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
       break;
     case kEntropyCsrngSendAppCmdTypeEdnGen:
       cmd_reg_addr = base_address + EDN_GENERATE_CMD_REG_OFFSET;
+      rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
+      reg_rdy_bit_offset = EDN_SW_CMD_STS_CMD_REG_RDY_BIT;
+      sts_reg_addr = base_address + CSRNG_SW_CMD_STS_REG_OFFSET;
       break;
     case kEntropyCsrngSendAppCmdTypeEdnRes:
       cmd_reg_addr = base_address + EDN_RESEED_CMD_REG_OFFSET;
+      rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
+      reg_rdy_bit_offset = EDN_SW_CMD_STS_CMD_REG_RDY_BIT;
+      sts_reg_addr = base_address + CSRNG_SW_CMD_STS_REG_OFFSET;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;

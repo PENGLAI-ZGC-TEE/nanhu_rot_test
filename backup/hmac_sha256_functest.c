@@ -145,7 +145,7 @@ OTTF_DEFINE_TEST_CONFIG();
 // Holds the test result.
 static volatile status_t test_result;
 
-bool main(void) {
+bool test_main(void) {
   test_result = OK_STATUS();
   CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, simple_test);

@@ -181,11 +181,12 @@ void status_report(status_t value);
   ({                                       \
     status_t status_ = INTO_STATUS(expr_); \
     if (status_.value < 0) {               \
-      STATUS_REPORT_HERE(status_);         \
       return status_;                      \
     }                                      \
     status_.value;                         \
   })
+      // STATUS_REPORT_HERE(status_);         
+
 
 // This global constant is available to all modules and is the constant zero.
 // This name intentionally violates the constant naming convention of
@@ -249,9 +250,9 @@ OT_ALWAYS_INLINE absl_status_t status_err(status_t s) {
   ({                                                                      \
     static_assert(OT_VA_ARGS_COUNT(_, __VA_ARGS__) <= 2,                  \
                   "status macros take 0 or 1 arguments");                 \
-    RECORD_STATUS_CREATE(s_, MODULE_ID, __FILE__);                        \
     status_create(s_, MODULE_ID, __FILE__, OT_GET_LAST_ARG(__VA_ARGS__)); \
   })
+      // RECORD_STATUS_CREATE(s_, MODULE_ID, __FILE__);                        
 
 // Helpers for creating statuses of various kinds.
 // clang-format off

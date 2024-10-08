@@ -127,8 +127,9 @@ otcrypto_status_t otcrypto_kdf_hmac_ctr(
   // (see NIST SP 800-108r1, section 4.1)
   size_t required_word_len = ceil_div(required_byte_len, sizeof(uint32_t));
   size_t num_iterations = ceil_div(required_word_len, digest_word_len);
-  if (launder32(num_iterations) > UINT32_MAX) {
-    return OTCRYPTO_BAD_ARGS;
+  uint32_t laundered_value = launder32(num_iterations);
+  if (laundered_value > UINT32_MAX) {
+      return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_LE(num_iterations, UINT32_MAX);
 

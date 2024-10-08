@@ -15,17 +15,17 @@
 #define MODULE_ID MAKE_MODULE_ID('h', 'a', 's')
 
 // Check that internal and publicly exposed digest values match each other.
-static_assert(kSha256DigestBits == kHmacSha256DigestBits &&
-                  kSha256DigestBytes == kHmacSha256DigestBytes &&
-                  kSha256DigestWords == kHmacSha256DigestWords,
+static_assert((int)kSha256DigestBits == (int)kHmacSha256DigestBits &&
+              (int)kSha256DigestBytes == (int)kHmacSha256DigestBytes &&
+              (int)kSha256DigestWords == (int)kHmacSha256DigestWords,
               "Exposed and driver-level SHA-256 digest size mismatch.");
-static_assert(kSha384DigestBits == kHmacSha384DigestBits &&
-                  kSha384DigestBytes == kHmacSha384DigestBytes &&
-                  kSha384DigestWords == kHmacSha384DigestWords,
+static_assert((int)kSha384DigestBits == (int)kHmacSha384DigestBits &&
+                  (int)kSha384DigestBytes == (int)kHmacSha384DigestBytes &&
+                  (int)kSha384DigestWords == (int)kHmacSha384DigestWords,
               "Exposed and driver-level SHA-384 digest size mismatch.");
-static_assert(kSha512DigestBits == kHmacSha512DigestBits &&
-                  kSha512DigestBytes == kHmacSha512DigestBytes &&
-                  kSha512DigestWords == kHmacSha512DigestWords,
+static_assert((int)kSha512DigestBits == (int)kHmacSha512DigestBits &&
+                  (int)kSha512DigestBytes == (int)kHmacSha512DigestBytes &&
+                  (int)kSha512DigestWords == (int)kHmacSha512DigestWords,
               "Exposed and driver-level SHA-512 digest size mismatch.");
 
 // Ensure that the hash context is large enough for HMAC driver struct.

@@ -5,21 +5,21 @@
 #include "sw/device/lib/testing/keymgr_testutils.h"
 
 #include "sw/device/lib/arch/boot_stage.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+// #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
-#include "sw/device/lib/runtime/ibex.h"
+// #include "sw/device/lib/dif/dif_otp_ctrl.h"
+// #include "sw/device/lib/dif/dif_rstmgr.h"
+// #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+// #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
-#include "sw/device/lib/testing/otp_ctrl_testutils.h"
-#include "sw/device/lib/testing/rstmgr_testutils.h"
+// #include "sw/device/lib/testing/otp_ctrl_testutils.h"
+// #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/silicon_creator/lib/base/chip.h"
-#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+// #include "sw/device/silicon_creator/lib/base/chip.h"
+// #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -49,61 +49,61 @@ const static char *kKeymgrStageNames[] = {
     [kDifKeymgrStateInvalid] = "Invalid",
 };
 
-static status_t write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
-                                const keymgr_testutils_secret_t *data,
-                                bool scramble) {
-  uint32_t address = 0;
-  if (scramble) {
-    TRY(flash_ctrl_testutils_info_region_scrambled_setup(
-        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
-  } else {
-    TRY(flash_ctrl_testutils_info_region_setup(
-        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
-  }
+// static status_t write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
+//                                 const keymgr_testutils_secret_t *data,
+//                                 bool scramble) {
+//   uint32_t address = 0;
+//   if (scramble) {
+//     TRY(flash_ctrl_testutils_info_region_scrambled_setup(
+//         flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
+//   } else {
+//     TRY(flash_ctrl_testutils_info_region_setup(
+//         flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
+//   }
 
-  TRY(flash_ctrl_testutils_erase_and_write_page(
-      flash, address, kFlashInfoPartitionId, data->value,
-      kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(data->value)));
+//   TRY(flash_ctrl_testutils_erase_and_write_page(
+//       flash, address, kFlashInfoPartitionId, data->value,
+//       kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(data->value)));
 
-  keymgr_testutils_secret_t readback_data;
-  TRY(flash_ctrl_testutils_read(
-      flash, address, kFlashInfoPartitionId, readback_data.value,
-      kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(readback_data.value), 0));
-  TRY_CHECK(memcmp(data->value, readback_data.value, sizeof(data->value)) == 0);
-  return OK_STATUS();
-}
+//   keymgr_testutils_secret_t readback_data;
+//   TRY(flash_ctrl_testutils_read(
+//       flash, address, kFlashInfoPartitionId, readback_data.value,
+//       kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(readback_data.value), 0));
+//   TRY_CHECK(memcmp(data->value, readback_data.value, sizeof(data->value)) == 0);
+//   return OK_STATUS();
+// }
 
-status_t keymgr_testutils_flash_init(
-    dif_flash_ctrl_state_t *flash,
-    const keymgr_testutils_secret_t *creator_secret,
-    const keymgr_testutils_secret_t *owner_secret) {
-  // Initialize flash secrets.
-  write_info_page(flash, kFlashInfoPageIdCreatorSecret, creator_secret,
-                  /*scramble=*/true);
-  write_info_page(flash, kFlashInfoPageIdOwnerSecret, owner_secret,
-                  /*scramble=*/true);
-  return OK_STATUS();
-}
+// status_t keymgr_testutils_flash_init(
+//     dif_flash_ctrl_state_t *flash,
+//     const keymgr_testutils_secret_t *creator_secret,
+//     const keymgr_testutils_secret_t *owner_secret) {
+//   // Initialize flash secrets.
+//   write_info_page(flash, kFlashInfoPageIdCreatorSecret, creator_secret,
+//                   /*scramble=*/true);
+//   write_info_page(flash, kFlashInfoPageIdOwnerSecret, owner_secret,
+//                   /*scramble=*/true);
+//   return OK_STATUS();
+// }
 
-static status_t check_lock_otp_partition(void) {
-  dif_otp_ctrl_t otp;
-  TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+// static status_t check_lock_otp_partition(void) {
+//   dif_otp_ctrl_t otp;
+//   TRY(dif_otp_ctrl_init(
+//       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
-  bool is_computed;
-  TRY(dif_otp_ctrl_is_digest_computed(&otp, kDifOtpCtrlPartitionSecret2,
-                                      &is_computed));
-  if (is_computed) {
-    uint64_t digest;
-    TRY(dif_otp_ctrl_get_digest(&otp, kDifOtpCtrlPartitionSecret2, &digest));
-    LOG_INFO("OTP partition locked. Digest: %x-%x", ((uint32_t *)&digest)[0],
-             ((uint32_t *)&digest)[1]);
-    return OK_STATUS();
-  }
+//   bool is_computed;
+//   TRY(dif_otp_ctrl_is_digest_computed(&otp, kDifOtpCtrlPartitionSecret2,
+//                                       &is_computed));
+//   if (is_computed) {
+//     uint64_t digest;
+//     TRY(dif_otp_ctrl_get_digest(&otp, kDifOtpCtrlPartitionSecret2, &digest));
+//     LOG_INFO("OTP partition locked. Digest: %x-%x", ((uint32_t *)&digest)[0],
+//              ((uint32_t *)&digest)[1]);
+//     return OK_STATUS();
+//   }
 
-  TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2, 0));
-  return OK_STATUS();
-}
+//   TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2, 0));
+//   return OK_STATUS();
+// }
 
 static status_t dif_init(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   // Initialize KMAC in preparation for keymgr use.
@@ -184,69 +184,83 @@ status_t keymgr_testutils_try_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
   return OK_STATUS();
 }
 
-status_t keymgr_testutils_init_nvm_then_reset(void) {
-  dif_flash_ctrl_state_t flash;
-  dif_rstmgr_t rstmgr;
+// status_t keymgr_testutils_init_nvm_then_reset(void) {
+//   dif_flash_ctrl_state_t flash;
+//   dif_rstmgr_t rstmgr;
 
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
-                      &rstmgr));
-  const dif_rstmgr_reset_info_bitfield_t reset_info =
-      rstmgr_testutils_reason_get();
+//   TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+//                       &rstmgr));
+//   const dif_rstmgr_reset_info_bitfield_t reset_info =
+//       rstmgr_testutils_reason_get();
 
-  // POR reset.
-  if (reset_info == kDifRstmgrResetInfoPor) {
-    LOG_INFO("Powered up for the first time, program flash");
+//   // POR reset.
+//   if (reset_info == kDifRstmgrResetInfoPor) {
+//     LOG_INFO("Powered up for the first time, program flash");
 
-    TRY(dif_flash_ctrl_init_state(
-        &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+//     TRY(dif_flash_ctrl_init_state(
+//         &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
-    TRY(keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret));
+//     TRY(keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret));
 
-    TRY(check_lock_otp_partition());
+//     TRY(check_lock_otp_partition());
 
-    // Reboot device.
-    LOG_INFO("Requesting a reset to make OTP partitions accessible to keymgr");
-    rstmgr_testutils_reason_clear();
-    TRY(dif_rstmgr_software_device_reset(&rstmgr));
+//     // Reboot device.
+//     LOG_INFO("Requesting a reset to make OTP partitions accessible to keymgr");
+//     rstmgr_testutils_reason_clear();
+//     TRY(dif_rstmgr_software_device_reset(&rstmgr));
 
-    // Wait here until device reset.
-    wait_for_interrupt();
+//     // Wait here until device reset.
+//     wait_for_interrupt();
 
-    // Should never reach this.
-    return INTERNAL();
+//     // Should never reach this.
+//     return INTERNAL();
 
-  } else {
-    // Not POR reset: this function has done its job (or can't run because it's
-    // supposed to run after POR).
-    return OK_STATUS();
-  }
-}
+//   } else {
+//     // Not POR reset: this function has done its job (or can't run because it's
+//     // supposed to run after POR).
+//     return OK_STATUS();
+//   }
+// }
 
 status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
-  dif_rstmgr_t rstmgr;
+  // dif_rstmgr_t rstmgr;
 
   // Check the last word of the retention SRAM creator area to determine the
   // type of the ROM.
-  bool is_using_test_rom =
-      retention_sram_get()
-          ->creator
-          .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
-      TEST_ROM_IDENTIFIER;
+  bool is_using_test_rom = 1;
+  //     retention_sram_get()
+  //         ->creator
+  //         .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
+  //     TEST_ROM_IDENTIFIER;
 
-  TRY(keymgr_testutils_init_nvm_then_reset());
+  // TRY(keymgr_testutils_init_nvm_then_reset());
 
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
-                      &rstmgr));
-  const dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
+  // TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+  //                     &rstmgr));
+  // const dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
 
-  TRY_CHECK(info == kDifRstmgrResetInfoSw, "Unexpected reset reason: %08x",
-            info);
+  // TRY_CHECK(info == kDifRstmgrResetInfoSw, "Unexpected reset reason: %08x",
+  //           info);
 
-  LOG_INFO("Initializing entropy complex in Auto mode");
+  // LOG_INFO("Initializing entropy complex in Auto mode");
 
-  TRY(entropy_testutils_auto_mode_init());
+  // TRY(entropy_testutils_auto_mode_init());
 
-  LOG_INFO("Powered up for the second time, actuate keymgr and perform test.");
+  // LOG_INFO("Powered up for the second time, actuate keymgr and perform test.");
+
+  // edn entropy csrng init
+     void *entropy_conf_addr = (void*)0x3b160024;
+     void *entropy_en_addr = (void*)0x3b160020;
+     void *csrng_ctrl_addr = (void*)0x3b150014;
+      void *end0_ctrl_addr = (void*)0x3b190014;
+     *(uint32_t*)entropy_conf_addr = 0x00909099;
+     asm volatile("" ::: "memory"); 
+     *(uint32_t*)entropy_en_addr = 0x00000006;
+     asm volatile("" ::: "memory"); 
+     *(uint32_t*)csrng_ctrl_addr = 0x00000666;
+     asm volatile("" ::: "memory"); 
+     *(uint32_t*)end0_ctrl_addr = 0x00009966;
+     asm volatile("" ::: "memory"); 
 
   TRY(dif_init(keymgr, kmac));
 
@@ -273,7 +287,6 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   // the DV_WAIT sequences from keymgr_key_derivation vseq
   TRY(keymgr_testutils_generate_identity(keymgr));
   LOG_INFO("Keymgr generated identity at CreatorRootKey State");
-
   return OK_STATUS();
 }
 

@@ -41,8 +41,9 @@ extern "C" {
  * computers (yet).
  */
 #define MMIO_DEPRECATED
+#define OT_PLATFORM_RV32_zdr 1
 
-#ifdef OT_PLATFORM_RV32
+#ifdef OT_PLATFORM_RV32_zdr
 /**
  * An mmio_region_t is an opaque handle to an MMIO region; it should only be
  * modified using the functions provided in this header.

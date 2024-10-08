@@ -14,6 +14,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/status.h"
+#include "sw/device/lib/arch/device.h"
 
 /**
  * Runtime assertion macros with log.h integration.
