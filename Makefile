@@ -36,7 +36,7 @@ rename_test_main_to_main:
 restore_main_to_test_main:
 	@echo "Restoring main to test_main in files: $(TEST_MAIN_SRCS)"
 	@for file in $(TEST_MAIN_SRCS); do \
-		cp $(BACKUP_DIR)$$file $$file; \
+		sed -i 's/main/test_main/g' $$file; \
 		echo "Restored main to test_main in $$file"; \
 	done
 
