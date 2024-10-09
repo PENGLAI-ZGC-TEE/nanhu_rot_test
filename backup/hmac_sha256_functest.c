@@ -9,7 +9,7 @@
 #include "sw/device/lib/crypto/include/mac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_main.h"
 
 enum {
   /**

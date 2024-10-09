@@ -9,7 +9,7 @@
 #include "sw/device/lib/crypto/include/mac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_main.h"
 
 enum {
   /**
@@ -145,7 +145,7 @@ OTTF_DEFINE_TEST_CONFIG();
 // Holds the test result.
 static volatile status_t test_result;
 
-bool main(void) {
+bool test_main(void) {
   test_result = OK_STATUS();
   CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, simple_test);

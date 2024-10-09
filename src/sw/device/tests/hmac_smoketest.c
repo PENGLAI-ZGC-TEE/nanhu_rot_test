@@ -117,5 +117,5 @@ bool test_main(void) {
   run_test(&hmac, kData, sizeof(kData), (uint8_t *)(&kHmacKey[0]),
            &kExpectedHmacDigest);
 
-  return true;
+  return 0;
 }

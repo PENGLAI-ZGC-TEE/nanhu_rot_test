@@ -1,7 +1,7 @@
 # NAME := aes_functest
 # SRCS := $(shell find -L ./src/ -name "$(NAME).[cS]")
 
-NAME := hmac_sha256_functest
+NAME := hmac_smoketest
 SRC_DIR := ./src/
 # 查找所有的 C 和 S 源文件
 ALL_SRCS := $(shell find -L $(SRC_DIR) -name "*.[cS]")
@@ -24,7 +24,8 @@ include ./Makefile.app
 rename_test_main_to_main:
 	@echo "Renaming test_main to main in files: $(TEST_MAIN_SRCS)"
 	@for file in $(TEST_MAIN_SRCS); do \
-		sed -i 's/test_main/main/g' $$file; \
+		sed -i 's/bool test_main/bool main/g' $$file; \
+		sed -i 's/return true/return 0/g' $$file; \
 		echo "Renamed test_main to main in $$file"; \
 	done
 
@@ -32,7 +33,7 @@ rename_test_main_to_main:
 restore_main_to_test_main:
 	@echo "Restoring main to test_main in files: $(TEST_MAIN_SRCS)"
 	@for file in $(TEST_MAIN_SRCS); do \
-		sed -i 's/main/test_main/g' $$file; \
+		sed -i 's/bool main/bool test_main/g' $$file; \
 		echo "Restored main to test_main in $$file"; \
 	done
 
