@@ -38,12 +38,26 @@ restore_main_to_test_main:
 	done
 
 # 添加编译前后的逻辑
-all: rename_test_main_to_main compile restore_main_to_test_main
+ram_sim: rename_test_main_to_main compile_ram_sim restore_main_to_test_main
+flash_sim: rename_test_main_to_main compile_flash_sim restore_main_to_test_main
+rom_sim: rename_test_main_to_main compile_rom_sim restore_main_to_test_main
 
 # 编译逻辑
-compile:
-	@echo "Compiling the project with renamed main functions."
+compile_ram_sim:
+	@echo "Compiling the project with renamed main functions for sram sim."
 	@$(MAKE) ARCH=riscv64-xs -j8
+
+compile_flash_sim:
+	@echo "Compiling the project with renamed main functions for flash sim."
+	@$(MAKE) ARCH=riscv64-xs-flash -j8
+
+compile_rom_sim:
+	@echo "Compiling the project with renamed main functions for bootrom."
+	@echo "Change reset_vector_addr to ROM."      
+	@sed -i 's/FLASH (rxa) : ORIGIN = 0x10000000/FLASH (rxa) : ORIGIN = 0x3b200000/g' ../../am/src/nemu/isa/riscv/boot/loaderflash.ld
+	@$(MAKE) ARCH=riscv64-xs-flash -j8            
+	@echo "Restore reset_vector_addr to SRAM."      
+	@sed -i 's/FLASH (rxa) : ORIGIN = 0x3b200000/FLASH (rxa) : ORIGIN = 0x10000000/g' ../../am/src/nemu/isa/riscv/boot/loaderflash.ld 
 
 # include $(AM_HOME)/Makefile.app
 # include ./Makefile.app
