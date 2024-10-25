@@ -1,7 +1,7 @@
 # NAME := aes_functest
 # SRCS := $(shell find -L ./src/ -name "$(NAME).[cS]")
 
-NAME := hmac_smoketest
+NAME := kmac_app_rom_test
 SRC_DIR := ./src/
 # 查找所有的 C 和 S 源文件
 ALL_SRCS := $(shell find -L $(SRC_DIR) -name "*.[cS]")
