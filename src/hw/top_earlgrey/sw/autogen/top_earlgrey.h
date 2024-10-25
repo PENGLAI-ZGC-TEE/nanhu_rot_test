@@ -25,6 +25,8 @@
 extern "C" {
 #endif
 
+#define ROT_BASE_ADDR 0x100011000000u
+
 /**
  * Peripheral base address for uart0 in top earlgrey.
  *
@@ -679,7 +681,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_AES_BASE_ADDR 0x3b300000u
+#define TOP_EARLGREY_AES_BASE_ADDR ROT_BASE_ADDR+0x00300000u
 
 /**
  * Peripheral size for aes in top earlgrey.
@@ -697,7 +699,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_HMAC_BASE_ADDR 0x3b110000u
+#define TOP_EARLGREY_HMAC_BASE_ADDR ROT_BASE_ADDR+0x00110000u
 
 /**
  * Peripheral size for hmac in top earlgrey.
@@ -715,7 +717,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_KMAC_BASE_ADDR 0x3b120000u
+#define TOP_EARLGREY_KMAC_BASE_ADDR ROT_BASE_ADDR+0x00120000u
 
 /**
  * Peripheral size for kmac in top earlgrey.
@@ -733,7 +735,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_OTBN_BASE_ADDR 0x3b130000u
+#define TOP_EARLGREY_OTBN_BASE_ADDR ROT_BASE_ADDR+0x00130000u
 
 /**
  * Peripheral size for otbn in top earlgrey.
@@ -751,7 +753,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_KEYMGR_BASE_ADDR 0x3b140000u
+#define TOP_EARLGREY_KEYMGR_BASE_ADDR ROT_BASE_ADDR+0x00140000u
 
 /**
  * Peripheral size for keymgr in top earlgrey.
@@ -769,7 +771,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ROT_TOP_BASE_ADDR 0x3b000000u
+#define TOP_EARLGREY_ROT_TOP_BASE_ADDR ROT_BASE_ADDR+0x00000000u
 
 /**
  * Peripheral size for rot_top in top earlgrey.
@@ -823,7 +825,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RS_ENCODE_BASE_ADDR 0x3b170000u
+#define TOP_EARLGREY_RS_ENCODE_BASE_ADDR ROT_BASE_ADDR+0x00170000u
 
 /**
  * Peripheral size for rs_encode in top earlgrey.
@@ -841,7 +843,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RS_DECODE_BASE_ADDR 0x3b180000u
+#define TOP_EARLGREY_RS_DECODE_BASE_ADDR ROT_BASE_ADDR+0x00180000u
 
 /**
  * Peripheral size for rs_decode in top earlgrey.
@@ -859,7 +861,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_PUF1_BASE_ADDR 0x3b1c0000u
+#define TOP_EARLGREY_PUF1_BASE_ADDR ROT_BASE_ADDR+0x001c0000u
 
 /**
  * Peripheral size for puf1 in top earlgrey.
@@ -877,7 +879,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_PUF2_BASE_ADDR 0x3b1d0000u
+#define TOP_EARLGREY_PUF2_BASE_ADDR ROT_BASE_ADDR+0x001d0000u
 
 /**
  * Peripheral size for puf2 in top earlgrey.
@@ -895,7 +897,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_PUF_REG_BASE_ADDR 0x3b310000u
+#define TOP_EARLGREY_PUF_REG_BASE_ADDR ROT_BASE_ADDR+0x00310000u
 
 /**
  * Peripheral size for puf_reg in top earlgrey.
@@ -913,7 +915,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_PCR_BASE_ADDR 0x3b320000u
+#define TOP_EARLGREY_PCR_BASE_ADDR ROT_BASE_ADDR+0x00320000u
 
 /**
  * Peripheral size for pcr in top earlgrey.
@@ -931,7 +933,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_CSRNG_BASE_ADDR 0x3b150000u
+#define TOP_EARLGREY_CSRNG_BASE_ADDR ROT_BASE_ADDR+0x00150000u
 
 /**
  * Peripheral size for csrng in top earlgrey.
@@ -949,7 +951,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR 0x3b160000u
+#define TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR ROT_BASE_ADDR+0x00160000u
 
 /**
  * Peripheral size for entropy_src in top earlgrey.
@@ -967,7 +969,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_EDN0_BASE_ADDR 0x3b190000u
+#define TOP_EARLGREY_EDN0_BASE_ADDR ROT_BASE_ADDR+0x00190000u
 
 /**
  * Peripheral size for edn0 in top earlgrey.
@@ -1039,7 +1041,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR 0x3b1e0000u
+#define TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR ROT_BASE_ADDR+0x001e0000u
 
 /**
  * Peripheral size for regs device on rom_ctrl in top earlgrey.
@@ -1057,7 +1059,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x3b200000u
+#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR ROT_BASE_ADDR+0x00200000u
 
 /**
  * Peripheral size for rom device on rom_ctrl in top earlgrey.
