@@ -789,7 +789,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SM3_BASE_ADDR 0x3B1A0000u
+#define TOP_EARLGREY_SM3_BASE_ADDR ROT_BASE_ADDR+0x001A0000u
 
 /**
  * Peripheral size for sm3 in top earlgrey.
@@ -807,7 +807,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SM4_BASE_ADDR 0x3B1B0000u
+#define TOP_EARLGREY_SM4_BASE_ADDR ROT_BASE_ADDR+0x001B0000u
 
 /**
  * Peripheral size for sm4 in top earlgrey.
