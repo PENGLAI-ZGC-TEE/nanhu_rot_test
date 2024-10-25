@@ -58,8 +58,8 @@ static status_t aes_write_key(aes_key_t key) {
   }
   HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);
 
-  uint32_t share0 = kBase + AES_KEY_SHARE0_0_REG_OFFSET;
-  uint32_t share1 = kBase + AES_KEY_SHARE1_0_REG_OFFSET;
+  uint64_t share0 = kBase + AES_KEY_SHARE0_0_REG_OFFSET;
+  uint64_t share1 = kBase + AES_KEY_SHARE1_0_REG_OFFSET;
 
   // Handle key shares in two separate loops to avoid dealing with
   // corresponding parts too close together, which could risk power
@@ -219,7 +219,7 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
   // All modes except ECB need to set an IV.
   if (key.mode != launder32(kAesCipherModeEcb)) {
     HARDENED_CHECK_NE(key.mode, kAesCipherModeEcb);
-    uint32_t iv_offset = kBase + AES_IV_0_REG_OFFSET;
+    uint64_t iv_offset = kBase + AES_IV_0_REG_OFFSET;
     for (size_t i = 0; i < ARRAYSIZE(iv->data); ++i) {
       abs_mmio_write32(iv_offset + i * sizeof(uint32_t), iv->data[i]);
     }
@@ -259,7 +259,7 @@ status_t aes_update(aes_block_t *dest, const aes_block_t *src) {
 
     HARDENED_TRY(spin_until(AES_STATUS_OUTPUT_VALID_BIT));
 
-    uint32_t offset = kBase + AES_DATA_OUT_0_REG_OFFSET;
+    uint64_t offset = kBase + AES_DATA_OUT_0_REG_OFFSET;
     for (size_t i = 0; i < ARRAYSIZE(dest->data); ++i) {
       dest->data[i] = abs_mmio_read32(offset + i * sizeof(uint32_t));
     }
@@ -268,7 +268,7 @@ status_t aes_update(aes_block_t *dest, const aes_block_t *src) {
   if (src != NULL) {
     HARDENED_TRY(spin_until(AES_STATUS_INPUT_READY_BIT));
 
-    uint32_t offset = kBase + AES_DATA_IN_0_REG_OFFSET;
+    uint64_t offset = kBase + AES_DATA_IN_0_REG_OFFSET;
     for (size_t i = 0; i < ARRAYSIZE(src->data); ++i) {
       abs_mmio_write32(offset + i * sizeof(uint32_t), src->data[i]);
     }
@@ -285,7 +285,7 @@ status_t aes_end(aes_block_t *iv) {
 
   if (iv != NULL) {
     // Read back the current IV from the hardware.
-    uint32_t iv_offset = kBase + AES_IV_0_REG_OFFSET;
+    uint64_t iv_offset = kBase + AES_IV_0_REG_OFFSET;
     for (size_t i = 0; i < ARRAYSIZE(iv->data); ++i) {
       iv->data[i] = abs_mmio_read32(iv_offset + i * sizeof(uint32_t));
     }

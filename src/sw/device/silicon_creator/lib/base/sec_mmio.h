@@ -158,7 +158,7 @@ void sec_mmio_next_stage_init(void);
  * @return the read value.
  */
 OT_WARN_UNUSED_RESULT
-uint32_t sec_mmio_read32(uint32_t addr);
+uint32_t sec_mmio_read32(uint64_t addr);
 
 /**
  * Writes an aligned uint32_t to the MMIO region `base` at the give byte
@@ -177,7 +177,7 @@ uint32_t sec_mmio_read32(uint32_t addr);
  * @param addr The address to write to.
  * @param value The value to write.
  */
-void sec_mmio_write32(uint32_t addr, uint32_t value);
+void sec_mmio_write32(uint64_t addr, uint32_t value);
 
 /**
  * Writes an aligned uint32_t to the MMIO region `base` at the give byte
@@ -196,7 +196,7 @@ void sec_mmio_write32(uint32_t addr, uint32_t value);
  * @param addr The address to write to.
  * @param value The value to write.
  */
-void sec_mmio_write32_shadowed(uint32_t addr, uint32_t value);
+void sec_mmio_write32_shadowed(uint64_t addr, uint32_t value);
 
 /**
  * Checks the expected list of register values.

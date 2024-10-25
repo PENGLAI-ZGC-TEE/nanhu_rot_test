@@ -92,7 +92,7 @@ typedef struct edn_config {
   /**
    * Base address of the EDN block.
    */
-  uint32_t base_address;
+  uint64_t base_address;
   /**
    * Number of generate calls between reseed commands.
    */
@@ -303,7 +303,7 @@ static const entropy_complex_config_t
 // passes to CSRNG. In this case, the check_completion argument should only be
 // true for non-generate commands issued to the SW register.
 OT_WARN_UNUSED_RESULT
-static status_t csrng_send_app_cmd(uint32_t base_address,
+static status_t csrng_send_app_cmd(uint64_t base_address,
                                    entropy_csrng_cmd_t cmd,
                                    entropy_csrng_send_app_cmd_type_t cmd_type,
                                    bool check_completion) {
@@ -317,8 +317,8 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  uint32_t cmd_reg_addr;
-  uint32_t sts_reg_addr;
+  uint64_t cmd_reg_addr;
+  uint64_t sts_reg_addr;
   uint32_t rdy_bit_offset;
   uint32_t reg_rdy_bit_offset;
   uint32_t reg;
@@ -490,7 +490,7 @@ static void csrng_configure(void) {
  *
  * @param edn_address The based address of the target EDN block.
  */
-static void edn_stop(uint32_t edn_address) {
+static void edn_stop(uint64_t edn_address) {
   // FIFO clear is only honored if edn is enabled. This is needed to avoid
   // synchronization issues with the upstream CSRNG instance.
   uint32_t reg = abs_mmio_read32(edn_address + EDN_CTRL_REG_OFFSET);
@@ -510,7 +510,7 @@ static void edn_stop(uint32_t edn_address) {
  * @returns an error if the EDN error status bit is set.
  */
 OT_WARN_UNUSED_RESULT
-static status_t edn_ready_block(uint32_t edn_address) {
+static status_t edn_ready_block(uint64_t edn_address) {
   uint32_t reg;
   do {
     reg = abs_mmio_read32(edn_address + EDN_SW_CMD_STS_REG_OFFSET);
