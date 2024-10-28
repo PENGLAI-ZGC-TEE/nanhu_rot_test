@@ -1,7 +1,7 @@
 # NAME := aes_functest
 # SRCS := $(shell find -L ./src/ -name "$(NAME).[cS]")
 
-NAME := kmac_app_rom_test
+NAME := bootrom
 SRC_DIR := ./src/
 # 查找所有的 C 和 S 源文件
 ALL_SRCS := $(shell find -L $(SRC_DIR) -name "*.[cS]")
@@ -36,6 +36,13 @@ restore_main_to_test_main:
 		sed -i 's/bool main/bool test_main/g' $$file; \
 		echo "Restored main to test_main in $$file"; \
 	done
+	@FILE_PATH=$$(find ./src -name "$(NAME).c"); \
+	if [ -n "$$FILE_PATH" ]; then \
+		echo "Modifying $$FILE_PATH..."; \
+		sed -i 's/bool main/bool test_main/g' $$FILE_PATH; \
+	else \
+		echo "$(NAME).c not found."; \
+	fi
 
 # 添加编译前后的逻辑
 ram_sim: rename_test_main_to_main compile_ram_sim restore_main_to_test_main

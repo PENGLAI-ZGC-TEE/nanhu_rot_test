@@ -55,7 +55,7 @@ inline uint64_t abs_mmio_read64(uint64_t addr) {
     return *((volatile uint64_t *)addr);
 }
 
-uint64_t PUF_hash_addr = 0x3b010008u;
+uint64_t PUF_hash_addr = TOP_EARLGREY_PUF2_BASE_ADDR + 0x0008u;
 
 //base_register_address: 0x3b010008L
 void write_hash_to_registers(unsigned char output[32], uint64_t base_register_address) {
@@ -84,7 +84,7 @@ void read_hash_from_registers(uint64_t base_addr) {
 
 // ! change PUF to PUF2
 bool PUF_enrollment(uint32_t *helper_data) {
-    puf_get_res_of_a_cha(TOP_EARLGREY_PUF_BASE_ADDR, a_challenge, puf_result_buf);
+    puf_get_res_of_a_cha(TOP_EARLGREY_PUF2_BASE_ADDR, a_challenge, puf_result_buf);
     LOG_INFO("PUF enrollment response :");
     LOG_INFO("%08x%08x%08x%08x%08x%08x%08x%08x",puf_result_buf[0],puf_result_buf[1],puf_result_buf[2],puf_result_buf[3],puf_result_buf[4],puf_result_buf[5],puf_result_buf[6],puf_result_buf[7]);
 
@@ -110,7 +110,7 @@ bool PUF_enrollment(uint32_t *helper_data) {
         helper_data[i] = rs_encode_result_buf[i];
     }
 
-    return true;
+    return 0;
 }
 
 void PUF_authorization(uint32_t helper_data[8]){
@@ -118,7 +118,7 @@ void PUF_authorization(uint32_t helper_data[8]){
     uint32_t rs_decode_result_buf[50]={0};
     uint32_t puf_result_buf_auth[42]={0};
 
-    puf_get_res_of_a_cha(TOP_EARLGREY_PUF_BASE_ADDR, a_challenge, puf_result_buf_auth);
+    puf_get_res_of_a_cha(TOP_EARLGREY_PUF2_BASE_ADDR, a_challenge, puf_result_buf_auth);
     LOG_INFO("PUF authorization response :");
     LOG_INFO("%08x%08x%08x%08x%08x%08x%08x%08x",puf_result_buf_auth[0],puf_result_buf_auth[1],puf_result_buf_auth[2],puf_result_buf_auth[3],puf_result_buf_auth[4],puf_result_buf_auth[5],puf_result_buf_auth[6],puf_result_buf_auth[7]);
     // Combine helper_data and puf_result_buf into rs_encode_result_buf
@@ -152,7 +152,7 @@ void PUF_authorization2(uint32_t helper_data[8]){
     uint32_t rs_decode_result_buf[50]={0};
     uint32_t puf_result_buf_auth[42]={0};
 
-    puf_get_res_of_a_cha(TOP_EARLGREY_PUF_BASE_ADDR, a_challenge, puf_result_buf_auth);
+    puf_get_res_of_a_cha(TOP_EARLGREY_PUF2_BASE_ADDR, a_challenge, puf_result_buf_auth);
     LOG_INFO("PUF authorization response :");
     LOG_INFO("%08x%08x%08x%08x%08x%08x%08x%08x",puf_result_buf_auth[0],puf_result_buf_auth[1],puf_result_buf_auth[2],puf_result_buf_auth[3],puf_result_buf_auth[4],puf_result_buf_auth[5],puf_result_buf_auth[6],puf_result_buf_auth[7]);
     // Combine helper_data and puf_result_buf into rs_encode_result_buf
